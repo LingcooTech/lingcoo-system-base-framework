@@ -1,0 +1,14 @@
+{
+  "$schema": "./docs/framework-manifest.schema.json",
+  "name": "lingcoo-system-base-framework",
+  "version": "0.1.0",
+  "kind": "runnable-base-framework",
+  "origin": {
+    "referenceProject": "lingcoo-edu-system",
+    "strategy": "architecture extraction, not source mirroring"
+  },
+  "surfaces": ["public-web", "admin-ui", "api"],
+  "infrastructure": ["postgresql", "docker", "caddy"],
+  "foundationModules": ["system"],
+  "domainModules": []
+}

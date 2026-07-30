@@ -1,0 +1,55 @@
+{
+  "name": "lingcoo-system-base-framework",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lingcoo 可运行、可部署、可扩展的业务系统基础框架。",
+  "scripts": {
+    "setup": "npm install && npm --prefix admin-ui install && npm --prefix public-web install",
+    "dev": "tsx watch src/server.ts",
+    "dev:api": "npm run dev",
+    "dev:admin": "npm --prefix admin-ui run dev",
+    "dev:public": "npm --prefix public-web run dev",
+    "build": "tsc -p tsconfig.json",
+    "build:admin": "npm --prefix admin-ui run build",
+    "build:public": "npm --prefix public-web run build",
+    "build:all": "npm run build:admin && npm run build:public && npm run build",
+    "start": "node dist/server.js",
+    "test": "node --import tsx --test test/**/*.test.ts",
+    "typecheck": "tsc --noEmit && npm --prefix admin-ui run typecheck && npm --prefix public-web run typecheck",
+    "lint": "eslint . && npm --prefix admin-ui run lint && npm --prefix public-web run lint",
+    "check": "npm run typecheck && npm test && npm run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/run-migrations.mjs",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/sensible": "^6.0.4",
+    "@fastify/static": "^10.1.2",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.6.1",
+    "pg": "^8.16.3",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^10.8.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.8.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.65.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

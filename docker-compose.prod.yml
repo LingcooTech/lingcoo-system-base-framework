@@ -1,0 +1,84 @@
+name: lingcoo-base-framework
+
+x-runtime-environment: &runtime-environment
+  NODE_ENV: production
+  APP_NAME: ${APP_NAME:-lingcoo-system-base-framework}
+  APP_VERSION: ${APP_VERSION:-development}
+  DATABASE_URL: postgres://${POSTGRES_USER:-lingcoo_base}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-lingcoo_base}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:18090}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lingcoo_base}
+      POSTGRES_USER: ${POSTGRES_USER:-lingcoo_base}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  migrate:
+    image: ${LINGCOO_RUNTIME_IMAGE:-lingcoo-system-base-framework:local}
+    environment: *runtime-environment
+    command: ['node', 'scripts/run-migrations.mjs']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    image: ${LINGCOO_RUNTIME_IMAGE:-lingcoo-system-base-framework:local}
+    environment: *runtime-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    expose:
+      - '8090'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:8090/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 4s
+      retries: 10
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.10-alpine
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-:80}
+    ports:
+      - '${LINGCOO_HTTP_PORT:-18090}:80'
+      - '${LINGCOO_HTTPS_PORT:-18446}:443'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

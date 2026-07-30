@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lingcoo.com/schemas/framework-manifest.schema.json",
+  "title": "Lingcoo Framework Manifest",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "kind",
+    "surfaces",
+    "infrastructure",
+    "foundationModules",
+    "domainModules"
+  ],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "kind": { "const": "runnable-base-framework" },
+    "origin": { "type": "object" },
+    "surfaces": { "type": "array", "items": { "type": "string" } },
+    "infrastructure": { "type": "array", "items": { "type": "string" } },
+    "foundationModules": { "type": "array", "items": { "type": "string" } },
+    "domainModules": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

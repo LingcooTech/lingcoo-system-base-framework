@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.local
+.DS_Store
+coverage
+*.log
+admin-ui/node_modules
+admin-ui/dist
+public-web/node_modules
+public-web/dist
