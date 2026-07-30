@@ -22,7 +22,7 @@ Browser
                          └─ PostgreSQL
 ```
 
-开发时三个应用独立运行，以获得快速热更新；生产时两个前端编译为静态资源，由 Fastify 与 API 一起装入单一镜像。Caddy 只负责入口、压缩、TLS 和反向代理。
+开发时三个应用独立运行，以获得快速热更新；`admin-ui`、`public-web` 和共享包由 npm workspace 统一管理。生产时两个前端编译为静态资源，由 Fastify 与 API 一起装入单一镜像。Caddy 只负责入口、压缩、TLS 和反向代理。
 
 这种形态保持了前端职责的独立性，同时避免一个基础系统一开始就承担多镜像编排、服务发现和跨服务认证等不必要复杂度。
 
@@ -31,6 +31,9 @@ Browser
 ```text
 admin-ui/              管理后台应用
 public-web/            公共用户侧应用
+packages/
+  design-tokens/       双 Web 入口共享的语义设计变量
+  ui/                  无业务含义的 React 基础组件
 src/
   app.ts               HTTP 宿主与通用中间件
   server.ts            进程入口
@@ -56,6 +59,10 @@ docs/                  架构约束与扩展指南
 
 后台提供可复用的应用壳、响应式导航、页面容器、数据表格、资源分区和状态呈现。当前数据都用于表达框架运行状态，不伪造业务仪表盘。
 
+### 共享 UI
+
+`@lingcoo/frame-design-tokens` 定义语义颜色、间距、排版、圆角、阴影、动效和层级；`@lingcoo/frame-ui` 实现 Button、Badge、Card、Input、Textarea、FormField、Dialog、Spinner 和 EmptyState 等无业务含义的组件。两套前端只能通过语义 Token 定制品牌外观，不复制组件实现。
+
 ### API
 
 Fastify 宿主统一提供：
@@ -80,6 +87,8 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
+
+敏感系统设置使用带版本号的 AES-256-GCM envelope 写入 `system_settings`。密钥只来自运行环境，不进入数据库或 API 响应；读取端支持 keyring，便于在不中断既有配置读取的前提下轮换密钥。`audit_logs` 通过统一写入函数记录操作者、动作、资源和上下文，领域模块不直接拼装表字段。
 
 ### 部署
 
@@ -117,7 +126,6 @@ src/modules/catalog/
 - 文件和对象存储
 - 消息与通知
 - 后台任务和队列
-- 操作审计的统一写入协议
 - 日志、指标和链路追踪
 
 第一阶段保留接入位置，不提前选择无法被成熟系统共同验证的抽象。

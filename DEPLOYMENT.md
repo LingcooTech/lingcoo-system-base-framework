@@ -58,6 +58,7 @@ DATABASE_URL=postgres://lingcoo_base:<password>@postgres:5432/lingcoo_base
 POSTGRES_DB=lingcoo_base
 POSTGRES_USER=lingcoo_base
 POSTGRES_PASSWORD=<password>
+SETTINGS_ENCRYPTION_KEY=<at-least-32-random-characters>
 LOG_LEVEL=info
 CADDY_SITE_ADDRESS=:80
 LINGCOO_BASE_HTTP_PORT=18093

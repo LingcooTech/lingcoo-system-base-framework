@@ -1,3 +1,4 @@
+import { EmptyState } from '@lingcoo/frame-ui/empty-state';
 import type { ReactNode } from 'react';
 
 export interface DataTableColumn<Row> {
@@ -18,7 +19,9 @@ export function DataTable<Row>({
   getRowKey(row: Row): string;
   emptyTitle?: string;
 }) {
-  if (rows.length === 0) return <div className="empty-state">{emptyTitle}</div>;
+  if (rows.length === 0) {
+    return <EmptyState compact title={emptyTitle} />;
+  }
   return (
     <div className="table-scroll">
       <table className="data-table">

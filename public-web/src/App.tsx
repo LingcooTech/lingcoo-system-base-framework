@@ -7,6 +7,7 @@ import {
   Layers3,
   ShieldCheck,
 } from 'lucide-react';
+import { Button } from '@lingcoo/frame-ui/button';
 
 const layers = [
   {
@@ -67,13 +68,12 @@ function App() {
             新系统只需在稳定边界内增加自己的领域模型与业务模块。
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href="/admin/">
-              查看管理后台
-              <ArrowRight size={16} />
-            </a>
-            <a className="secondary-action" href="#architecture">
-              了解架构
-            </a>
+            <Button asChild size="lg" trailingIcon={<ArrowRight size={16} />}>
+              <a href="/admin/">查看管理后台</a>
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <a href="#architecture">了解架构</a>
+            </Button>
           </div>
         </div>
         <div className="architecture-card" aria-label="基础框架结构示意">

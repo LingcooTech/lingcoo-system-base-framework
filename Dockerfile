@@ -4,13 +4,11 @@ FROM ${NODE_BASE_IMAGE} AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY admin-ui/package.json ./admin-ui/
+COPY public-web/package.json ./public-web/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+COPY packages/ui/package.json ./packages/ui/
 RUN npm ci
-
-COPY admin-ui/package.json admin-ui/package-lock.json ./admin-ui/
-RUN npm --prefix admin-ui ci
-
-COPY public-web/package.json public-web/package-lock.json ./public-web/
-RUN npm --prefix public-web ci
 
 FROM dependencies AS build
 COPY . .

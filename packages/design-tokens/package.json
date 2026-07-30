@@ -1,0 +1,11 @@
+{
+  "name": "@lingcoo/frame-design-tokens",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./base.css": "./src/base.css",
+    "./admin.css": "./src/admin.css",
+    "./public.css": "./src/public.css"
+  }
+}

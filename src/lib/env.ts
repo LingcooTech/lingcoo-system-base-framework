@@ -13,6 +13,10 @@ const envSchema = z
     DATABASE_URL: z
       .string()
       .default('postgres://lingcoo_base:lingcoo_base_password@localhost:5437/lingcoo_base'),
+    SETTINGS_ENCRYPTION_KEY: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(32).optional(),
+    ),
     LOG_LEVEL: logLevelSchema.default('info'),
   })
   .superRefine((env, context) => {

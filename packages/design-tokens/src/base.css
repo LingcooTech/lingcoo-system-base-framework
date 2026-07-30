@@ -1,0 +1,63 @@
+:root {
+  --lc-space-0: 0;
+  --lc-space-1: 0.25rem;
+  --lc-space-2: 0.5rem;
+  --lc-space-3: 0.75rem;
+  --lc-space-4: 1rem;
+  --lc-space-5: 1.25rem;
+  --lc-space-6: 1.5rem;
+  --lc-space-8: 2rem;
+  --lc-space-10: 2.5rem;
+  --lc-space-12: 3rem;
+  --lc-space-16: 4rem;
+
+  --lc-radius-xs: 0.25rem;
+  --lc-radius-sm: 0.5rem;
+  --lc-radius-md: 0.75rem;
+  --lc-radius-lg: 1rem;
+  --lc-radius-xl: 1.25rem;
+  --lc-radius-full: 999px;
+
+  --lc-font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  --lc-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --lc-font-size-xs: 0.75rem;
+  --lc-font-size-sm: 0.875rem;
+  --lc-font-size-md: 1rem;
+  --lc-font-size-lg: 1.125rem;
+  --lc-font-weight-medium: 550;
+  --lc-font-weight-semibold: 650;
+
+  --lc-duration-fast: 150ms;
+  --lc-duration-base: 240ms;
+  --lc-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --lc-shadow-xs: 0 1px 2px rgb(21 41 30 / 5%);
+  --lc-shadow-sm: 0 8px 24px rgb(21 41 30 / 7%);
+  --lc-shadow-md: 0 18px 48px rgb(21 41 30 / 12%);
+
+  --lc-color-text-primary: #1e2c24;
+  --lc-color-text-secondary: #536159;
+  --lc-color-text-muted: #7b8880;
+  --lc-color-text-inverse: #f5faf7;
+  --lc-color-surface-base: #f5f7f5;
+  --lc-color-surface-raised: #ffffff;
+  --lc-color-surface-sunken: #edf1ee;
+  --lc-color-surface-overlay: rgb(12 24 17 / 56%);
+  --lc-color-border-subtle: #e5ebe7;
+  --lc-color-border-default: #dce4df;
+  --lc-color-border-strong: #cbd7cf;
+  --lc-color-success: #2f7d4e;
+  --lc-color-success-soft: #e1f3e7;
+  --lc-color-warning: #9a6a18;
+  --lc-color-warning-soft: #faefd6;
+  --lc-color-danger: #b44848;
+  --lc-color-danger-soft: #f9e3e2;
+  --lc-color-info: #39735a;
+  --lc-color-info-soft: #e4f0e9;
+
+  --lc-z-overlay: 40;
+  --lc-z-modal: 50;
+  --lc-z-toast: 70;
+}

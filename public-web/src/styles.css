@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@import '@lingcoo/frame-design-tokens/base.css';
+@import '@lingcoo/frame-design-tokens/public.css';
+@import '@lingcoo/frame-ui/styles.css';
 
 :root {
   color: #17211c;

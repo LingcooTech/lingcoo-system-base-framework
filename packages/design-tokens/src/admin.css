@@ -1,0 +1,10 @@
+:root,
+[data-lc-theme='admin'] {
+  --lc-color-brand-primary: #315f47;
+  --lc-color-brand-hover: #254e39;
+  --lc-color-brand-active: #1c3d2d;
+  --lc-color-brand-soft: #e5f0e9;
+  --lc-color-brand-on: #f5faf7;
+  --lc-color-page-background: #f4f6f4;
+  --lc-shadow-focus: 0 0 0 3px rgb(76 132 98 / 20%);
+}

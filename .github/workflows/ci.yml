@@ -41,13 +41,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            admin-ui/package-lock.json
-            public-web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm --prefix admin-ui ci
-      - run: npm --prefix public-web ci
       - run: npm run db:migrate
       - run: npm run check
       - run: npm run build:all
