@@ -1,0 +1,190 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: lingcoo-system-base-framework
+  GHCR_IMAGE: ghcr.io/lingcootech/lingcoo-system-base-framework
+
+jobs:
+  build-and-push-acr:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Prepare image variables
+        id: vars
+        shell: bash
+        run: |
+          IMAGE_TAG="${{ github.event.workflow_run.head_sha || github.sha }}"
+          ACR_IMAGE="${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ env.IMAGE_NAME }}"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "acr_image=${ACR_IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push runtime image to ACR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            APP_VERSION=${{ steps.vars.outputs.image_tag }}
+          tags: |
+            ${{ steps.vars.outputs.acr_image }}:latest
+            ${{ steps.vars.outputs.acr_image }}:${{ steps.vars.outputs.image_tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ steps.vars.outputs.image_tag }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+  publish-ghcr:
+    needs:
+      - build-and-push-acr
+    if: ${{ needs.build-and-push-acr.result == 'success' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Mirror ACR image to GHCR
+        run: |
+          : "${ACR_IMAGE:?ACR_IMAGE is required}"
+          : "${IMAGE_TAG:?IMAGE_TAG is required}"
+          docker buildx imagetools create \
+            --tag "${GHCR_IMAGE}:latest" \
+            --tag "${GHCR_IMAGE}:${IMAGE_TAG}" \
+            "${ACR_IMAGE}:${IMAGE_TAG}"
+        env:
+          ACR_IMAGE: ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ env.IMAGE_NAME }}
+          IMAGE_TAG: ${{ needs.build-and-push-acr.outputs.image_tag }}
+
+  deploy:
+    needs:
+      - build-and-push-acr
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Trust deploy host
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          DEPLOY_COMPOSE_FILE: docker-compose.prod.yml
+          DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          IMAGE_TAG: ${{ needs.build-and-push-acr.outputs.image_tag }}
+          LINGCOO_BASE_IMAGE_NAME: ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ env.IMAGE_NAME }}
+        run: |
+          escape() {
+            printf '%q' "$1"
+          }
+
+          remote_cmd="ACR_PASSWORD=$(escape "${ACR_PASSWORD}") \
+             ACR_REGISTRY=$(escape "${ACR_REGISTRY}") \
+             ACR_USERNAME=$(escape "${ACR_USERNAME}") \
+             DEPLOY_COMPOSE_FILE=$(escape "${DEPLOY_COMPOSE_FILE}") \
+             DEPLOY_HEALTHCHECK_URL=$(escape "${DEPLOY_HEALTHCHECK_URL}") \
+             DEPLOY_PATH=$(escape "${DEPLOY_PATH}") \
+             IMAGE_TAG=$(escape "${IMAGE_TAG}") \
+             LINGCOO_BASE_IMAGE_NAME=$(escape "${LINGCOO_BASE_IMAGE_NAME}") \
+             sh -s"
+
+          ssh_opts="-o BatchMode=yes -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=4"
+          attempt=1
+          max_attempts=8
+
+          while true; do
+            set +e
+            ssh $ssh_opts "${DEPLOY_USER}@${DEPLOY_HOST}" "${remote_cmd}" < ./scripts/deploy/deploy.sh
+            code=$?
+            set -e
+
+            if [ "$code" -eq 0 ]; then
+              exit 0
+            fi
+            if [ "$code" -ne 255 ]; then
+              echo "deploy.sh exited with ${code}; not retrying"
+              exit "$code"
+            fi
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "SSH transport failed after ${attempt} attempts"
+              exit 255
+            fi
+            wait_s=$((attempt * 20))
+            if [ "$wait_s" -gt 120 ]; then
+              wait_s=120
+            fi
+            echo "SSH transport drop; retrying in ${wait_s}s"
+            sleep "${wait_s}"
+            attempt=$((attempt + 1))
+          done

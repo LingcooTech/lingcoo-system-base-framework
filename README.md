@@ -67,19 +67,15 @@ npm start
 
 ## 容器部署
 
-先构建应用镜像：
+本地验证生产拓扑时，可以先构建应用镜像再启动：
 
 ```bash
 docker build -t lingcoo-system-base-framework:local .
-```
-
-再启动完整生产拓扑：
-
-```bash
+LINGCOO_BASE_RUNTIME_IMAGE=lingcoo-system-base-framework:local \
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-默认访问地址为 <http://localhost:18090>。生产环境必须通过环境变量覆盖数据库密码、站点地址、CORS 来源和镜像版本。
+正式部署使用 GitHub Actions 构建镜像并发布到阿里云 ACR，服务器只拉取指定 Git 提交对应的镜像，不在服务器构建。完整链路见 [DEPLOYMENT.md](DEPLOYMENT.md)。
 
 ## 常用命令
 

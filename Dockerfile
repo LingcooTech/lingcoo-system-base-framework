@@ -18,7 +18,9 @@ RUN npm run build:all
 RUN npm prune --omit=dev
 
 FROM node:22-alpine AS runtime
+ARG APP_VERSION=development
 ENV NODE_ENV=production \
+    APP_VERSION=${APP_VERSION} \
     API_HOST=0.0.0.0 \
     API_PORT=8090
 

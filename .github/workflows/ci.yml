@@ -8,10 +8,33 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: lingcoo_base
+          POSTGRES_USER: lingcoo_base
+          POSTGRES_PASSWORD: lingcoo_base
+        ports:
+          - 5437:5432
+        options: >-
+          --health-cmd "pg_isready -U lingcoo_base -d lingcoo_base"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://lingcoo_base:lingcoo_base@localhost:5437/lingcoo_base
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,5 +48,7 @@ jobs:
       - run: npm ci
       - run: npm --prefix admin-ui ci
       - run: npm --prefix public-web ci
+      - run: npm run db:migrate
       - run: npm run check
       - run: npm run build:all
+      - run: npm audit --omit=dev --audit-level=high
