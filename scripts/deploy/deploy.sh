@@ -39,7 +39,7 @@ if ! docker compose -f "${DEPLOY_COMPOSE_FILE}" pull api; then
   docker compose -f "${DEPLOY_COMPOSE_FILE}" pull api
 fi
 docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d postgres
-docker compose -f "${DEPLOY_COMPOSE_FILE}" run --rm --no-deps \
+docker compose -f "${DEPLOY_COMPOSE_FILE}" run --rm \
   api node scripts/run-migrations.mjs
 docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d --remove-orphans api caddy
 cleanup_docker_space
