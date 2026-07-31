@@ -17,6 +17,21 @@ const envSchema = z
       (value) => (value === '' ? undefined : value),
       z.string().min(32).optional(),
     ),
+    AUTH_JWT_SECRET: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(32).optional(),
+    ),
+    AUTH_COOKIE_NAME: z.string().min(1).default('lingcoo_frame_session'),
+    AUTH_SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(168),
+    AUTH_BOOTSTRAP_EMAIL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.email().optional(),
+    ),
+    AUTH_BOOTSTRAP_PASSWORD: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(12).max(128).optional(),
+    ),
+    AUTH_BOOTSTRAP_DISPLAY_NAME: z.string().min(1).max(120).default('系统所有者'),
     LOG_LEVEL: logLevelSchema.default('info'),
   })
   .superRefine((env, context) => {
@@ -25,6 +40,20 @@ const envSchema = z
         code: 'custom',
         path: ['DATABASE_URL'],
         message: 'Production DATABASE_URL must be a PostgreSQL connection string',
+      });
+    }
+    if (env.NODE_ENV === 'production' && !env.AUTH_JWT_SECRET) {
+      context.addIssue({
+        code: 'custom',
+        path: ['AUTH_JWT_SECRET'],
+        message: 'Production AUTH_JWT_SECRET is required',
+      });
+    }
+    if (Boolean(env.AUTH_BOOTSTRAP_EMAIL) !== Boolean(env.AUTH_BOOTSTRAP_PASSWORD)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['AUTH_BOOTSTRAP_PASSWORD'],
+        message: 'Bootstrap email and password must be provided together',
       });
     }
   });

@@ -9,6 +9,6 @@
   },
   "surfaces": ["public-web", "admin-ui", "api"],
   "infrastructure": ["postgresql", "docker", "caddy"],
-  "foundationModules": ["system"],
+  "foundationModules": ["system", "auth", "access"],
   "domainModules": []
 }

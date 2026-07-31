@@ -37,3 +37,12 @@ test('unknown API routes use the standard error envelope', async () => {
   assert.deepEqual(response.json(), { error: 'NotFound', message: '接口不存在' });
   await app.close();
 });
+
+test('system runtime requires an authenticated permission-bearing session', async () => {
+  const app = await buildApp(testEnv());
+  const response = await app.inject({ method: 'GET', url: '/api/system/runtime' });
+
+  assert.equal(response.statusCode, 401);
+  assert.equal(response.json().message, '登录已过期，请重新登录');
+  await app.close();
+});

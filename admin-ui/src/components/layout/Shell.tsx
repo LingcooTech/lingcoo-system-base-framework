@@ -1,14 +1,24 @@
-import { ChevronLeft, ChevronRight, Layers3, Menu, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers3, LogOut, Menu, Search } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
+import { useAuth } from '../../lib/auth';
 import { getSectionByPath, sectionList } from '../../lib/foundation';
 import { Link, useRouter } from '../../lib/router';
 
 export function Shell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
+  const visibleSections = sectionList.filter((section) => hasPermission(section.permission));
+  const initials =
+    account?.displayName
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'LC';
 
   return (
     <div className={collapsed ? 'app-shell shell-collapsed' : 'app-shell'}>
@@ -26,7 +36,7 @@ export function Shell({ children }: { children: ReactNode }) {
             ) : null}
           </div>
           <nav aria-label="基础框架后台导航">
-            {sectionList.map((section) => {
+            {visibleSections.map((section) => {
               const Icon = section.icon;
               const active =
                 section.href === '/' ? pathname === '/' : pathname.startsWith(section.href);
@@ -79,7 +89,22 @@ export function Shell({ children }: { children: ReactNode }) {
             <span>搜索页面和资源</span>
             <kbd>⌘ K</kbd>
           </button>
-          <span className="avatar">LC</span>
+          <div className="account-actions">
+            <span className="account-copy">
+              <strong>{account?.displayName}</strong>
+              <small>{account?.roles.map((role) => role.name).join('、')}</small>
+            </span>
+            <span className="avatar">{initials}</span>
+            <button
+              aria-label="退出登录"
+              className="logout-button"
+              onClick={() => void logout()}
+              title="退出登录"
+              type="button"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </header>
         <main>{children}</main>
       </div>

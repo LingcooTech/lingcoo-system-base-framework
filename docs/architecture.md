@@ -76,14 +76,24 @@ Fastify 宿主统一提供：
 - 静态前端托管
 - 健康与就绪探针
 
+### 身份与权限
+
+身份内核提供统一账号、独立密码凭据、HttpOnly JWT Cookie、数据库可撤销会话、多角色 RBAC 和权限中间件。JWT 只携带账号与会话标识，账号状态、角色和权限在请求时从数据库重新确认，避免停用账号或权限变更后旧令牌继续生效。
+
+基础角色与权限没有行业语义。领域模块只能注册自己的权限并通过 `account_id` 关联领域资料，不能修改身份内核。完整约束见 [身份与访问控制](identity-access.md)。
+
 ### 数据库
 
 PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定义；部署执行器以文件名顺序运行 SQL，并记录文件校验和，避免已发布迁移被静默修改。
 
-基础层当前只有：
+基础层当前包含：
 
 - `system_settings`：系统级键值配置的持久化位置
-- `audit_logs`：未来共享审计能力的数据基础
+- `audit_logs`：共享审计事件
+- `accounts` / `password_credentials`：账号与登录凭据
+- `auth_sessions`：可撤销登录会话
+- `roles` / `permissions`：通用角色权限目录
+- `account_roles` / `role_permissions`：授权关系
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
@@ -121,8 +131,6 @@ src/modules/catalog/
 
 以下能力很可能是共享能力，但需要在 Core、Edu、Retail 的真实实现中继续对照后再固化：
 
-- 身份认证和会话
-- RBAC 与资源权限
 - 文件和对象存储
 - 消息与通知
 - 后台任务和队列

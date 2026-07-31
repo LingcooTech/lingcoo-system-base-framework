@@ -22,11 +22,15 @@ export const systemModule: AppModule = {
       }
     });
 
-    app.get('/api/system/runtime', async () => ({
-      name: app.appEnv.APP_NAME,
-      version: app.appEnv.APP_VERSION,
-      environment: app.appEnv.NODE_ENV,
-      surfaces: ['api', 'admin-ui', 'public-web'],
-    }));
+    app.get(
+      '/api/system/runtime',
+      { preHandler: app.requirePermission('system.runtime.read') },
+      async () => ({
+        name: app.appEnv.APP_NAME,
+        version: app.appEnv.APP_VERSION,
+        environment: app.appEnv.NODE_ENV,
+        surfaces: ['api', 'admin-ui', 'public-web'],
+      }),
+    );
   },
 };

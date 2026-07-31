@@ -20,7 +20,7 @@ export function SettingsPage() {
           <div>
             <dt>认证与权限</dt>
             <dd>
-              <StatusPill tone="neutral">下一阶段</StatusPill>
+              <StatusPill tone="ok">已启用</StatusPill>
             </dd>
           </div>
           <div>

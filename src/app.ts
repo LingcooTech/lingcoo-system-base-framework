@@ -1,5 +1,7 @@
+import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import sensible from '@fastify/sensible';
 import fastifyStatic from '@fastify/static';
@@ -11,7 +13,9 @@ import { ZodError } from 'zod';
 
 import { createDatabase } from './db/client.js';
 import type { AppEnv } from './lib/env.js';
+import { hasAnyPermission, type PermissionCode } from './lib/rbac.js';
 import { appModules } from './modules/index.js';
+import { AuthRepository } from './modules/auth/repository.js';
 
 const sourceDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +28,14 @@ function parseCorsOrigins(value: string): string[] {
 
 function runtimePath(...segments: string[]): string {
   return path.resolve(sourceDirectory, '..', ...segments);
+}
+
+function resolveJwtSecret(env: AppEnv): string {
+  if (env.AUTH_JWT_SECRET) return env.AUTH_JWT_SECRET;
+  if (env.NODE_ENV === 'production') {
+    throw new Error('AUTH_JWT_SECRET is required in production');
+  }
+  return 'lingcoo-frame-development-jwt-secret-change-me';
 }
 
 export async function buildApp(env: AppEnv) {
@@ -56,9 +68,57 @@ export async function buildApp(env: AppEnv) {
       },
     },
   });
+  await app.register(cookie);
+  await app.register(jwt, {
+    secret: resolveJwtSecret(env),
+    cookie: {
+      cookieName: env.AUTH_COOKIE_NAME,
+      signed: false,
+    },
+  });
   await app.register(rateLimit, {
     max: 300,
     timeWindow: '1 minute',
+  });
+
+  app.decorateRequest('auth', null);
+  app.decorate('authenticate', async (request) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      throw app.httpErrors.unauthorized('登录已过期，请重新登录');
+    }
+    if (!request.user.sub || !request.user.sid) {
+      throw app.httpErrors.unauthorized('登录凭证无效');
+    }
+
+    const repository = new AuthRepository(app.db);
+    const resolved = await repository.resolveSession(request.user.sid, request.user.sub);
+    if (!resolved) {
+      throw app.httpErrors.unauthorized('登录已失效，请重新登录');
+    }
+    const access = await repository.getAccess(resolved.account.id);
+    request.auth = {
+      accountId: resolved.account.id,
+      sessionId: resolved.session.id,
+      email: resolved.account.email,
+      displayName: resolved.account.displayName,
+      roleCodes: access.roles.map((role) => role.code),
+      permissions: access.permissions,
+    };
+    await repository.touchSession(resolved.session.id, resolved.session.lastSeenAt);
+  });
+  app.decorate('requirePermission', (required: PermissionCode | PermissionCode[]) => {
+    const permissionCodes = Array.isArray(required) ? required : [required];
+    return async (request) => {
+      await app.authenticate(request);
+      if (
+        !request.auth ||
+        !hasAnyPermission(request.auth.roleCodes, request.auth.permissions, permissionCodes)
+      ) {
+        throw app.httpErrors.forbidden('当前账号没有执行此操作的权限');
+      }
+    };
   });
 
   for (const appModule of appModules) {

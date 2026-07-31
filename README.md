@@ -10,6 +10,7 @@
 - 管理后台：独立 React 应用，包含导航、页面容器、状态、表格和资源区块等基础界面
 - 共享 UI：npm workspace 管理 Design Tokens 与无业务含义的 React 组件
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
+- 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
 - 数据基础：PostgreSQL、Drizzle Schema、可追踪的 SQL 迁移、加密系统设置与统一审计写入
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
@@ -35,6 +36,9 @@ npm run setup
 docker compose up -d
 npm run db:migrate
 ```
+
+首次运行前，在 `.env` 中临时设置 `AUTH_BOOTSTRAP_EMAIL` 和至少 12 位的
+`AUTH_BOOTSTRAP_PASSWORD`。首个所有者创建后删除临时密码，并在首次登录时设置正式密码。
 
 然后分别启动三个开发进程：
 
@@ -97,8 +101,9 @@ docker compose -f docker-compose.prod.yml up -d
 
 - [架构说明](docs/architecture.md)
 - [成熟系统共同能力矩阵](docs/capability-matrix.md)
+- [身份与访问控制](docs/identity-access.md)
 - [领域扩展指南](docs/domain-extension.md)
 
 ## 当前边界
 
-这是持续演进的空白业务框架。共享 UI、加密系统设置和审计写入已经完成第一批抽取；认证、RBAC、文件存储、消息队列、后台任务和可观测性仍按成熟系统的共同约束分批进入框架。
+这是持续演进的空白业务框架。共享 UI、身份与 RBAC、加密系统设置和审计写入已经进入基础层；文件存储、消息队列、后台任务和可观测性仍按成熟系统的共同约束分批进入框架。

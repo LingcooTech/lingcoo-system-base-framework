@@ -59,11 +59,21 @@ POSTGRES_DB=lingcoo_base
 POSTGRES_USER=lingcoo_base
 POSTGRES_PASSWORD=<password>
 SETTINGS_ENCRYPTION_KEY=<at-least-32-random-characters>
+AUTH_JWT_SECRET=<at-least-32-random-characters>
+AUTH_COOKIE_NAME=lingcoo_frame_session
+AUTH_SESSION_TTL_HOURS=168
+AUTH_BOOTSTRAP_EMAIL=<first-owner-email>
+AUTH_BOOTSTRAP_PASSWORD=<temporary-password-at-least-12-characters>
+AUTH_BOOTSTRAP_DISPLAY_NAME=系统所有者
 LOG_LEVEL=info
 CADDY_SITE_ADDRESS=:80
 LINGCOO_BASE_HTTP_PORT=18093
 LINGCOO_BASE_HTTPS_PORT=18449
 ```
+
+`AUTH_BOOTSTRAP_EMAIL` and `AUTH_BOOTSTRAP_PASSWORD` are only needed until the
+first owner is created. Remove the bootstrap password from `.env` after the
+first successful deployment; the owner must replace it on first login.
 
 The host Nginx terminates TLS for `frame.lingcoo.com` and proxies requests to
 `http://127.0.0.1:18093`.
