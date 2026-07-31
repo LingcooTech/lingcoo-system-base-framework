@@ -1,8 +1,10 @@
 import type { AppModule } from '../types.js';
 import { createIntegrationProviderRegistry } from './registry.js';
+import { SmtpService } from './providers/smtp-service.js';
 import {
   connectionParamsSchema,
   createConnectionSchema,
+  smtpTestEmailSchema,
   updateConnectionSchema,
 } from './schemas.js';
 import { IntegrationService } from './service.js';
@@ -12,6 +14,7 @@ export const integrationsModule: AppModule = {
   register(app) {
     const registry = createIntegrationProviderRegistry(app.appEnv.NODE_ENV);
     const service = new IntegrationService(app.db, registry, app.appEnv.SETTINGS_ENCRYPTION_KEY);
+    const smtpService = new SmtpService(service);
 
     app.get(
       '/api/integrations/providers',
@@ -69,6 +72,23 @@ export const integrationsModule: AppModule = {
       async (request) => {
         const { connectionId } = connectionParamsSchema.parse(request.params);
         return { items: await service.listEvents(connectionId) };
+      },
+    );
+
+    app.post(
+      '/api/integrations/connections/:connectionId/smtp/send-test',
+      {
+        preHandler: app.requirePermission('integrations.write'),
+        config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+      },
+      async (request) => {
+        const { connectionId } = connectionParamsSchema.parse(request.params);
+        const result = await smtpService.sendTestEmail(
+          connectionId,
+          smtpTestEmailSchema.parse(request.body),
+          request.auth!.accountId,
+        );
+        return { result };
       },
     );
   },

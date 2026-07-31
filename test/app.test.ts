@@ -46,3 +46,20 @@ test('system runtime requires an authenticated permission-bearing session', asyn
   assert.equal(response.json().message, '登录已过期，请重新登录');
   await app.close();
 });
+
+test('SMTP test delivery requires an authenticated integration permission', async () => {
+  const app = await buildApp(testEnv());
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/integrations/connections/00000000-0000-4000-8000-000000000000/smtp/send-test',
+    payload: {
+      to: 'recipient@example.test',
+      subject: 'Test',
+      text: 'Test',
+    },
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.equal(response.json().message, '登录已过期，请重新登录');
+  await app.close();
+});

@@ -13,6 +13,8 @@ import {
 } from '../src/db/schema.js';
 import { loadEnv } from '../src/lib/env.js';
 import { hashPassword } from '../src/lib/password.js';
+import { createIntegrationProviderRegistry } from '../src/modules/integrations/registry.js';
+import { IntegrationService } from '../src/modules/integrations/service.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const ownerEmail = 'integration-owner@example.test';
@@ -94,7 +96,7 @@ test(
         .json()
         .items.some(
           (provider: { code: string; availability: string }) =>
-            provider.code === 'smtp' && provider.availability === 'planned',
+            provider.code === 'smtp' && provider.availability === 'available',
         ),
       true,
     );
@@ -149,6 +151,27 @@ test(
     assert.equal(enable.statusCode, 200);
     assert.equal(enable.json().connection.enabled, true);
 
+    const service = new IntegrationService(
+      app.db,
+      createIntegrationProviderRegistry('test'),
+      encryptionKey,
+    );
+    const execution = await service.executeConnection({
+      connectionId: connection.id,
+      providerCode: 'framework-diagnostic',
+      operation: 'diagnostic.invoke',
+      actorId: owner.id,
+      execute: async ({ credentials }) => {
+        assert.equal(credentials.token, 'diagnostic-secret');
+        return {
+          value: 'executed',
+          message: 'diagnostic operation complete',
+          metadata: { reflectedToken: credentials.token },
+        };
+      },
+    });
+    assert.equal(execution, 'executed');
+
     const rotateCredential = await app.inject({
       method: 'PATCH',
       url: `/api/integrations/connections/${connection.id}`,
@@ -178,8 +201,8 @@ test(
     assert.equal(JSON.stringify(events.json()).includes('diagnostic-secret'), false);
     assert.equal(JSON.stringify(events.json()).includes('replacement-secret'), false);
     assert.deepEqual(
-      events.json().items.map((event: { outcome: string }) => event.outcome),
-      ['failure', 'success'],
+      events.json().items.map((event: { operation: string }) => event.operation),
+      ['connection.test', 'diagnostic.invoke', 'connection.test'],
     );
 
     await app.close();

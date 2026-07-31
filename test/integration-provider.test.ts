@@ -7,7 +7,7 @@ import {
 } from '../src/modules/integrations/provider.js';
 import { createIntegrationProviderRegistry } from '../src/modules/integrations/registry.js';
 
-test('production registry exposes planned capabilities without installing fake adapters', () => {
+test('production registry installs SMTP while keeping later adapters planned', () => {
   const registry = createIntegrationProviderRegistry('production');
   const providers = registry.list();
 
@@ -15,12 +15,14 @@ test('production registry exposes planned capabilities without installing fake a
     providers.map((provider) => provider.code),
     ['ai-hub', 'smtp', 'payment', 'qiniu'],
   );
+  assert.equal(providers.find((provider) => provider.code === 'smtp')?.availability, 'available');
   assert.equal(
-    providers.every((provider) => provider.availability === 'planned'),
+    providers
+      .filter((provider) => provider.code !== 'smtp')
+      .every((provider) => provider.availability === 'planned'),
     true,
   );
-  assert.equal(registry.getAdapter('smtp'), undefined);
-  assert.throws(() => registry.requireAdapter('smtp'), /适配器尚未安装/);
+  assert.equal(typeof registry.requireAdapter('smtp').testConnection, 'function');
 });
 
 test('test registry installs the diagnostic adapter with no executable function in manifests', () => {

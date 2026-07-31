@@ -105,10 +105,11 @@ docker compose -f docker-compose.prod.yml up -d
 - [成熟系统共同能力矩阵](docs/capability-matrix.md)
 - [身份与访问控制](docs/identity-access.md)
 - [外部集成基础](docs/integration-foundation.md)
+- [SMTP Provider](docs/smtp-provider.md)
 - [领域扩展指南](docs/domain-extension.md)
 
 ## 当前边界
 
 这是持续演进的空白业务框架。共享 UI、身份与 RBAC、加密系统设置、审计写入和外部集成
-生命周期已经进入基础层；SMTP、对象存储、支付、AI、消息队列、后台任务和可观测性的具体
-Provider 仍按成熟系统的共同约束分批进入框架。
+生命周期已经进入基础层，SMTP Provider 已可真实连接和发送；对象存储、支付、AI、消息队列、
+后台任务和可观测性的具体 Provider 仍按成熟系统的共同约束分批进入框架。

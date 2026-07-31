@@ -10,6 +10,7 @@ export interface IntegrationFieldDefinition {
   required?: boolean;
   description?: string;
   placeholder?: string;
+  defaultValue?: string | number | boolean;
 }
 
 export interface IntegrationProviderManifest {

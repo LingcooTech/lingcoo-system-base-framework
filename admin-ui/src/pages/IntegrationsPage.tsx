@@ -2,17 +2,21 @@ import { Button } from '@lingcoo/frame-ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcoo/frame-ui/dialog';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
+import { Textarea } from '@lingcoo/frame-ui/textarea';
 import { CheckCircle2, PlugZap } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import {
   createIntegrationConnection,
+  fetchIntegrationEvents,
   fetchIntegrationConnections,
   fetchIntegrationProviders,
+  sendSmtpTestEmail,
   testIntegrationConnection,
   updateIntegrationConnection,
   type IntegrationConnection,
   type IntegrationField,
+  type IntegrationEvent,
   type IntegrationProvider,
 } from '../api/client';
 import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
@@ -20,6 +24,7 @@ import { PageFrame } from '../components/shared/PageFrame';
 import { ResourceSection } from '../components/shared/ResourceSection';
 import { StatusPill } from '../components/shared/StatusPill';
 import { sections } from '../lib/foundation';
+import { useAuth } from '../lib/auth';
 
 const categoryNames: Record<IntegrationProvider['category'], string> = {
   communication: '通信',
@@ -36,12 +41,38 @@ function fieldValue(field: IntegrationField, values: Record<string, string | boo
   return value;
 }
 
+function defaultFieldValues(fields: IntegrationField[]): Record<string, string | boolean> {
+  return Object.fromEntries(
+    fields
+      .filter((field) => field.defaultValue !== undefined)
+      .map((field) => [
+        field.key,
+        typeof field.defaultValue === 'boolean' ? field.defaultValue : String(field.defaultValue),
+      ]),
+  );
+}
+
+function configuredFieldValues(
+  fields: IntegrationField[],
+  config: Record<string, unknown>,
+): Record<string, string | boolean> {
+  return Object.fromEntries(
+    fields.map((field) => {
+      const value =
+        config[field.key] ?? field.defaultValue ?? (field.type === 'boolean' ? false : '');
+      return [field.key, typeof value === 'boolean' ? value : String(value)];
+    }),
+  );
+}
+
 function DynamicField({
   field,
+  required = field.required,
   values,
   setValues,
 }: {
   field: IntegrationField;
+  required?: boolean;
   values: Record<string, string | boolean>;
   setValues(values: Record<string, string | boolean>): void;
 }) {
@@ -61,13 +92,13 @@ function DynamicField({
     );
   }
   return (
-    <FormField label={field.label} description={field.description} required={field.required}>
+    <FormField label={field.label} description={field.description} required={required}>
       {({ controlId }) => (
         <Input
           id={controlId}
           onChange={(event) => setValues({ ...values, [field.key]: event.target.value })}
           placeholder={field.placeholder}
-          required={field.required}
+          required={required}
           type={
             field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'
           }
@@ -79,16 +110,26 @@ function DynamicField({
 }
 
 export function IntegrationsPage() {
+  const { account } = useAuth();
   const [providers, setProviders] = useState<IntegrationProvider[]>([]);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingConnection, setEditingConnection] = useState<IntegrationConnection | null>(null);
+  const [mailConnection, setMailConnection] = useState<IntegrationConnection | null>(null);
+  const [eventConnection, setEventConnection] = useState<IntegrationConnection | null>(null);
+  const [events, setEvents] = useState<IntegrationEvent[]>([]);
   const [providerCode, setProviderCode] = useState('');
   const [connectionName, setConnectionName] = useState('');
   const [configValues, setConfigValues] = useState<Record<string, string | boolean>>({});
   const [credentialValues, setCredentialValues] = useState<Record<string, string | boolean>>({});
   const [busyId, setBusyId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [testTo, setTestTo] = useState('');
+  const [testSubject, setTestSubject] = useState('Lingcoo Frame SMTP 测试邮件');
+  const [testText, setTestText] = useState(
+    '如果你收到了这封邮件，说明当前 SMTP 连接已经可以正常发送邮件。',
+  );
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -97,6 +138,49 @@ export function IntegrationsPage() {
     [providers],
   );
   const selectedProvider = providers.find((provider) => provider.code === providerCode);
+
+  function openCreateDialog() {
+    const provider = availableProviders[0];
+    if (!provider) return;
+    setEditingConnection(null);
+    setProviderCode(provider.code);
+    setConnectionName('');
+    setConfigValues(defaultFieldValues(provider.configFields));
+    setCredentialValues(defaultFieldValues(provider.credentialFields));
+    setError('');
+    setDialogOpen(true);
+  }
+
+  function openEditDialog(connection: IntegrationConnection) {
+    const provider = providers.find((item) => item.code === connection.providerCode);
+    if (!provider) return;
+    setEditingConnection(connection);
+    setProviderCode(provider.code);
+    setConnectionName(connection.name);
+    setConfigValues(configuredFieldValues(provider.configFields, connection.config));
+    setCredentialValues({});
+    setError('');
+    setDialogOpen(true);
+  }
+
+  function openMailDialog(connection: IntegrationConnection) {
+    setMailConnection(connection);
+    setTestTo(account?.email ?? '');
+    setTestSubject('Lingcoo Frame SMTP 测试邮件');
+    setTestText('如果你收到了这封邮件，说明当前 SMTP 连接已经可以正常发送邮件。');
+    setError('');
+  }
+
+  async function openEventsDialog(connection: IntegrationConnection) {
+    setEventConnection(connection);
+    setEvents([]);
+    setError('');
+    try {
+      setEvents(await fetchIntegrationEvents(connection.id));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '连接事件加载失败');
+    }
+  }
 
   async function load() {
     try {
@@ -146,20 +230,55 @@ export function IntegrationsPage() {
           .map((field) => [field.key, fieldValue(field, credentialValues)])
           .filter(([, value]) => value !== undefined && value !== ''),
       );
-      await createIntegrationConnection({
-        providerCode: selectedProvider.code,
-        name: connectionName,
-        config,
-        credentials,
-      });
+      if (editingConnection) {
+        const configChanged = JSON.stringify(config) !== JSON.stringify(editingConnection.config);
+        await updateIntegrationConnection(editingConnection.id, {
+          name: connectionName,
+          ...(configChanged ? { config } : {}),
+          ...(Object.keys(credentials).length > 0 ? { credentials } : {}),
+        });
+      } else {
+        await createIntegrationConnection({
+          providerCode: selectedProvider.code,
+          name: connectionName,
+          config,
+          credentials,
+        });
+      }
       setDialogOpen(false);
+      setEditingConnection(null);
       setConnectionName('');
       setConfigValues({});
       setCredentialValues({});
-      setMessage('连接已保存。完成连通性测试后即可启用。');
+      setMessage(
+        editingConnection
+          ? '连接已更新；如果配置发生变化，请重新完成连通性测试。'
+          : '连接已保存。完成连通性测试后即可启用。',
+      );
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '保存连接失败');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function submitTestEmail(event: FormEvent) {
+    event.preventDefault();
+    if (!mailConnection) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const result = await sendSmtpTestEmail(mailConnection.id, {
+        to: testTo,
+        subject: testSubject,
+        text: testText,
+      });
+      setMailConnection(null);
+      setMessage(`测试邮件已提交：${result.from} → ${result.to}`);
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '测试邮件发送失败');
     } finally {
       setSubmitting(false);
     }
@@ -246,6 +365,12 @@ export function IntegrationsPage() {
       align: 'right',
       cell: (connection) => (
         <div className="integration-actions">
+          <Button onClick={() => openEditDialog(connection)} size="sm" variant="ghost">
+            编辑
+          </Button>
+          <Button onClick={() => void openEventsDialog(connection)} size="sm" variant="ghost">
+            事件
+          </Button>
           <Button
             loading={busyId === connection.id}
             onClick={() => void testConnection(connection)}
@@ -262,6 +387,16 @@ export function IntegrationsPage() {
           >
             {connection.enabled ? '停用' : '启用'}
           </Button>
+          {connection.providerCode === 'smtp' ? (
+            <Button
+              disabled={!connection.enabled}
+              onClick={() => openMailDialog(connection)}
+              size="sm"
+              variant="secondary"
+            >
+              发测试邮件
+            </Button>
+          ) : null}
         </div>
       ),
     },
@@ -297,7 +432,7 @@ export function IntegrationsPage() {
 
       <ResourceSection
         title="Provider 目录"
-        description="底座只声明公共能力；具体适配器安装后才允许录入服务配置。"
+        description="已安装适配器可以创建真实连接；等待适配器的能力暂时只展示契约。"
       >
         <div className="integration-catalog">
           {providers.map((provider) => (
@@ -328,11 +463,7 @@ export function IntegrationsPage() {
       >
         <div className="integration-toolbar">
           <p>只有通过当前配置连通性测试的连接才能启用。</p>
-          <Button
-            disabled={availableProviders.length === 0}
-            onClick={() => setDialogOpen(true)}
-            size="sm"
-          >
+          <Button disabled={availableProviders.length === 0} onClick={openCreateDialog} size="sm">
             新建连接
           </Button>
         </div>
@@ -350,8 +481,12 @@ export function IntegrationsPage() {
         <DialogContent
           header={
             <DialogHeader
-              title="新建服务连接"
-              description="普通配置可见，访问凭据将立即加密且不再回传。"
+              title={editingConnection ? '编辑服务连接' : '新建服务连接'}
+              description={
+                editingConnection
+                  ? '已保存的凭据不会回传；密码留空表示保持原值。'
+                  : '普通配置可见，访问凭据将立即加密且不再回传。'
+              }
             />
           }
           footer={
@@ -374,11 +509,13 @@ export function IntegrationsPage() {
               {({ controlId }) => (
                 <select
                   className="integration-select"
+                  disabled={Boolean(editingConnection)}
                   id={controlId}
                   onChange={(event) => {
+                    const provider = providers.find((item) => item.code === event.target.value);
                     setProviderCode(event.target.value);
-                    setConfigValues({});
-                    setCredentialValues({});
+                    setConfigValues(defaultFieldValues(provider?.configFields ?? []));
+                    setCredentialValues(defaultFieldValues(provider?.credentialFields ?? []));
                   }}
                   value={providerCode}
                 >
@@ -416,12 +553,116 @@ export function IntegrationsPage() {
               <DynamicField
                 field={field}
                 key={`credential-${field.key}`}
+                required={
+                  Boolean(field.required) &&
+                  !(editingConnection?.credentialKeys.includes(field.key) ?? false)
+                }
                 setValues={setCredentialValues}
                 values={credentialValues}
               />
             ))}
             {error ? <p className="auth-error">{error}</p> : null}
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(mailConnection)}
+        onOpenChange={(open) => !open && setMailConnection(null)}
+      >
+        <DialogContent
+          header={
+            <DialogHeader
+              title="发送 SMTP 测试邮件"
+              description={`使用 ${mailConnection?.name ?? '当前连接'} 执行一次真实发送。`}
+            />
+          }
+          footer={
+            <DialogFooter>
+              <Button onClick={() => setMailConnection(null)} variant="secondary">
+                取消
+              </Button>
+              <Button form="smtp-test-form" loading={submitting} type="submit">
+                发送测试邮件
+              </Button>
+            </DialogFooter>
+          }
+        >
+          <form className="integration-form" id="smtp-test-form" onSubmit={submitTestEmail}>
+            <FormField label="收件人" required>
+              {({ controlId }) => (
+                <Input
+                  id={controlId}
+                  onChange={(event) => setTestTo(event.target.value)}
+                  required
+                  type="email"
+                  value={testTo}
+                />
+              )}
+            </FormField>
+            <FormField label="主题" required>
+              {({ controlId }) => (
+                <Input
+                  id={controlId}
+                  maxLength={200}
+                  onChange={(event) => setTestSubject(event.target.value)}
+                  required
+                  value={testSubject}
+                />
+              )}
+            </FormField>
+            <FormField label="正文" required>
+              {({ controlId }) => (
+                <Textarea
+                  id={controlId}
+                  maxLength={5000}
+                  onChange={(event) => setTestText(event.target.value)}
+                  required
+                  rows={6}
+                  value={testText}
+                />
+              )}
+            </FormField>
+            {error ? <p className="auth-error">{error}</p> : null}
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(eventConnection)}
+        onOpenChange={(open) => !open && setEventConnection(null)}
+      >
+        <DialogContent
+          size="lg"
+          header={
+            <DialogHeader
+              title="连接事件"
+              description={`${eventConnection?.name ?? '当前连接'} 最近 50 次测试与调用记录。`}
+            />
+          }
+        >
+          {error ? <p className="auth-error">{error}</p> : null}
+          <div className="integration-event-list">
+            {events.length === 0 && !error ? (
+              <p className="section-message">暂无连接事件。</p>
+            ) : (
+              events.map((event) => (
+                <article key={event.id}>
+                  <div>
+                    <strong>{event.operation}</strong>
+                    <small>{new Date(event.createdAt).toLocaleString('zh-CN')}</small>
+                  </div>
+                  <p>{event.message ?? '无附加信息'}</p>
+                  <div>
+                    <StatusPill tone={event.outcome === 'success' ? 'ok' : 'danger'}>
+                      {event.outcome === 'success' ? '成功' : '失败'}
+                    </StatusPill>
+                    <small>{event.durationMs === null ? '—' : `${event.durationMs} ms`}</small>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </PageFrame>

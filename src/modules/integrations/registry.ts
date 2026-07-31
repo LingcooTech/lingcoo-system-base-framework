@@ -1,16 +1,8 @@
 import type { IntegrationProvider } from './provider.js';
 import { IntegrationProviderRegistry } from './provider.js';
+import { SmtpProvider } from './providers/smtp.js';
 
 const plannedProviders = [
-  {
-    code: 'smtp',
-    name: 'SMTP 邮件服务',
-    category: 'communication' as const,
-    description: '事务邮件、验证码和系统通知的统一发送通道。',
-    capabilities: ['email.send', 'connection.test'],
-    configFields: [],
-    credentialFields: [],
-  },
   {
     code: 'qiniu',
     name: '七牛云对象存储',
@@ -77,6 +69,7 @@ export function createIntegrationProviderRegistry(
 ): IntegrationProviderRegistry {
   const registry = new IntegrationProviderRegistry();
   for (const provider of plannedProviders) registry.registerManifest(provider);
+  registry.register(new SmtpProvider());
   if (environment === 'test') registry.register(diagnosticProvider);
   return registry;
 }

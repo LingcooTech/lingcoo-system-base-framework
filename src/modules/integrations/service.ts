@@ -5,7 +5,7 @@ import { integrationConnections, integrationEvents } from '../../db/schema.js';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import { decryptSetting, encryptSetting, SettingsCryptoError } from '../../lib/settings-crypto.js';
-import type { ProviderTestResult } from './provider.js';
+import type { IntegrationProvider, ProviderTestResult } from './provider.js';
 import { validateProviderFields, type IntegrationProviderRegistry } from './provider.js';
 
 type ConnectionRow = typeof integrationConnections.$inferSelect;
@@ -74,6 +74,19 @@ function redactMetadata(
     return value;
   }
   return redact(metadata) as Record<string, unknown>;
+}
+
+export interface IntegrationExecutionContext {
+  provider: IntegrationProvider;
+  config: Record<string, unknown>;
+  credentials: Record<string, unknown>;
+  signal: AbortSignal;
+}
+
+export interface IntegrationExecutionResult<T> {
+  value: T;
+  message: string;
+  metadata?: Record<string, unknown>;
 }
 
 export class IntegrationService {
@@ -262,6 +275,59 @@ export class IntegrationService {
       .limit(50);
   }
 
+  async executeConnection<T>(input: {
+    connectionId: string;
+    providerCode: string;
+    operation: string;
+    actorId?: string;
+    execute(context: IntegrationExecutionContext): Promise<IntegrationExecutionResult<T>>;
+  }): Promise<T> {
+    const connection = await this.findConnection(input.connectionId);
+    if (connection.providerCode !== input.providerCode) {
+      throw httpError(422, '集成连接类型不匹配', 'ValidationError');
+    }
+    if (!connection.enabled) {
+      throw httpError(409, '集成连接尚未启用', 'ConflictError');
+    }
+    const provider = this.registry.requireAdapter(connection.providerCode);
+    const credentials = decryptCredentials(connection, requireEncryptionKey(this.encryptionKey));
+    validateProviderFields(provider.configFields, connection.config, '连接配置');
+    validateProviderFields(provider.credentialFields, credentials, '访问凭据');
+
+    const startedAt = performance.now();
+    try {
+      const result = await input.execute({
+        provider,
+        config: connection.config,
+        credentials,
+        signal: AbortSignal.timeout(30_000),
+      });
+      const durationMs = Math.round(performance.now() - startedAt);
+      await this.recordOperation(
+        connection,
+        input.operation,
+        'success',
+        durationMs,
+        redactMessage(new Error(result.message), credentials),
+        input.actorId,
+        redactMetadata(result.metadata, credentials),
+      );
+      return result.value;
+    } catch (error) {
+      const durationMs = Math.round(performance.now() - startedAt);
+      const message = redactMessage(error, credentials);
+      await this.recordOperation(
+        connection,
+        input.operation,
+        'failure',
+        durationMs,
+        message,
+        input.actorId,
+      );
+      throw httpError(502, '外部服务调用失败，请查看连接事件', 'IntegrationError');
+    }
+  }
+
   private async finishTest(
     connection: ConnectionRow,
     actorId: string,
@@ -297,6 +363,33 @@ export class IntegrationService {
       resourceId: connection.id,
       actorId,
       metadata: { providerCode: connection.providerCode, outcome, durationMs },
+    });
+  }
+
+  private async recordOperation(
+    connection: ConnectionRow,
+    operation: string,
+    outcome: 'success' | 'failure',
+    durationMs: number,
+    message: string,
+    actorId?: string,
+    metadata?: Record<string, unknown>,
+  ) {
+    await this.db.insert(integrationEvents).values({
+      connectionId: connection.id,
+      operation,
+      outcome,
+      durationMs,
+      message,
+      actorId,
+      metadata,
+    });
+    await recordAuditEvent(this.db, {
+      action: 'integration.operation_executed',
+      resourceType: 'integration_connection',
+      resourceId: connection.id,
+      actorId,
+      metadata: { providerCode: connection.providerCode, operation, outcome, durationMs },
     });
   }
 }

@@ -47,6 +47,7 @@ export interface IntegrationField {
   required?: boolean;
   description?: string;
   placeholder?: string;
+  defaultValue?: string | number | boolean;
 }
 
 export interface IntegrationProvider {
@@ -74,6 +75,16 @@ export interface IntegrationConnection {
   lastTestAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IntegrationEvent {
+  id: string;
+  operation: string;
+  outcome: 'success' | 'failure';
+  durationMs: number | null;
+  message: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
 }
 
 export class ApiError extends Error {
@@ -173,7 +184,12 @@ export async function createIntegrationConnection(input: {
 
 export async function updateIntegrationConnection(
   connectionId: string,
-  input: { name?: string; enabled?: boolean },
+  input: {
+    name?: string;
+    enabled?: boolean;
+    config?: Record<string, unknown>;
+    credentials?: Record<string, unknown>;
+  },
 ): Promise<IntegrationConnection> {
   return (
     await apiRequest<{ connection: IntegrationConnection }>(
@@ -195,4 +211,38 @@ export async function testIntegrationConnection(
       { method: 'POST' },
     )
   ).result;
+}
+
+export async function sendSmtpTestEmail(
+  connectionId: string,
+  input: { to: string; subject: string; text: string },
+): Promise<{
+  sent: boolean;
+  to: string;
+  from: string;
+  subject: string;
+  messageId: string | null;
+}> {
+  return (
+    await apiRequest<{
+      result: {
+        sent: boolean;
+        to: string;
+        from: string;
+        subject: string;
+        messageId: string | null;
+      };
+    }>(`/api/integrations/connections/${connectionId}/smtp/send-test`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  ).result;
+}
+
+export async function fetchIntegrationEvents(connectionId: string): Promise<IntegrationEvent[]> {
+  return (
+    await apiRequest<{ items: IntegrationEvent[] }>(
+      `/api/integrations/connections/${connectionId}/events`,
+    )
+  ).items;
 }

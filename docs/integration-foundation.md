@@ -120,6 +120,7 @@ const provider: IntegrationProvider = {
 
 ## 7. 当前 Provider 目录
 
-生产环境预先声明 SMTP、七牛云、支付网关和 AI Hub 四个能力方向，状态为“等待适配器”，不能
-创建连接。自动化测试环境额外注册一个诊断 Provider，用于覆盖创建、加密、测试、启用、凭据轮换
-和失败审计的完整生命周期。
+生产环境预先声明 SMTP、七牛云、支付网关和 AI Hub 四个能力方向。SMTP Provider 已安装，可以
+创建连接、验证认证并发送邮件；其实现约束见 [SMTP Provider](smtp-provider.md)。其余三个方向保持
+“等待适配器”状态。自动化测试环境额外注册一个诊断 Provider，用于覆盖创建、加密、测试、启用、
+凭据轮换和失败审计的完整生命周期。

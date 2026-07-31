@@ -41,12 +41,14 @@
     "@fastify/static": "^10.1.2",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.6.1",
+    "nodemailer": "^9.0.3",
     "pg": "^8.16.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.5.2",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.8.0",

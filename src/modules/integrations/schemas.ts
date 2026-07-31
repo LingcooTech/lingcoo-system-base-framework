@@ -29,3 +29,9 @@ export const updateConnectionSchema = z
   .refine((value) => Object.keys(value).length > 0, '至少提供一个修改项');
 
 export const connectionParamsSchema = z.object({ connectionId: z.uuid() });
+
+export const smtpTestEmailSchema = z.object({
+  to: z.email().max(254),
+  subject: z.string().trim().min(1).max(200),
+  text: z.string().trim().min(1).max(5000),
+});
