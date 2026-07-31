@@ -53,7 +53,7 @@ Edu 的运行形态 + Retail 的共享包边界 + Core 的系统能力深度
 
 1. `design-tokens` 与 `ui` 共享包
 2. 认证、会话和 RBAC
-3. 系统设置、加密与审计
+3. 系统设置、加密、审计与 Provider 生命周期
 4. SMTP
 5. Storage Hub（首个 Provider 为七牛云）
 6. Payment Hub（支付宝、微信支付）

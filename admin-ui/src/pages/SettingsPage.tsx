@@ -6,10 +6,7 @@ import { sections } from '../lib/foundation';
 export function SettingsPage() {
   return (
     <PageFrame section={sections.settings}>
-      <ResourceSection
-        title="基础能力"
-        description="当前阶段只展示接入状态，不提供虚假的配置保存。"
-      >
+      <ResourceSection title="基础能力" description="运行环境配置与管理后台配置保持明确边界。">
         <dl className="settings-list">
           <div>
             <dt>PostgreSQL</dt>
@@ -24,9 +21,9 @@ export function SettingsPage() {
             </dd>
           </div>
           <div>
-            <dt>对象存储</dt>
+            <dt>集成凭据</dt>
             <dd>
-              <StatusPill tone="neutral">未启用</StatusPill>
+              <StatusPill tone="ok">加密存储</StatusPill>
             </dd>
           </div>
           <div>

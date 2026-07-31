@@ -41,6 +41,9 @@ src/
   lib/                 无领域含义的运行工具
   modules/
     system/            健康、就绪和运行时信息
+    auth/              登录、会话与密码生命周期
+    access/            账号、角色与权限管理
+    integrations/      Provider、加密凭据与连接生命周期
     index.ts            模块组合根
 drizzle/               有序 SQL 迁移
 deploy/                入口代理配置
@@ -94,11 +97,22 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `auth_sessions`：可撤销登录会话
 - `roles` / `permissions`：通用角色权限目录
 - `account_roles` / `role_permissions`：授权关系
+- `integration_connections`：Provider 连接、配置与加密凭据
+- `integration_events`：连通性与后续外部调用事件
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
 
 敏感系统设置使用带版本号的 AES-256-GCM envelope 写入 `system_settings`。密钥只来自运行环境，不进入数据库或 API 响应；读取端支持 keyring，便于在不中断既有配置读取的前提下轮换密钥。`audit_logs` 通过统一写入函数记录操作者、动作、资源和上下文，领域模块不直接拼装表字段。
+
+### 外部集成
+
+外部服务使用显式注册的 Provider 契约进入系统。普通配置可以通过 API 返回，凭据使用
+AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用，只有当前配置通过连通性测试后
+才能启用；配置或凭据变更会自动停用并使旧测试结果失效。
+
+框架当前预声明 SMTP、七牛云、支付和 AI Hub 能力方向，具体适配器按批次安装。完整约束见
+[外部集成基础](integration-foundation.md)。
 
 ### 部署
 
@@ -131,8 +145,7 @@ src/modules/catalog/
 
 以下能力很可能是共享能力，但需要在 Core、Edu、Retail 的真实实现中继续对照后再固化：
 
-- 文件和对象存储
-- 消息与通知
+- SMTP、对象存储、支付和 AI 的具体 Provider 适配器
 - 后台任务和队列
 - 日志、指标和链路追踪
 

@@ -1,6 +1,6 @@
-import { Gauge, Settings2, ShieldCheck, Waypoints, type LucideIcon } from 'lucide-react';
+import { Gauge, PlugZap, Settings2, ShieldCheck, Waypoints, type LucideIcon } from 'lucide-react';
 
-export type SectionKey = 'dashboard' | 'modules' | 'access' | 'settings';
+export type SectionKey = 'dashboard' | 'modules' | 'access' | 'integrations' | 'settings';
 
 export interface SectionMeta {
   id: SectionKey;
@@ -42,7 +42,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '3', note: 'system · auth · access' },
+      { label: '内置模块', value: '4', note: 'system · auth · access · integrations' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -58,6 +58,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '会话方式', value: 'HttpOnly JWT', note: '数据库支持主动撤销' },
       { label: '权限模型', value: 'RBAC', note: '账号可同时拥有多个角色' },
+    ],
+  },
+  integrations: {
+    id: 'integrations',
+    group: '系统',
+    title: '外部集成',
+    navLabel: '外部集成',
+    description: '通过统一 Provider 契约管理服务配置、加密凭据、连通性和调用记录。',
+    href: '/integrations',
+    icon: PlugZap,
+    permission: 'integrations.read',
+    context: [
+      { label: '凭据存储', value: 'AES-256-GCM', note: '密钥与普通配置物理分离' },
+      { label: '接入方式', value: 'Provider', note: '服务适配器显式注册并版本化' },
     ],
   },
   settings: {

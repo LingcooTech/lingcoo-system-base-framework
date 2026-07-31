@@ -20,7 +20,7 @@
     "build:public": "npm run build --workspace @lingcoo/base-public-web",
     "build:all": "npm run build:admin && npm run build:public && npm run build",
     "start": "node dist/server.js",
-    "test": "node --import tsx --test test/**/*.test.ts && npm run test --workspaces --if-present",
+    "test": "node --import tsx --test --test-concurrency=1 test/**/*.test.ts && npm run test --workspaces --if-present",
     "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
     "lint": "eslint . && npm run lint --workspaces --if-present",
     "check": "npm run typecheck && npm test && npm run lint",

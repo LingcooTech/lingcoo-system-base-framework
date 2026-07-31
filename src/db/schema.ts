@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -116,3 +117,48 @@ export const auditLogs = pgTable('audit_logs', {
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const integrationConnections = pgTable(
+  'integration_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    providerCode: text('provider_code').notNull(),
+    name: text('name').notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    config: jsonb('config').$type<Record<string, unknown>>().notNull().default({}),
+    encryptedCredentials: jsonb('encrypted_credentials').notNull(),
+    credentialKeys: jsonb('credential_keys').$type<string[]>().notNull().default([]),
+    lastTestStatus: text('last_test_status'),
+    lastTestMessage: text('last_test_message'),
+    lastTestDurationMs: integer('last_test_duration_ms'),
+    lastTestAt: timestamp('last_test_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('integration_connections_provider_idx').on(table.providerCode),
+    index('integration_connections_enabled_idx').on(table.enabled),
+  ],
+);
+
+export const integrationEvents = pgTable(
+  'integration_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    connectionId: uuid('connection_id')
+      .notNull()
+      .references(() => integrationConnections.id, { onDelete: 'cascade' }),
+    operation: text('operation').notNull(),
+    outcome: text('outcome').notNull(),
+    durationMs: integer('duration_ms'),
+    message: text('message'),
+    actorId: uuid('actor_id').references(() => accounts.id, { onDelete: 'set null' }),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('integration_events_connection_idx').on(table.connectionId),
+    index('integration_events_created_at_idx').on(table.createdAt),
+  ],
+);

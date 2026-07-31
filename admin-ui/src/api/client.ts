@@ -40,6 +40,42 @@ export interface AccessPermission {
   description: string | null;
 }
 
+export interface IntegrationField {
+  key: string;
+  label: string;
+  type: 'text' | 'password' | 'url' | 'number' | 'boolean';
+  required?: boolean;
+  description?: string;
+  placeholder?: string;
+}
+
+export interface IntegrationProvider {
+  code: string;
+  name: string;
+  category: 'communication' | 'storage' | 'payment' | 'ai' | 'developer';
+  description: string;
+  adapterVersion?: string;
+  availability: 'available' | 'planned';
+  capabilities: string[];
+  configFields: IntegrationField[];
+  credentialFields: IntegrationField[];
+}
+
+export interface IntegrationConnection {
+  id: string;
+  providerCode: string;
+  name: string;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  credentialKeys: string[];
+  lastTestStatus: 'success' | 'failure' | null;
+  lastTestMessage: string | null;
+  lastTestDurationMs: number | null;
+  lastTestAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -110,4 +146,53 @@ export async function fetchAccessRoles(): Promise<AccessRole[]> {
 
 export async function fetchAccessPermissions(): Promise<AccessPermission[]> {
   return (await apiRequest<{ items: AccessPermission[] }>('/api/access/permissions')).items;
+}
+
+export async function fetchIntegrationProviders(): Promise<IntegrationProvider[]> {
+  return (await apiRequest<{ items: IntegrationProvider[] }>('/api/integrations/providers')).items;
+}
+
+export async function fetchIntegrationConnections(): Promise<IntegrationConnection[]> {
+  return (await apiRequest<{ items: IntegrationConnection[] }>('/api/integrations/connections'))
+    .items;
+}
+
+export async function createIntegrationConnection(input: {
+  providerCode: string;
+  name: string;
+  config: Record<string, unknown>;
+  credentials: Record<string, unknown>;
+}): Promise<IntegrationConnection> {
+  return (
+    await apiRequest<{ connection: IntegrationConnection }>('/api/integrations/connections', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  ).connection;
+}
+
+export async function updateIntegrationConnection(
+  connectionId: string,
+  input: { name?: string; enabled?: boolean },
+): Promise<IntegrationConnection> {
+  return (
+    await apiRequest<{ connection: IntegrationConnection }>(
+      `/api/integrations/connections/${connectionId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      },
+    )
+  ).connection;
+}
+
+export async function testIntegrationConnection(
+  connectionId: string,
+): Promise<{ ok: boolean; message: string; durationMs: number }> {
+  return (
+    await apiRequest<{ result: { ok: boolean; message: string; durationMs: number } }>(
+      `/api/integrations/connections/${connectionId}/test`,
+      { method: 'POST' },
+    )
+  ).result;
 }

@@ -673,6 +673,132 @@ a {
   background: #fff8f7;
 }
 
+.integration-catalog {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 20px;
+}
+
+.integration-catalog article {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 18px;
+  border: 1px solid #e9ede9;
+  border-radius: 14px;
+}
+
+.provider-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  color: #47715a;
+  background: #edf5ef;
+  border-radius: 10px;
+  place-items: center;
+}
+
+.integration-catalog article > div:nth-child(2) > span,
+.integration-form-divider {
+  color: #859188;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.integration-catalog h3 {
+  margin: 5px 0 0;
+  color: #2a382f;
+  font-size: 14px;
+}
+
+.integration-catalog p {
+  margin: 7px 0 0;
+  color: #77837b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.integration-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 24px;
+  background: #fafcfa;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.integration-toolbar p {
+  margin: 0;
+  color: #78847c;
+  font-size: 11px;
+}
+
+.integration-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.integration-notice {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.integration-notice.success {
+  color: #27623f;
+  background: #e2f3e7;
+}
+
+.integration-notice.error {
+  color: #8b3838;
+  background: #fae7e5;
+}
+
+.integration-form {
+  display: grid;
+  gap: 18px;
+}
+
+.integration-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  color: #35423a;
+  background: #fff;
+  border: 1px solid #dce3dd;
+  border-radius: 9px;
+}
+
+.integration-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: #35423a;
+  font-size: 12px;
+}
+
+.integration-check span {
+  display: grid;
+  gap: 3px;
+}
+
+.integration-check small {
+  color: #859087;
+}
+
+.integration-form-divider {
+  margin: 2px 0 -6px;
+  padding-top: 16px;
+  border-top: 1px solid #edf0ed;
+}
+
 .auth-loading,
 .password-screen {
   display: grid;
@@ -940,6 +1066,24 @@ a {
 
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+
+  .integration-catalog {
+    grid-template-columns: 1fr;
+  }
+
+  .integration-catalog article {
+    grid-template-columns: auto 1fr;
+  }
+
+  .integration-catalog article > .lc-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .integration-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .settings-list > div,

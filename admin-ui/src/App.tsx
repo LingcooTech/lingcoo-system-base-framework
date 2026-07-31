@@ -6,6 +6,7 @@ import { AccessPage } from './pages/AccessPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { IntegrationsPage } from './pages/IntegrationsPage';
 import { ModulesPage } from './pages/ModulesPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -57,6 +58,8 @@ function RoutedApp() {
 
   const page = pathname.startsWith('/access') ? (
     <AccessPage />
+  ) : pathname.startsWith('/integrations') ? (
+    <IntegrationsPage />
   ) : pathname.startsWith('/modules') ? (
     <ModulesPage />
   ) : pathname.startsWith('/settings') ? (

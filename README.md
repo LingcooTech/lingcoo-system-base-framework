@@ -11,11 +11,13 @@
 - 共享 UI：npm workspace 管理 Design Tokens 与无业务含义的 React 组件
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
 - 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
+- 外部集成：Provider 注册表、加密凭据、配置生命周期、连通性测试和调用审计
 - 数据基础：PostgreSQL、Drizzle Schema、可追踪的 SQL 迁移、加密系统设置与统一审计写入
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 
-当前只包含 `system` 基础模块，没有用户、商品、课程、订单、内容等领域概念。
+当前包含 `system`、`auth`、`access` 和 `integrations` 基础模块，没有商品、课程、订单、
+内容等领域概念。
 
 ## 架构来源
 
@@ -102,8 +104,11 @@ docker compose -f docker-compose.prod.yml up -d
 - [架构说明](docs/architecture.md)
 - [成熟系统共同能力矩阵](docs/capability-matrix.md)
 - [身份与访问控制](docs/identity-access.md)
+- [外部集成基础](docs/integration-foundation.md)
 - [领域扩展指南](docs/domain-extension.md)
 
 ## 当前边界
 
-这是持续演进的空白业务框架。共享 UI、身份与 RBAC、加密系统设置和审计写入已经进入基础层；文件存储、消息队列、后台任务和可观测性仍按成熟系统的共同约束分批进入框架。
+这是持续演进的空白业务框架。共享 UI、身份与 RBAC、加密系统设置、审计写入和外部集成
+生命周期已经进入基础层；SMTP、对象存储、支付、AI、消息队列、后台任务和可观测性的具体
+Provider 仍按成熟系统的共同约束分批进入框架。
