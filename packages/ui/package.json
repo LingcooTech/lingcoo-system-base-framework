@@ -20,6 +20,7 @@
     "./src/styles.css"
   ],
   "scripts": {
+    "test": "node --import tsx --test test/**/*.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
@@ -42,6 +43,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.65.0"
   }

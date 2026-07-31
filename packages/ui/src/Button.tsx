@@ -1,4 +1,4 @@
-import { Slot } from '@radix-ui/react-slot';
+import { Slot, Slottable } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
@@ -69,7 +69,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...rest}
       >
         {loading ? <span aria-hidden className="lc-spinner lc-spinner--sm" /> : leadingIcon}
-        {children}
+        <Slottable>{children}</Slottable>
         {trailingIcon}
       </Component>
     );
