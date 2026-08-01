@@ -43,7 +43,7 @@ export interface AccessPermission {
 export interface IntegrationField {
   key: string;
   label: string;
-  type: 'text' | 'password' | 'url' | 'number' | 'boolean';
+  type: 'text' | 'password' | 'textarea' | 'secret-textarea' | 'url' | 'number' | 'boolean';
   required?: boolean;
   description?: string;
   placeholder?: string;
@@ -235,6 +235,43 @@ export async function sendSmtpTestEmail(
     }>(`/api/integrations/connections/${connectionId}/smtp/send-test`, {
       method: 'POST',
       body: JSON.stringify(input),
+    })
+  ).result;
+}
+
+export interface QiniuObjectItem {
+  key: string;
+  hash: string;
+  size: number;
+  mimeType: string;
+  putTime: number;
+}
+
+export async function fetchQiniuObjects(connectionId: string): Promise<QiniuObjectItem[]> {
+  return (
+    await apiRequest<{ items: QiniuObjectItem[] }>(
+      `/api/integrations/connections/${connectionId}/qiniu/objects?limit=50`,
+    )
+  ).items;
+}
+
+export async function sendOpenRouterTest(
+  connectionId: string,
+  prompt: string,
+): Promise<{ model: string; content: string; usage: { totalTokens: number } | null }> {
+  return (
+    await apiRequest<{
+      result: {
+        model: string;
+        content: string;
+        usage: { totalTokens: number } | null;
+      };
+    }>(`/api/integrations/connections/${connectionId}/openrouter/chat-test`, {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        maxTokens: 500,
+      }),
     })
   ).result;
 }

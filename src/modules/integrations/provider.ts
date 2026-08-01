@@ -1,7 +1,8 @@
 import { httpError } from '../../lib/http-error.js';
 
 export type IntegrationCategory = 'communication' | 'storage' | 'payment' | 'ai' | 'developer';
-export type IntegrationFieldType = 'text' | 'password' | 'url' | 'number' | 'boolean';
+export type IntegrationFieldType =
+  'text' | 'password' | 'textarea' | 'secret-textarea' | 'url' | 'number' | 'boolean';
 
 export interface IntegrationFieldDefinition {
   key: string;

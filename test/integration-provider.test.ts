@@ -7,22 +7,23 @@ import {
 } from '../src/modules/integrations/provider.js';
 import { createIntegrationProviderRegistry } from '../src/modules/integrations/registry.js';
 
-test('production registry installs SMTP while keeping later adapters planned', () => {
+test('production registry installs all shared service adapters', () => {
   const registry = createIntegrationProviderRegistry('production');
   const providers = registry.list();
 
   assert.deepEqual(
     providers.map((provider) => provider.code),
-    ['ai-hub', 'smtp', 'payment', 'qiniu'],
+    ['openrouter', 'smtp', 'wechat-pay', 'alipay', 'qiniu'],
   );
-  assert.equal(providers.find((provider) => provider.code === 'smtp')?.availability, 'available');
   assert.equal(
-    providers
-      .filter((provider) => provider.code !== 'smtp')
-      .every((provider) => provider.availability === 'planned'),
+    providers.every((provider) => provider.availability === 'available'),
     true,
   );
   assert.equal(typeof registry.requireAdapter('smtp').testConnection, 'function');
+  assert.equal(typeof registry.requireAdapter('qiniu').testConnection, 'function');
+  assert.equal(typeof registry.requireAdapter('alipay').testConnection, 'function');
+  assert.equal(typeof registry.requireAdapter('wechat-pay').testConnection, 'function');
+  assert.equal(typeof registry.requireAdapter('openrouter').testConnection, 'function');
 });
 
 test('test registry installs the diagnostic adapter with no executable function in manifests', () => {

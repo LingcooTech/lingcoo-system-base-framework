@@ -1,36 +1,10 @@
 import type { IntegrationProvider } from './provider.js';
 import { IntegrationProviderRegistry } from './provider.js';
+import { AlipayProvider } from './providers/alipay.js';
+import { OpenRouterProvider } from './providers/openrouter.js';
+import { QiniuProvider } from './providers/qiniu.js';
 import { SmtpProvider } from './providers/smtp.js';
-
-const plannedProviders = [
-  {
-    code: 'qiniu',
-    name: '七牛云对象存储',
-    category: 'storage' as const,
-    description: '文件上传、私有访问、资源域名和生命周期管理。',
-    capabilities: ['object.put', 'object.delete', 'object.sign', 'connection.test'],
-    configFields: [],
-    credentialFields: [],
-  },
-  {
-    code: 'payment',
-    name: '支付网关',
-    category: 'payment' as const,
-    description: '订单支付、退款、回调验签和账务事件的通用边界。',
-    capabilities: ['payment.create', 'refund.create', 'webhook.verify', 'connection.test'],
-    configFields: [],
-    credentialFields: [],
-  },
-  {
-    code: 'ai-hub',
-    name: 'AI Hub',
-    category: 'ai' as const,
-    description: '统一管理模型端点、API 凭据、调用策略和健康状态。',
-    capabilities: ['model.invoke', 'model.list', 'connection.test'],
-    configFields: [],
-    credentialFields: [],
-  },
-];
+import { WechatPayProvider } from './providers/wechat-pay.js';
 
 const diagnosticProvider: IntegrationProvider = {
   code: 'framework-diagnostic',
@@ -68,8 +42,11 @@ export function createIntegrationProviderRegistry(
   environment: 'development' | 'test' | 'production',
 ): IntegrationProviderRegistry {
   const registry = new IntegrationProviderRegistry();
-  for (const provider of plannedProviders) registry.registerManifest(provider);
   registry.register(new SmtpProvider());
+  registry.register(new QiniuProvider());
+  registry.register(new AlipayProvider());
+  registry.register(new WechatPayProvider());
+  registry.register(new OpenRouterProvider());
   if (environment === 'test') registry.register(diagnosticProvider);
   return registry;
 }

@@ -11,8 +11,8 @@
 - 连通性测试和后续业务调用如何审计
 - 管理后台如何根据 Provider 契约生成配置入口
 
-它不直接实现邮件发送、文件上传、支付订单或模型调用。SMTP、七牛云、支付和 AI
-Hub 是后续安装到此基础层的具体 Provider 适配器。
+它不直接承载行业业务，但通过具体 Provider 实现邮件、对象存储、支付协议和模型调用。目前已安装
+SMTP、七牛云、支付宝、微信支付 API v3 和 OpenRouter。
 
 ## 2. 组成
 
@@ -120,7 +120,7 @@ const provider: IntegrationProvider = {
 
 ## 7. 当前 Provider 目录
 
-生产环境预先声明 SMTP、七牛云、支付网关和 AI Hub 四个能力方向。SMTP Provider 已安装，可以
-创建连接、验证认证并发送邮件；其实现约束见 [SMTP Provider](smtp-provider.md)。其余三个方向保持
-“等待适配器”状态。自动化测试环境额外注册一个诊断 Provider，用于覆盖创建、加密、测试、启用、
-凭据轮换和失败审计的完整生命周期。
+生产环境显式注册 SMTP、七牛云、支付宝、微信支付和 OpenRouter 五个适配器，均可创建、测试并
+启用真实连接。具体边界见 [SMTP Provider](smtp-provider.md) 与
+[通用 Provider 适配器](shared-providers.md)。自动化测试环境额外注册诊断 Provider，用于覆盖创建、
+加密、测试、启用、凭据轮换和失败审计的完整生命周期。

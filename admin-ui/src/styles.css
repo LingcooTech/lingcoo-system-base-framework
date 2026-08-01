@@ -808,6 +808,11 @@ a {
   gap: 18px;
 }
 
+.integration-secret-textarea {
+  -webkit-text-security: disc;
+  font-family: monospace;
+}
+
 .integration-select {
   width: 100%;
   min-height: 42px;

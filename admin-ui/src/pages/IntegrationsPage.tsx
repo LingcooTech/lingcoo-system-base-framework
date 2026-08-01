@@ -8,16 +8,19 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import {
   createIntegrationConnection,
+  fetchQiniuObjects,
   fetchIntegrationEvents,
   fetchIntegrationConnections,
   fetchIntegrationProviders,
   sendSmtpTestEmail,
+  sendOpenRouterTest,
   testIntegrationConnection,
   updateIntegrationConnection,
   type IntegrationConnection,
   type IntegrationField,
   type IntegrationEvent,
   type IntegrationProvider,
+  type QiniuObjectItem,
 } from '../api/client';
 import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
 import { PageFrame } from '../components/shared/PageFrame';
@@ -91,6 +94,23 @@ function DynamicField({
       </label>
     );
   }
+  if (field.type === 'textarea' || field.type === 'secret-textarea') {
+    return (
+      <FormField label={field.label} description={field.description} required={required}>
+        {({ controlId }) => (
+          <Textarea
+            className={field.type === 'secret-textarea' ? 'integration-secret-textarea' : undefined}
+            id={controlId}
+            onChange={(event) => setValues({ ...values, [field.key]: event.target.value })}
+            placeholder={field.placeholder}
+            required={required}
+            rows={6}
+            value={String(values[field.key] ?? '')}
+          />
+        )}
+      </FormField>
+    );
+  }
   return (
     <FormField label={field.label} description={field.description} required={required}>
       {({ controlId }) => (
@@ -117,6 +137,11 @@ export function IntegrationsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<IntegrationConnection | null>(null);
   const [mailConnection, setMailConnection] = useState<IntegrationConnection | null>(null);
+  const [storageConnection, setStorageConnection] = useState<IntegrationConnection | null>(null);
+  const [storageObjects, setStorageObjects] = useState<QiniuObjectItem[]>([]);
+  const [aiConnection, setAiConnection] = useState<IntegrationConnection | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('请用一句话说明当前 AI 连接已经正常工作。');
+  const [aiResult, setAiResult] = useState('');
   const [eventConnection, setEventConnection] = useState<IntegrationConnection | null>(null);
   const [events, setEvents] = useState<IntegrationEvent[]>([]);
   const [providerCode, setProviderCode] = useState('');
@@ -180,6 +205,24 @@ export function IntegrationsPage() {
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '连接事件加载失败');
     }
+  }
+
+  async function openStorageDialog(connection: IntegrationConnection) {
+    setStorageConnection(connection);
+    setStorageObjects([]);
+    setError('');
+    try {
+      setStorageObjects(await fetchQiniuObjects(connection.id));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '对象列表加载失败');
+    }
+  }
+
+  function openAiDialog(connection: IntegrationConnection) {
+    setAiConnection(connection);
+    setAiPrompt('请用一句话说明当前 AI 连接已经正常工作。');
+    setAiResult('');
+    setError('');
   }
 
   async function load() {
@@ -279,6 +322,25 @@ export function IntegrationsPage() {
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '测试邮件发送失败');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function submitAiTest(event: FormEvent) {
+    event.preventDefault();
+    if (!aiConnection) return;
+    setSubmitting(true);
+    setError('');
+    setAiResult('');
+    try {
+      const result = await sendOpenRouterTest(aiConnection.id, aiPrompt);
+      setAiResult(
+        `${result.content}\n\n模型：${result.model}${result.usage ? ` · ${result.usage.totalTokens} tokens` : ''}`,
+      );
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '模型测试失败');
     } finally {
       setSubmitting(false);
     }
@@ -395,6 +457,26 @@ export function IntegrationsPage() {
               variant="secondary"
             >
               发测试邮件
+            </Button>
+          ) : null}
+          {connection.providerCode === 'qiniu' ? (
+            <Button
+              disabled={!connection.enabled}
+              onClick={() => void openStorageDialog(connection)}
+              size="sm"
+              variant="secondary"
+            >
+              浏览对象
+            </Button>
+          ) : null}
+          {connection.providerCode === 'openrouter' ? (
+            <Button
+              disabled={!connection.enabled}
+              onClick={() => openAiDialog(connection)}
+              size="sm"
+              variant="secondary"
+            >
+              模型测试
             </Button>
           ) : null}
         </div>
@@ -663,6 +745,81 @@ export function IntegrationsPage() {
               ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(storageConnection)}
+        onOpenChange={(open) => !open && setStorageConnection(null)}
+      >
+        <DialogContent
+          size="lg"
+          header={
+            <DialogHeader
+              title="七牛云对象"
+              description={`${storageConnection?.name ?? '当前连接'} 默认前缀下最近 50 个对象。上传凭证、删除与签名能力由领域模块调用。`}
+            />
+          }
+        >
+          {error ? <p className="auth-error">{error}</p> : null}
+          <div className="integration-event-list">
+            {storageObjects.length === 0 && !error ? (
+              <p className="section-message">当前前缀下暂无对象。</p>
+            ) : (
+              storageObjects.map((object) => (
+                <article key={object.key}>
+                  <div>
+                    <strong>{object.key}</strong>
+                    <small>{object.mimeType}</small>
+                  </div>
+                  <p>{(object.size / 1024).toFixed(1)} KB</p>
+                  <small>{object.hash || '—'}</small>
+                </article>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(aiConnection)} onOpenChange={(open) => !open && setAiConnection(null)}>
+        <DialogContent
+          header={
+            <DialogHeader
+              title="OpenRouter 模型测试"
+              description={`使用 ${aiConnection?.name ?? '当前连接'} 的默认模型发起一次真实调用，可能产生少量模型费用。`}
+            />
+          }
+          footer={
+            <DialogFooter>
+              <Button onClick={() => setAiConnection(null)} variant="secondary">
+                关闭
+              </Button>
+              <Button form="openrouter-test-form" loading={submitting} type="submit">
+                发送测试
+              </Button>
+            </DialogFooter>
+          }
+        >
+          <form className="integration-form" id="openrouter-test-form" onSubmit={submitAiTest}>
+            <FormField label="测试提示词" required>
+              {({ controlId }) => (
+                <Textarea
+                  id={controlId}
+                  maxLength={20_000}
+                  onChange={(event) => setAiPrompt(event.target.value)}
+                  required
+                  rows={5}
+                  value={aiPrompt}
+                />
+              )}
+            </FormField>
+            {aiResult ? (
+              <FormField label="模型响应">
+                {({ controlId }) => <Textarea id={controlId} readOnly rows={8} value={aiResult} />}
+              </FormField>
+            ) : null}
+            {error ? <p className="auth-error">{error}</p> : null}
+          </form>
         </DialogContent>
       </Dialog>
     </PageFrame>

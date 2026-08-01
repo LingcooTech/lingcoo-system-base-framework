@@ -111,9 +111,9 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用，只有当前配置通过连通性测试后
 才能启用；配置或凭据变更会自动停用并使旧测试结果失效。
 
-框架当前预声明 SMTP、七牛云、支付和 AI Hub 能力方向。SMTP 已安装真实适配器，其余适配器按
-批次安装。完整约束见 [外部集成基础](integration-foundation.md) 和
-[SMTP Provider](smtp-provider.md)。
+框架当前安装 SMTP、七牛云、支付宝、微信支付 API v3 和 OpenRouter 真实适配器。完整约束见
+[外部集成基础](integration-foundation.md)、[SMTP Provider](smtp-provider.md) 和
+[通用 Provider 适配器](shared-providers.md)。
 
 ### 部署
 
@@ -146,7 +146,6 @@ src/modules/catalog/
 
 以下能力很可能是共享能力，但需要在 Core、Edu、Retail 的真实实现中继续对照后再固化：
 
-- 对象存储、支付和 AI 的具体 Provider 适配器
 - 后台任务和队列
 - 日志、指标和链路追踪
 
