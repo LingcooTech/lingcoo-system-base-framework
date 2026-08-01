@@ -41,8 +41,30 @@ fi
 docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d postgres
 docker compose -f "${DEPLOY_COMPOSE_FILE}" run --rm \
   api node scripts/run-migrations.mjs
-docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d --remove-orphans api caddy
+docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d --remove-orphans api worker caddy
 cleanup_docker_space
+
+worker_container_id="$(docker compose -f "${DEPLOY_COMPOSE_FILE}" ps -q worker)"
+if [ -z "${worker_container_id}" ]; then
+  echo "worker container was not created"
+  exit 1
+fi
+
+worker_attempt=1
+while [ "${worker_attempt}" -le 24 ]; do
+  worker_status="$(docker inspect --format '{{.State.Health.Status}}' "${worker_container_id}" 2>/dev/null || true)"
+  if [ "${worker_status}" = "healthy" ]; then
+    echo "worker health check passed on attempt ${worker_attempt}"
+    break
+  fi
+  if [ "${worker_attempt}" -eq 24 ]; then
+    echo "worker health check failed: ${worker_status:-unknown}"
+    docker compose -f "${DEPLOY_COMPOSE_FILE}" logs --tail=100 worker || true
+    exit 1
+  fi
+  worker_attempt=$((worker_attempt + 1))
+  sleep 5
+done
 
 attempt=1
 max_attempts=30

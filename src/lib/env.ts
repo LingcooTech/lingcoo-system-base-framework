@@ -32,6 +32,9 @@ const envSchema = z
       z.string().min(12).max(128).optional(),
     ),
     AUTH_BOOTSTRAP_DISPLAY_NAME: z.string().min(1).max(120).default('系统所有者'),
+    WORKER_POLL_INTERVAL_MS: z.coerce.number().int().min(100).max(10_000).default(1000),
+    WORKER_STALE_TIMEOUT_MS: z.coerce.number().int().min(10_000).max(3_600_000).default(300_000),
+    WORKER_HEALTH_PORT: z.coerce.number().int().positive().default(8091),
     LOG_LEVEL: logLevelSchema.default('info'),
   })
   .superRefine((env, context) => {

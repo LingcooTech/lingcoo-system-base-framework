@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -160,5 +161,131 @@ export const integrationEvents = pgTable(
   (table) => [
     index('integration_events_connection_idx').on(table.connectionId),
     index('integration_events_created_at_idx').on(table.createdAt),
+  ],
+);
+
+export const jobRuns = pgTable(
+  'job_runs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    queue: text('queue').notNull().default('default'),
+    kind: text('kind').notNull(),
+    status: text('status').notNull().default('pending'),
+    priority: integer('priority').notNull().default(100),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    result: jsonb('result').$type<Record<string, unknown>>(),
+    dedupeKey: text('dedupe_key'),
+    relatedEntityType: text('related_entity_type'),
+    relatedEntityId: text('related_entity_id'),
+    attempts: integer('attempts').notNull().default(0),
+    maxAttempts: integer('max_attempts').notNull().default(5),
+    availableAt: timestamp('available_at', { withTimezone: true }).notNull().defaultNow(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lockedBy: text('locked_by'),
+    lastError: text('last_error'),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('job_runs_claim_idx').on(table.status, table.availableAt, table.priority),
+    index('job_runs_kind_created_idx').on(table.kind, table.createdAt),
+    uniqueIndex('job_runs_dedupe_key_idx').on(table.dedupeKey),
+  ],
+);
+
+export const outboxEvents = pgTable(
+  'outbox_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    topic: text('topic').notNull(),
+    status: text('status').notNull().default('pending'),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    aggregateType: text('aggregate_type'),
+    aggregateId: text('aggregate_id'),
+    dedupeKey: text('dedupe_key'),
+    attempts: integer('attempts').notNull().default(0),
+    maxAttempts: integer('max_attempts').notNull().default(5),
+    availableAt: timestamp('available_at', { withTimezone: true }).notNull().defaultNow(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lockedBy: text('locked_by'),
+    lastError: text('last_error'),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('outbox_events_claim_idx').on(table.status, table.availableAt),
+    index('outbox_events_topic_idx').on(table.topic, table.createdAt),
+    uniqueIndex('outbox_events_dedupe_key_idx').on(table.dedupeKey),
+  ],
+);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    recipientAccountId: uuid('recipient_account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    category: text('category').notNull().default('system'),
+    level: text('level').notNull().default('info'),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    ctaLabel: text('cta_label'),
+    ctaUrl: text('cta_url'),
+    status: text('status').notNull().default('unread'),
+    sourceEventId: uuid('source_event_id').references(() => outboxEvents.id, {
+      onDelete: 'set null',
+    }),
+    sourceEventName: text('source_event_name'),
+    dedupeKey: text('dedupe_key').notNull(),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('notifications_recipient_status_idx').on(
+      table.recipientAccountId,
+      table.status,
+      table.createdAt,
+    ),
+    index('notifications_category_idx').on(table.category, table.createdAt),
+    uniqueIndex('notifications_dedupe_key_idx').on(table.dedupeKey),
+  ],
+);
+
+export const notificationDeliveries = pgTable(
+  'notification_deliveries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    notificationId: uuid('notification_id')
+      .notNull()
+      .references(() => notifications.id, { onDelete: 'cascade' }),
+    channel: text('channel').notNull(),
+    destination: text('destination').notNull(),
+    status: text('status').notNull().default('pending'),
+    integrationConnectionId: uuid('integration_connection_id').references(
+      () => integrationConnections.id,
+      { onDelete: 'set null' },
+    ),
+    jobId: uuid('job_id').references(() => jobRuns.id, { onDelete: 'set null' }),
+    attempts: integer('attempts').notNull().default(0),
+    lastError: text('last_error'),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('notification_deliveries_notification_idx').on(table.notificationId),
+    index('notification_deliveries_status_idx').on(table.status, table.createdAt),
+    uniqueIndex('notification_deliveries_notification_channel_idx').on(
+      table.notificationId,
+      table.channel,
+    ),
   ],
 );

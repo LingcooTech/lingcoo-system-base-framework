@@ -1,6 +1,16 @@
-import { Gauge, PlugZap, Settings2, ShieldCheck, Waypoints, type LucideIcon } from 'lucide-react';
+import {
+  Bell,
+  Gauge,
+  ListChecks,
+  PlugZap,
+  Settings2,
+  ShieldCheck,
+  Waypoints,
+  type LucideIcon,
+} from 'lucide-react';
 
-export type SectionKey = 'dashboard' | 'modules' | 'access' | 'integrations' | 'settings';
+export type SectionKey =
+  'dashboard' | 'modules' | 'access' | 'integrations' | 'operations' | 'notifications' | 'settings';
 
 export interface SectionMeta {
   id: SectionKey;
@@ -42,7 +52,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '4', note: 'system · auth · access · integrations' },
+      { label: '内置模块', value: '6', note: '含 jobs · notifications' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -72,6 +82,34 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '凭据存储', value: 'AES-256-GCM', note: '密钥与普通配置物理分离' },
       { label: '接入方式', value: 'Provider', note: '服务适配器显式注册并版本化' },
+    ],
+  },
+  operations: {
+    id: 'operations',
+    group: '运行',
+    title: '任务与事件',
+    navLabel: '任务中心',
+    description: '查看持久化后台任务、重试状态和 Outbox 事件投影。',
+    href: '/operations',
+    icon: ListChecks,
+    permission: 'jobs.read',
+    context: [
+      { label: '任务队列', value: 'PostgreSQL', note: '行锁领取 · 不丢失' },
+      { label: '失败恢复', value: 'Backoff', note: '指数退避与人工重试' },
+    ],
+  },
+  notifications: {
+    id: 'notifications',
+    group: '运行',
+    title: '通知中心',
+    navLabel: '通知中心',
+    description: '管理站内通知、系统公告和异步邮件投递。',
+    href: '/notifications',
+    icon: Bell,
+    permission: 'notifications.read',
+    context: [
+      { label: '站内状态', value: 'Inbox', note: '未读 · 已读 · 归档' },
+      { label: '邮件投递', value: 'Async', note: 'SMTP Provider · Worker' },
     ],
   },
   settings: {

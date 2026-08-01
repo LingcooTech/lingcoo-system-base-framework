@@ -12,12 +12,14 @@
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
 - 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
 - 外部集成：Provider 注册表、加密凭据、配置生命周期、连通性测试和调用审计
+- 异步执行：PostgreSQL 持久化任务、事务 Outbox、幂等键、并发锁、退避重试和独立 Worker
+- 通知中心：站内通知、系统公告、未读状态和通过 SMTP 异步执行的邮件投递
 - 数据基础：PostgreSQL、Drizzle Schema、可追踪的 SQL 迁移、加密系统设置与统一审计写入
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 
-当前包含 `system`、`auth`、`access` 和 `integrations` 基础模块，没有商品、课程、订单、
-内容等领域概念。
+当前包含 `system`、`auth`、`access`、`integrations`、`jobs` 和 `notifications` 基础模块，
+没有商品、课程、订单、内容等领域概念。
 
 ## 架构来源
 
@@ -42,10 +44,11 @@ npm run db:migrate
 首次运行前，在 `.env` 中临时设置 `AUTH_BOOTSTRAP_EMAIL` 和至少 12 位的
 `AUTH_BOOTSTRAP_PASSWORD`。首个所有者创建后删除临时密码，并在首次登录时设置正式密码。
 
-然后分别启动三个开发进程：
+然后分别启动四个开发进程：
 
 ```bash
 npm run dev:api
+npm run dev:worker
 npm run dev:public
 npm run dev:admin
 ```
@@ -91,6 +94,7 @@ docker compose -f docker-compose.prod.yml up -d
 | `npm run setup`        | 安装 API、双 Web 和共享包依赖 |
 | `npm run check`        | 类型检查、测试和 Lint         |
 | `npm run build:all`    | 构建公共 Web、管理后台和 API  |
+| `npm run dev:worker`   | 启动后台任务与 Outbox Worker  |
 | `npm run db:generate`  | 根据 Drizzle Schema 生成迁移  |
 | `npm run db:migrate`   | 按顺序执行未应用的 SQL 迁移   |
 | `npm run format:check` | 检查代码格式                  |
@@ -107,10 +111,12 @@ docker compose -f docker-compose.prod.yml up -d
 - [外部集成基础](docs/integration-foundation.md)
 - [SMTP Provider](docs/smtp-provider.md)
 - [七牛云、支付与 OpenRouter Provider](docs/shared-providers.md)
+- [后台任务、Outbox 与通知](docs/jobs-notifications.md)
 - [领域扩展指南](docs/domain-extension.md)
 
 ## 当前边界
 
 这是持续演进的空白业务框架。共享 UI、身份与 RBAC、加密系统设置、审计写入和外部集成
 生命周期已经进入基础层；SMTP、七牛云、支付宝、微信支付 API v3 与 OpenRouter 均已安装真实
-适配器。消息队列、后台任务和可观测性仍按成熟系统的共同约束分批进入框架。
+适配器。持久化任务、事务 Outbox、独立 Worker、站内通知和邮件投递也已进入基础层；日志、指标
+和链路追踪仍按成熟系统的共同约束分批进入框架。

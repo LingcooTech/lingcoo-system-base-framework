@@ -16,6 +16,8 @@ const rows: ModuleRow[] = [
   { id: 'auth', name: 'auth', kind: '框架内置模块', status: '已启用' },
   { id: 'access', name: 'access', kind: '框架内置模块', status: '已启用' },
   { id: 'integrations', name: 'integrations', kind: '框架内置模块', status: '已启用' },
+  { id: 'jobs', name: 'jobs', kind: '框架内置模块', status: '已启用' },
+  { id: 'notifications', name: 'notifications', kind: '框架内置模块', status: '已启用' },
 ];
 
 const columns: DataTableColumn<ModuleRow>[] = [

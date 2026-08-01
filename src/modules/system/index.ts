@@ -29,7 +29,7 @@ export const systemModule: AppModule = {
         name: app.appEnv.APP_NAME,
         version: app.appEnv.APP_VERSION,
         environment: app.appEnv.NODE_ENV,
-        surfaces: ['api', 'admin-ui', 'public-web'],
+        surfaces: ['api', 'worker', 'admin-ui', 'public-web'],
       }),
     );
   },

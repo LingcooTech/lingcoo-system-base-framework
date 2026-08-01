@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { and, asc, desc, eq, gt, inArray, isNull, ne, sql } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
@@ -5,6 +7,7 @@ import {
   accountRoles,
   accounts,
   authSessions,
+  outboxEvents,
   passwordCredentials,
   permissions,
   rolePermissions,
@@ -145,7 +148,11 @@ export class AuthRepository {
       .where(eq(accounts.id, accountId));
   }
 
-  async updatePassword(accountId: string, passwordHash: string): Promise<void> {
+  async updatePassword(
+    accountId: string,
+    passwordHash: string,
+    currentSessionId: string,
+  ): Promise<void> {
     await this.db.transaction(async (transaction) => {
       await transaction
         .update(passwordCredentials)
@@ -155,6 +162,23 @@ export class AuthRepository {
         .update(accounts)
         .set({ mustChangePassword: false, updatedAt: new Date() })
         .where(eq(accounts.id, accountId));
+      await transaction
+        .update(authSessions)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(authSessions.accountId, accountId),
+            ne(authSessions.id, currentSessionId),
+            isNull(authSessions.revokedAt),
+          ),
+        );
+      await transaction.insert(outboxEvents).values({
+        topic: 'auth.password_changed',
+        aggregateType: 'account',
+        aggregateId: accountId,
+        payload: { accountId },
+        dedupeKey: `auth.password_changed:${randomUUID()}`,
+      });
     });
   }
 

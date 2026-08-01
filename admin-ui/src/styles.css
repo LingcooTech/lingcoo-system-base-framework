@@ -813,6 +813,29 @@ a {
   font-family: monospace;
 }
 
+.notification-button {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+
+.notification-button > span {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border: 2px solid var(--color-surface, #fff);
+  border-radius: 999px;
+  background: #d94c4c;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
+
 .integration-select {
   width: 100%;
   min-height: 42px;

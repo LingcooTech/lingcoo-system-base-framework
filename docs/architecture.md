@@ -19,10 +19,10 @@ Browser
   ├─ /admin/*      → Admin UI
   └─ /api/*        → Fastify API
                          │
-                         └─ PostgreSQL
+                         └─ PostgreSQL ← Worker
 ```
 
-开发时三个应用独立运行，以获得快速热更新；`admin-ui`、`public-web` 和共享包由 npm workspace 统一管理。生产时两个前端编译为静态资源，由 Fastify 与 API 一起装入单一镜像。Caddy 只负责入口、压缩、TLS 和反向代理。
+开发时 API、Worker 和两个 Web 应用独立运行，以获得快速热更新；`admin-ui`、`public-web` 和共享包由 npm workspace 统一管理。生产时两个前端编译为静态资源，API 与 Worker 使用同一镜像、不同进程。Caddy 只负责入口、压缩、TLS 和反向代理。
 
 这种形态保持了前端职责的独立性，同时避免一个基础系统一开始就承担多镜像编排、服务发现和跨服务认证等不必要复杂度。
 
@@ -37,6 +37,7 @@ packages/
 src/
   app.ts               HTTP 宿主与通用中间件
   server.ts            进程入口
+  worker.ts            后台任务与 Outbox 独立进程入口
   db/                  数据库连接和共享基础表
   lib/                 无领域含义的运行工具
   modules/
@@ -44,6 +45,8 @@ src/
     auth/              登录、会话与密码生命周期
     access/            账号、角色与权限管理
     integrations/      Provider、加密凭据与连接生命周期
+    jobs/              持久化任务、Outbox 与处理器注册表
+    notifications/     站内通知、公告策略与邮件投递
     index.ts            模块组合根
 drizzle/               有序 SQL 迁移
 deploy/                入口代理配置
@@ -99,6 +102,10 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `account_roles` / `role_permissions`：授权关系
 - `integration_connections`：Provider 连接、配置与加密凭据
 - `integration_events`：连通性与后续外部调用事件
+- `job_runs`：幂等、可重试的持久化后台任务
+- `outbox_events`：与业务写入共享事务的可靠领域事件
+- `notifications`：账号级站内通知与阅读状态
+- `notification_deliveries`：外部通知通道的投递状态
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
@@ -115,6 +122,13 @@ AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用
 [外部集成基础](integration-foundation.md)、[SMTP Provider](smtp-provider.md) 和
 [通用 Provider 适配器](shared-providers.md)。
 
+### 后台任务与通知
+
+后台任务由 PostgreSQL 持久化，Worker 通过 `FOR UPDATE SKIP LOCKED` 原子领取任务，并提供幂等键、
+失败退避、最大尝试次数、死亡任务与人工重试。事务 Outbox 用于保证核心状态变化和待发布事件同成
+同败；订阅器必须自行保持幂等。通知中心在此基础上提供站内通知、全员公告和 SMTP 邮件投递，
+不引入 Redis 作为最小运行依赖。完整约束见 [后台任务、Outbox 与通知](jobs-notifications.md)。
+
 ### 部署
 
 开发拓扑只启动 PostgreSQL，三个应用由本机 Node.js 进程运行。生产拓扑包含：
@@ -122,6 +136,7 @@ AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用
 - PostgreSQL
 - 一次性迁移容器
 - 非 root、只读文件系统的应用容器
+- 与 API 使用同一镜像的非 root Worker 容器
 - Caddy 入口
 
 迁移成功后应用才启动，应用健康后入口才接受流量。
@@ -146,7 +161,6 @@ src/modules/catalog/
 
 以下能力很可能是共享能力，但需要在 Core、Edu、Retail 的真实实现中继续对照后再固化：
 
-- 后台任务和队列
 - 日志、指标和链路追踪
 
 第一阶段保留接入位置，不提前选择无法被成熟系统共同验证的抽象。

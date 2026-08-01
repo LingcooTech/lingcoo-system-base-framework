@@ -63,3 +63,14 @@ test('SMTP test delivery requires an authenticated integration permission', asyn
   assert.equal(response.json().message, '登录已过期，请重新登录');
   await app.close();
 });
+
+test('job and notification management routes require authentication', async () => {
+  const app = await buildApp(testEnv());
+  const [jobs, notifications] = await Promise.all([
+    app.inject({ method: 'GET', url: '/api/jobs' }),
+    app.inject({ method: 'GET', url: '/api/notifications/admin' }),
+  ]);
+  assert.equal(jobs.statusCode, 401);
+  assert.equal(notifications.statusCode, 401);
+  await app.close();
+});

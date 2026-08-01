@@ -87,6 +87,63 @@ export interface IntegrationEvent {
   createdAt: string;
 }
 
+export interface JobRun {
+  id: string;
+  queue: string;
+  kind: string;
+  status: 'pending' | 'running' | 'succeeded' | 'dead' | 'cancelled';
+  priority: number;
+  attempts: number;
+  maxAttempts: number;
+  availableAt: string;
+  lockedBy: string | null;
+  lastError: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+}
+
+export interface OutboxEvent {
+  id: string;
+  topic: string;
+  status: 'pending' | 'processing' | 'published' | 'dead';
+  attempts: number;
+  maxAttempts: number;
+  aggregateType: string | null;
+  aggregateId: string | null;
+  lastError: string | null;
+  createdAt: string;
+  publishedAt: string | null;
+}
+
+export interface NotificationItem {
+  id: string;
+  category: string;
+  level: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  body: string;
+  status: 'unread' | 'read' | 'archived';
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  createdAt: string;
+  recipient?: { email: string; displayName: string };
+}
+
+export interface NotificationDelivery {
+  id: string;
+  channel: string;
+  destination: string;
+  status: 'pending' | 'sending' | 'sent' | 'failed';
+  attempts: number;
+  lastError: string | null;
+  sentAt: string | null;
+  createdAt: string;
+  notificationId: string;
+  notificationTitle: string;
+  connectionId: string | null;
+  connectionName: string | null;
+  jobId: string | null;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -282,4 +339,77 @@ export async function fetchIntegrationEvents(connectionId: string): Promise<Inte
       `/api/integrations/connections/${connectionId}/events`,
     )
   ).items;
+}
+
+export async function fetchJobs(): Promise<{ items: JobRun[]; total: number }> {
+  return apiRequest('/api/jobs?limit=50');
+}
+
+export async function fetchJobSummary(): Promise<Record<string, number>> {
+  return (await apiRequest<{ counts: Record<string, number> }>('/api/jobs/summary')).counts;
+}
+
+export async function retryJob(jobId: string): Promise<void> {
+  await apiRequest(`/api/jobs/${jobId}/retry`, { method: 'POST' });
+}
+
+export async function cancelJob(jobId: string): Promise<void> {
+  await apiRequest(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
+}
+
+export async function fetchOutboxEvents(): Promise<{ items: OutboxEvent[]; total: number }> {
+  return apiRequest('/api/jobs/outbox?limit=30');
+}
+
+export async function fetchMyNotifications(): Promise<{
+  items: NotificationItem[];
+  total: number;
+}> {
+  return apiRequest('/api/notifications/me?limit=30');
+}
+
+export async function fetchAdminNotifications(): Promise<{
+  items: NotificationItem[];
+  total: number;
+}> {
+  return apiRequest('/api/notifications/admin?limit=50');
+}
+
+export async function fetchNotificationDeliveries(): Promise<{
+  items: NotificationDelivery[];
+  total: number;
+}> {
+  return apiRequest('/api/notifications/deliveries?limit=50');
+}
+
+export async function fetchUnreadNotificationCount(): Promise<number> {
+  return (await apiRequest<{ unreadCount: number }>('/api/notifications/me/unread-count'))
+    .unreadCount;
+}
+
+export async function markNotificationRead(notificationId: string): Promise<void> {
+  await apiRequest(`/api/notifications/${notificationId}/read`, { method: 'POST' });
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await apiRequest('/api/notifications/read-all', { method: 'POST' });
+}
+
+export async function archiveNotification(notificationId: string): Promise<void> {
+  await apiRequest(`/api/notifications/${notificationId}/archive`, { method: 'POST' });
+}
+
+export async function publishAnnouncement(input: {
+  title: string;
+  body: string;
+  level: 'info' | 'success' | 'warning' | 'error';
+  sendEmail: boolean;
+  smtpConnectionId?: string;
+}): Promise<{ broadcastId: string; recipientCount: number }> {
+  return (
+    await apiRequest<{ result: { broadcastId: string; recipientCount: number } }>(
+      '/api/notifications/announcements',
+      { method: 'POST', body: JSON.stringify(input) },
+    )
+  ).result;
 }

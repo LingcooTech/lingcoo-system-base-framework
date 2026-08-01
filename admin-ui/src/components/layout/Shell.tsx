@@ -1,6 +1,7 @@
-import { ChevronLeft, ChevronRight, Layers3, LogOut, Menu, Search } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { Bell, ChevronLeft, ChevronRight, Layers3, LogOut, Menu, Search } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
 
+import { fetchUnreadNotificationCount } from '../../api/client';
 import { useAuth } from '../../lib/auth';
 import { getSectionByPath, sectionList } from '../../lib/foundation';
 import { Link, useRouter } from '../../lib/router';
@@ -8,6 +9,7 @@ import { Link, useRouter } from '../../lib/router';
 export function Shell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
@@ -19,6 +21,12 @@ export function Shell({ children }: { children: ReactNode }) {
       .join('')
       .slice(0, 2)
       .toUpperCase() || 'LC';
+
+  useEffect(() => {
+    fetchUnreadNotificationCount()
+      .then(setUnreadNotifications)
+      .catch(() => undefined);
+  }, [pathname]);
 
   return (
     <div className={collapsed ? 'app-shell shell-collapsed' : 'app-shell'}>
@@ -90,6 +98,14 @@ export function Shell({ children }: { children: ReactNode }) {
             <kbd>⌘ K</kbd>
           </button>
           <div className="account-actions">
+            <Link
+              className="icon-button notification-button"
+              href="/notifications"
+              title="通知中心"
+            >
+              <Bell size={17} />
+              {unreadNotifications > 0 ? <span>{Math.min(unreadNotifications, 99)}</span> : null}
+            </Link>
             <span className="account-copy">
               <strong>{account?.displayName}</strong>
               <small>{account?.roles.map((role) => role.name).join('、')}</small>

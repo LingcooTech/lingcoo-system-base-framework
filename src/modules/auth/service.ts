@@ -158,8 +158,11 @@ export class AuthService {
       throw httpError(422, '当前密码不正确', 'ValidationError');
     }
 
-    await this.repository.updatePassword(accountId, await hashPassword(input.newPassword));
-    await this.repository.revokeOtherSessions(accountId, sessionId);
+    await this.repository.updatePassword(
+      accountId,
+      await hashPassword(input.newPassword),
+      sessionId,
+    );
     await recordAuditEvent(this.db, {
       action: 'auth.password_changed',
       resourceType: 'account',

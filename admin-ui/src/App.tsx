@@ -8,6 +8,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
 import { ModulesPage } from './pages/ModulesPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { OperationsPage } from './pages/OperationsPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 function RoutedApp() {
@@ -62,6 +64,10 @@ function RoutedApp() {
     <IntegrationsPage />
   ) : pathname.startsWith('/modules') ? (
     <ModulesPage />
+  ) : pathname.startsWith('/operations') ? (
+    <OperationsPage />
+  ) : pathname.startsWith('/notifications') ? (
+    <NotificationsPage />
   ) : pathname.startsWith('/settings') ? (
     <SettingsPage />
   ) : (
