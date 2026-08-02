@@ -6,6 +6,7 @@ import {
   Images,
   ListChecks,
   PlugZap,
+  Palette,
   ScrollText,
   Settings2,
   ShieldCheck,
@@ -24,6 +25,7 @@ export type SectionKey =
   | 'notifications'
   | 'metadata'
   | 'audit'
+  | 'presentation'
   | 'settings';
 
 export interface SectionMeta {
@@ -66,7 +68,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '13', note: '含 observability · search · data-exchange' },
+      { label: '内置模块', value: '14', note: '含 presentation · search · data-exchange' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -184,6 +186,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '记录方式', value: 'Append only', note: '业务操作只追加审计事件' },
       { label: '查询维度', value: 'Structured', note: '动作 · 资源 · 操作者 · 时间' },
+    ],
+  },
+  presentation: {
+    id: 'presentation',
+    group: '站点',
+    title: '品牌与站点呈现',
+    navLabel: '品牌设置',
+    description: '统一管理系统标识、品牌色、联系方式和站点基础呈现。',
+    href: '/presentation',
+    icon: Palette,
+    permission: 'presentation.read',
+    context: [
+      { label: '资源引用', value: 'Asset ID', note: 'Logo 与站点图片不绑定存储 URL' },
+      { label: '发布方式', value: 'Public profile', note: '只公开安全的品牌呈现字段' },
     ],
   },
   settings: {

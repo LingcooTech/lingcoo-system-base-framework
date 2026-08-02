@@ -13,6 +13,7 @@ import { MetadataPage } from './pages/MetadataPage';
 import { ModulesPage } from './pages/ModulesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { OperationsPage } from './pages/OperationsPage';
+import { PresentationPage } from './pages/PresentationPage';
 import { ObservabilityPage } from './pages/ObservabilityPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -80,6 +81,8 @@ function RoutedApp() {
     <ObservabilityPage />
   ) : pathname.startsWith('/notifications') ? (
     <NotificationsPage />
+  ) : pathname.startsWith('/presentation') ? (
+    <PresentationPage />
   ) : pathname.startsWith('/settings') ? (
     <SettingsPage />
   ) : (

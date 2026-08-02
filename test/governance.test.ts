@@ -111,6 +111,57 @@ test(
         .json()
         .items.some((item: { resourceId: string }) => item.resourceId === 'general.system_name'),
     );
+
+    const presentationPayload = {
+      displayName: 'Governance Brand',
+      shortName: 'GB',
+      slogan: 'Shared presentation foundation',
+      fullLogoAssetId: null,
+      squareLogoAssetId: null,
+      darkLogoAssetId: null,
+      faviconAssetId: null,
+      socialImageAssetId: null,
+      primaryColor: '#315f47',
+      secondaryColor: '#b9efc5',
+      accentColor: '#39735a',
+      contactEmail: 'brand@example.test',
+      contactPhone: null,
+      contactAddress: null,
+      publicUrl: 'https://example.test',
+      seoTitle: 'Governance Brand',
+      seoDescription: 'Presentation integration verification.',
+      headerNavigation: [{ label: '首页', href: '/' }],
+      footerLinks: [],
+      footerCopyright: 'Governance Brand',
+      filingInfo: null,
+      changeReason: 'automated presentation verification',
+    };
+    const presentationUpdate = await app.inject({
+      method: 'PATCH',
+      url: '/api/presentation',
+      headers: { cookie },
+      payload: presentationPayload,
+    });
+    assert.equal(presentationUpdate.statusCode, 200);
+    assert.equal(presentationUpdate.json().presentation.displayName, 'Governance Brand');
+
+    const publicPresentation = await app.inject({
+      method: 'GET',
+      url: '/api/public/presentation',
+    });
+    assert.equal(publicPresentation.statusCode, 200);
+    assert.equal(publicPresentation.json().presentation.displayName, 'Governance Brand');
+
+    const presentationHistory = await app.inject({
+      method: 'GET',
+      url: '/api/presentation/history',
+      headers: { cookie },
+    });
+    assert.equal(presentationHistory.statusCode, 200);
+    assert.equal(
+      presentationHistory.json().items[0].changeReason,
+      'automated presentation verification',
+    );
     await app.close();
   },
 );

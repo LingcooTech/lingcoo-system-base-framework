@@ -177,6 +177,12 @@ a {
   border-radius: 11px;
 }
 
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .brand-copy {
   overflow: hidden;
   white-space: nowrap;
@@ -371,10 +377,39 @@ a {
 }
 
 .sidebar-collapsed .sidebar-header {
-  display: grid;
+  position: relative;
+  display: flex;
   justify-content: center;
-  gap: 10px;
   padding-inline: 0;
+}
+
+.sidebar-collapsed .sidebar-header-button {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  color: #b7efc6;
+  background: #20382c;
+  opacity: 0;
+  transform: translateX(-50%);
+}
+
+.sidebar-collapsed .brand-mark {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.sidebar-collapsed .sidebar-header:hover .sidebar-header-button,
+.sidebar-collapsed .sidebar-header:focus-within .sidebar-header-button {
+  opacity: 1;
+}
+
+.sidebar-collapsed .sidebar-header:hover .brand-mark,
+.sidebar-collapsed .sidebar-header:focus-within .brand-mark {
+  opacity: 0;
+  transform: scale(0.94);
 }
 
 .sidebar-collapsed .nav-item {
@@ -1169,6 +1204,269 @@ a {
 
   .setting-card .integration-actions {
     justify-content: flex-start;
+  }
+}
+
+.presentation-form {
+  display: grid;
+  gap: 22px;
+}
+
+.presentation-fields {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px;
+}
+
+.presentation-fields.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.presentation-fields .full-column {
+  grid-column: 1 / -1;
+}
+
+.brand-asset-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
+.brand-asset-field {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px;
+  background: #f7f9f7;
+  border: 1px solid #e5ebe7;
+  border-radius: 13px;
+}
+
+.brand-asset-field > span {
+  position: absolute;
+  top: -7px;
+  left: 12px;
+  padding: 0 5px;
+  color: #718078;
+  font-size: 10px;
+  background: #fff;
+}
+
+.brand-asset-preview {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  overflow: hidden;
+  color: #809087;
+  background: #e9efeb;
+  border-radius: 11px;
+}
+
+.brand-asset-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-asset-field > div:nth-of-type(2) {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.brand-asset-field strong,
+.brand-asset-field small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand-asset-field strong {
+  color: #334138;
+  font-size: 12px;
+}
+.brand-asset-field small {
+  color: #849087;
+  font-size: 10px;
+}
+.brand-asset-clear {
+  display: grid;
+  place-items: center;
+  color: #819087;
+  cursor: pointer;
+  background: transparent;
+}
+
+.asset-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.asset-picker-item {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  color: #536159;
+  text-align: left;
+  cursor: pointer;
+  background: #f5f7f5;
+  border: 1px solid #e3e9e5;
+  border-radius: 12px;
+}
+
+.asset-picker-item.selected {
+  border-color: #6a9b7e;
+  box-shadow: var(--lc-shadow-focus);
+}
+.asset-picker-item img {
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+}
+.asset-picker-item span {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.asset-picker-empty {
+  grid-column: 1 / -1;
+  padding: 40px;
+  color: #7b8880;
+  text-align: center;
+}
+
+.presentation-color-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(300px, 1.2fr);
+  gap: 20px;
+  align-items: stretch;
+  padding-right: 24px;
+}
+
+.color-input {
+  display: flex;
+  gap: 9px;
+}
+.color-input > input {
+  width: 44px;
+  min-height: 40px;
+  padding: 3px;
+  background: #fff;
+  border: 1px solid #dce4df;
+  border-radius: 8px;
+}
+.brand-live-preview {
+  display: flex;
+  min-height: 250px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 34px;
+  color: #fff;
+  border-radius: 16px;
+}
+.brand-live-preview > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  margin-bottom: 20px;
+  font-size: 12px;
+  font-weight: 750;
+  border-radius: 12px;
+}
+.brand-live-preview strong {
+  font-size: 24px;
+}
+.brand-live-preview small {
+  margin-top: 8px;
+  opacity: 0.72;
+}
+.brand-live-preview button {
+  margin-top: 24px;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9px;
+}
+.presentation-savebar {
+  position: sticky;
+  bottom: 18px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 14px 20px;
+  color: #68766e;
+  font-size: 12px;
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid #dfe7e1;
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgb(27 48 36 / 12%);
+  backdrop-filter: blur(14px);
+}
+
+.presentation-navigation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  padding: 22px 24px;
+}
+
+.presentation-navigation-grid h3 {
+  margin: 0 0 13px;
+  color: #35423a;
+  font-size: 12px;
+}
+
+.presentation-link-editor {
+  display: grid;
+  gap: 9px;
+}
+
+.presentation-link-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.65fr) minmax(160px, 1.35fr) auto;
+  gap: 8px;
+}
+
+.presentation-link-row > button {
+  display: grid;
+  width: 38px;
+  place-items: center;
+  color: #8a5656;
+  cursor: pointer;
+  background: #f8eceb;
+  border-radius: 9px;
+}
+
+@media (max-width: 760px) {
+  .presentation-fields.two-columns,
+  .brand-asset-list,
+  .presentation-color-layout,
+  .asset-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .presentation-navigation-grid,
+  .presentation-link-row {
+    grid-template-columns: 1fr;
+  }
+  .presentation-color-layout {
+    padding: 0 18px 18px;
+  }
+  .presentation-fields .full-column {
+    grid-column: auto;
   }
 }
 

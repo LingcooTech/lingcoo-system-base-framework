@@ -17,6 +17,7 @@ function actionLabel(action: string): string {
     'iam.role_created': '创建角色',
     'iam.role_updated': '更新角色',
     'system.setting_updated': '更新设置',
+    'presentation.updated': '更新品牌呈现',
     'auth.login_succeeded': '登录成功',
     'auth.password_changed': '修改密码',
   };

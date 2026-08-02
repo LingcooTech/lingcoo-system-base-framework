@@ -8,6 +8,25 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
+import { useEffect, useState } from 'react';
+
+interface PublicPresentation {
+  displayName: string;
+  shortName: string | null;
+  slogan: string | null;
+  fullLogoAssetId: string | null;
+  squareLogoAssetId: string | null;
+  faviconAssetId: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  headerNavigation: { label: string; href: string }[];
+  footerCopyright: string | null;
+  filingInfo: string | null;
+  assets: Record<string, { publicUrl: string | null }>;
+}
 
 const layers = [
   {
@@ -31,19 +50,63 @@ const layers = [
 ];
 
 function App() {
+  const [presentation, setPresentation] = useState<PublicPresentation | null>(null);
+
+  useEffect(() => {
+    fetch('/api/public/presentation')
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
+      .then(({ presentation: result }: { presentation: PublicPresentation }) => {
+        setPresentation(result);
+        document.documentElement.style.setProperty('--site-primary', result.primaryColor);
+        document.documentElement.style.setProperty('--site-secondary', result.secondaryColor);
+        document.documentElement.style.setProperty('--site-accent', result.accentColor);
+        document.title = result.seoTitle || result.displayName;
+        const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+        if (description && result.seoDescription) description.content = result.seoDescription;
+        const faviconUrl = result.faviconAssetId
+          ? result.assets[result.faviconAssetId]?.publicUrl
+          : null;
+        if (faviconUrl) {
+          let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+          if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.head.append(favicon);
+          }
+          favicon.href = faviconUrl;
+        }
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const displayName = presentation?.displayName ?? 'Lingcoo Base';
+  const logoId = presentation?.fullLogoAssetId ?? presentation?.squareLogoAssetId;
+  const logoUrl = logoId ? presentation?.assets[logoId]?.publicUrl : null;
+  const navigation = presentation?.headerNavigation.length
+    ? presentation.headerNavigation
+    : [
+        { label: '基础架构', href: '#architecture' },
+        { label: '运行状态', href: '/health' },
+      ];
+
   return (
     <main>
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Lingcoo Base Framework 首页">
-          <span className="brand-mark">L</span>
+        <a className="brand" href="/" aria-label={`${displayName} 首页`}>
+          <span className="brand-mark">
+            {logoUrl ? <img alt="" src={logoUrl} /> : (presentation?.shortName?.slice(0, 1) ?? 'L')}
+          </span>
           <span>
-            <strong>Lingcoo Base</strong>
+            <strong>{displayName}</strong>
             <small>System Framework</small>
           </span>
         </a>
         <nav aria-label="主要导航">
-          <a href="#architecture">基础架构</a>
-          <a href="/health">运行状态</a>
+          {navigation.map((item) => (
+            <a href={item.href} key={`${item.label}-${item.href}`}>
+              {item.label}
+            </a>
+          ))}
           <a className="admin-link" href="/admin/">
             管理后台
             <ExternalLink size={14} />
@@ -145,9 +208,14 @@ function App() {
       <footer>
         <div>
           <span className="brand-mark">L</span>
-          <strong>Lingcoo Base Framework</strong>
+          <strong>{displayName}</strong>
         </div>
-        <p>Foundation first. Domain follows.</p>
+        <p>
+          {presentation?.footerCopyright ||
+            presentation?.slogan ||
+            'Foundation first. Domain follows.'}
+          {presentation?.filingInfo ? ` · ${presentation.filingInfo}` : ''}
+        </p>
       </footer>
     </main>
   );

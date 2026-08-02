@@ -362,6 +362,46 @@ export interface AssetSummary {
   totalBytes: number;
 }
 
+export interface PresentationAsset {
+  id: string;
+  displayName: string;
+  publicUrl: string | null;
+  mimeType: string;
+}
+
+export interface PresentationProfile {
+  id: string;
+  displayName: string;
+  shortName: string | null;
+  slogan: string | null;
+  fullLogoAssetId: string | null;
+  squareLogoAssetId: string | null;
+  darkLogoAssetId: string | null;
+  faviconAssetId: string | null;
+  socialImageAssetId: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  contactAddress: string | null;
+  publicUrl: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  headerNavigation: { label: string; href: string }[];
+  footerLinks: { label: string; href: string }[];
+  footerCopyright: string | null;
+  filingInfo: string | null;
+  version: number;
+  updatedAt: string | null;
+  assets: Record<string, PresentationAsset>;
+}
+
+export type PresentationUpdate = Omit<
+  PresentationProfile,
+  'id' | 'version' | 'updatedAt' | 'assets'
+> & { changeReason?: string };
+
 export interface AssetUploadIntent {
   asset: StorageAsset;
   upload: {
@@ -506,6 +546,20 @@ export async function updateAccessRole(
 
 export async function fetchSystemSettings(): Promise<SystemSetting[]> {
   return (await apiRequest<{ items: SystemSetting[] }>('/api/system/settings')).items;
+}
+
+export async function fetchPresentation(): Promise<PresentationProfile> {
+  return (await apiRequest<{ presentation: PresentationProfile }>('/api/presentation'))
+    .presentation;
+}
+
+export async function updatePresentation(input: PresentationUpdate): Promise<PresentationProfile> {
+  return (
+    await apiRequest<{ presentation: PresentationProfile }>('/api/presentation', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    })
+  ).presentation;
 }
 
 export async function updateSystemSetting(

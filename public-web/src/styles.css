@@ -4,6 +4,9 @@
 @import '@lingcoo/frame-ui/styles.css';
 
 :root {
+  --site-primary: #315f47;
+  --site-secondary: #b9efc5;
+  --site-accent: #39735a;
   color: #17211c;
   background: #f5f7f4;
   font-family:
@@ -64,8 +67,14 @@ a {
   color: #183323;
   font-weight: 800;
   letter-spacing: -0.06em;
-  background: #b9efc5;
+  background: var(--site-secondary);
   border-radius: 10px;
+}
+
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brand strong,

@@ -3,6 +3,8 @@ export const basePermissions = [
   'system.runtime.read',
   'system.settings.read',
   'system.settings.write',
+  'presentation.read',
+  'presentation.write',
   'iam.accounts.read',
   'iam.accounts.write',
   'iam.roles.read',

@@ -548,3 +548,64 @@ export const storageAssetReferences = pgTable(
     index('storage_asset_references_asset_idx').on(table.assetId),
   ],
 );
+
+export const presentationProfiles = pgTable('presentation_profiles', {
+  id: text('id').primaryKey().default('default'),
+  displayName: text('display_name').notNull().default('Lingcoo Frame'),
+  shortName: text('short_name'),
+  slogan: text('slogan'),
+  fullLogoAssetId: uuid('full_logo_asset_id').references(() => storageAssets.id, {
+    onDelete: 'restrict',
+  }),
+  squareLogoAssetId: uuid('square_logo_asset_id').references(() => storageAssets.id, {
+    onDelete: 'restrict',
+  }),
+  darkLogoAssetId: uuid('dark_logo_asset_id').references(() => storageAssets.id, {
+    onDelete: 'restrict',
+  }),
+  faviconAssetId: uuid('favicon_asset_id').references(() => storageAssets.id, {
+    onDelete: 'restrict',
+  }),
+  socialImageAssetId: uuid('social_image_asset_id').references(() => storageAssets.id, {
+    onDelete: 'restrict',
+  }),
+  primaryColor: text('primary_color').notNull().default('#315f47'),
+  secondaryColor: text('secondary_color').notNull().default('#b9efc5'),
+  accentColor: text('accent_color').notNull().default('#39735a'),
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  contactAddress: text('contact_address'),
+  publicUrl: text('public_url'),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
+  headerNavigation: jsonb('header_navigation')
+    .$type<Array<Record<string, unknown>>>()
+    .notNull()
+    .default([]),
+  footerLinks: jsonb('footer_links').$type<Array<Record<string, unknown>>>().notNull().default([]),
+  footerCopyright: text('footer_copyright'),
+  filingInfo: text('filing_info'),
+  version: integer('version').notNull().default(1),
+  updatedBy: uuid('updated_by').references(() => accounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const presentationProfileVersions = pgTable(
+  'presentation_profile_versions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    profileId: text('profile_id').notNull(),
+    version: integer('version').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+    changeReason: text('change_reason'),
+    changedBy: uuid('changed_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('presentation_profile_versions_profile_version_idx').on(
+      table.profileId,
+      table.version,
+    ),
+  ],
+);

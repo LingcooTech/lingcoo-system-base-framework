@@ -1,7 +1,7 @@
 import { TooltipProvider } from '@lingcoo/frame-ui/tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { fetchSystemSettings, fetchUnreadNotificationCount } from '../../api/client';
+import { fetchPresentation, fetchUnreadNotificationCount } from '../../api/client';
 import { useAuth } from '../../lib/auth';
 import { getSectionByPath, sectionList } from '../../lib/foundation';
 import { useRouter } from '../../lib/router';
@@ -25,6 +25,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [brandName, setBrandName] = useState('Lingcoo Base');
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
@@ -32,6 +33,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const canSearch = hasPermission('search.use');
   const canReadNotifications = hasPermission('notifications.read');
   const canReadSettings = hasPermission('system.settings.read');
+  const canReadPresentation = hasPermission('presentation.read');
 
   useEffect(() => {
     if (!canReadNotifications) return;
@@ -41,14 +43,15 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [canReadNotifications, pathname]);
 
   useEffect(() => {
-    if (!canReadSettings) return;
-    fetchSystemSettings()
-      .then((settings) => {
-        const systemName = settings.find((setting) => setting.key === 'general.system_name')?.value;
-        if (systemName?.trim()) setBrandName(systemName.trim());
+    if (!canReadPresentation) return;
+    fetchPresentation()
+      .then((presentation) => {
+        setBrandName(presentation.displayName);
+        const logoId = presentation.squareLogoAssetId ?? presentation.fullLogoAssetId;
+        setBrandLogoUrl(logoId ? (presentation.assets[logoId]?.publicUrl ?? null) : null);
       })
       .catch(() => undefined);
-  }, [canReadSettings]);
+  }, [canReadPresentation]);
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
@@ -96,6 +99,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Sidebar
             account={account}
             brandName={brandName}
+            brandLogoUrl={brandLogoUrl}
             canReadNotifications={canReadNotifications}
             canReadSettings={canReadSettings}
             collapsed={collapsed && !mobileOpen}

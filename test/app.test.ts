@@ -95,6 +95,13 @@ test('asset library routes require authentication', async () => {
   await app.close();
 });
 
+test('brand presentation management requires authentication', async () => {
+  const app = await buildApp(testEnv());
+  const response = await app.inject({ method: 'GET', url: '/api/presentation' });
+  assert.equal(response.statusCode, 401);
+  await app.close();
+});
+
 test('metadata, search and data exchange routes require authentication', async () => {
   const app = await buildApp(testEnv());
   const [metadata, search, datasets] = await Promise.all([

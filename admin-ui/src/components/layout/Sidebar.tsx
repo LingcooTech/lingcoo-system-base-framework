@@ -18,6 +18,7 @@ function groupSections(sections: SectionMeta[]) {
 export function Sidebar({
   account,
   brandName,
+  brandLogoUrl,
   canReadNotifications,
   canReadSettings,
   collapsed,
@@ -30,6 +31,7 @@ export function Sidebar({
 }: {
   account: AuthAccount;
   brandName: string;
+  brandLogoUrl: string | null;
   canReadNotifications: boolean;
   canReadSettings: boolean;
   collapsed: boolean;
@@ -47,7 +49,7 @@ export function Sidebar({
       <div className="sidebar-header">
         <div className="brand">
           <span className="brand-mark" aria-hidden>
-            <Layers3 size={18} />
+            {brandLogoUrl ? <img alt="" src={brandLogoUrl} /> : <Layers3 size={18} />}
           </span>
           {!collapsed ? (
             <span className="brand-copy">
