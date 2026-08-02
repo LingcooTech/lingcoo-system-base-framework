@@ -4,6 +4,7 @@ import {
   Images,
   ListChecks,
   PlugZap,
+  ScrollText,
   Settings2,
   ShieldCheck,
   Waypoints,
@@ -18,6 +19,7 @@ export type SectionKey =
   | 'assets'
   | 'operations'
   | 'notifications'
+  | 'audit'
   | 'settings';
 
 export interface SectionMeta {
@@ -60,7 +62,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '7', note: '含 jobs · notifications · assets' },
+      { label: '内置模块', value: '9', note: '含 settings · audit · assets' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -134,6 +136,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
       { label: '邮件投递', value: 'Async', note: 'SMTP Provider · Worker' },
     ],
   },
+  audit: {
+    id: 'audit',
+    group: '系统',
+    title: '审计中心',
+    navLabel: '审计日志',
+    description: '查询跨模块的关键操作记录、资源上下文和操作者。',
+    href: '/audit',
+    icon: ScrollText,
+    permission: 'audit.read',
+    context: [
+      { label: '记录方式', value: 'Append only', note: '业务操作只追加审计事件' },
+      { label: '查询维度', value: 'Structured', note: '动作 · 资源 · 操作者 · 时间' },
+    ],
+  },
   settings: {
     id: 'settings',
     group: '系统',
@@ -144,8 +160,8 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Settings2,
     permission: 'system.settings.read',
     context: [
-      { label: '配置方式', value: 'Environment', note: '运行配置由环境注入' },
-      { label: '数据基础', value: 'PostgreSQL', note: 'Drizzle 管理 schema 和迁移' },
+      { label: '配置方式', value: 'Typed registry', note: '只允许登记过的非敏感设置' },
+      { label: '变更历史', value: 'Versioned', note: '每次保存保留操作者与原因' },
     ],
   },
 };

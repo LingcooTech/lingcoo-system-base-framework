@@ -787,6 +787,170 @@ a {
   text-transform: uppercase;
 }
 
+.setting-cards {
+  display: grid;
+}
+
+.setting-card {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) minmax(180px, 0.8fr) auto;
+  gap: 22px;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.setting-card:last-child {
+  border-bottom: 0;
+}
+
+.setting-card > div:first-child,
+.setting-value {
+  display: grid;
+  gap: 5px;
+}
+
+.setting-card strong,
+.setting-value span {
+  color: #334138;
+  font-size: 12px;
+}
+
+.setting-card p,
+.setting-card code,
+.setting-value small {
+  margin: 0;
+  color: #7d8981;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.setting-card code {
+  color: #668073;
+}
+
+.setting-history {
+  display: grid;
+  gap: 0;
+}
+
+.setting-history article {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.6fr) minmax(120px, 0.5fr) minmax(220px, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.setting-history article > div {
+  display: grid;
+  gap: 4px;
+}
+
+.setting-history small,
+.setting-history p,
+.setting-history code {
+  margin: 0;
+  color: #77837b;
+  font-size: 11px;
+}
+
+.audit-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.6fr) auto auto;
+  gap: 10px;
+  padding: 14px 24px;
+  background: #fafcfa;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.audit-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  color: #78847c;
+  font-size: 11px;
+  border-top: 1px solid #edf0ed;
+}
+
+.audit-detail {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.audit-detail > div {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.audit-detail dt {
+  color: #78847c;
+  font-size: 11px;
+}
+
+.audit-detail dd {
+  min-width: 0;
+  margin: 0;
+  color: #34433a;
+  font-size: 12px;
+}
+
+.audit-detail pre {
+  overflow: auto;
+  max-height: 260px;
+  margin: 0;
+  padding: 14px;
+  color: #dce9df;
+  background: #17241e;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.permission-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.permission-fieldset {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #e1e7e2;
+  border-radius: 11px;
+}
+
+.permission-fieldset legend {
+  padding: 0 5px;
+  color: #53645a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .setting-card,
+  .setting-history article,
+  .audit-toolbar,
+  .permission-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .setting-card .integration-actions {
+    justify-content: flex-start;
+  }
+}
+
 .integration-event-list {
   display: grid;
 }

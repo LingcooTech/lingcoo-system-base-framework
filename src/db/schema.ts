@@ -107,18 +107,46 @@ export const systemSettings = pgTable('system_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   key: text('key').notNull().unique(),
   value: jsonb('value').notNull(),
+  version: integer('version').notNull().default(1),
+  updatedBy: uuid('updated_by').references(() => accounts.id, { onDelete: 'set null' }),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const auditLogs = pgTable('audit_logs', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  action: text('action').notNull(),
-  resourceType: text('resource_type').notNull(),
-  resourceId: text('resource_id'),
-  actorId: text('actor_id'),
-  metadata: jsonb('metadata'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const systemSettingVersions = pgTable(
+  'system_setting_versions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    settingKey: text('setting_key').notNull(),
+    version: integer('version').notNull(),
+    value: jsonb('value').notNull(),
+    changeReason: text('change_reason'),
+    changedBy: uuid('changed_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('system_setting_versions_key_version_idx').on(table.settingKey, table.version),
+    index('system_setting_versions_key_created_idx').on(table.settingKey, table.createdAt),
+  ],
+);
+
+export const auditLogs = pgTable(
+  'audit_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    action: text('action').notNull(),
+    resourceType: text('resource_type').notNull(),
+    resourceId: text('resource_id'),
+    actorId: text('actor_id'),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('audit_logs_created_at_idx').on(table.createdAt),
+    index('audit_logs_action_created_idx').on(table.action, table.createdAt),
+    index('audit_logs_resource_created_idx').on(table.resourceType, table.createdAt),
+    index('audit_logs_actor_created_idx').on(table.actorId, table.createdAt),
+  ],
+);
 
 export const integrationConnections = pgTable(
   'integration_connections',

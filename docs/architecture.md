@@ -95,8 +95,9 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 
 基础层当前包含：
 
-- `system_settings`：系统级键值配置的持久化位置
-- `audit_logs`：共享审计事件
+- `system_settings`：登记过的非敏感系统设置当前值
+- `system_setting_versions`：系统设置的不可变版本历史
+- `audit_logs`：可按动作、资源、操作者和时间查询的共享审计事件
 - `accounts` / `password_credentials`：账号与登录凭据
 - `auth_sessions`：可撤销登录会话
 - `roles` / `permissions`：通用角色权限目录
@@ -113,7 +114,7 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 
 这些表不包含行业业务。
 
-敏感系统设置使用带版本号的 AES-256-GCM envelope 写入 `system_settings`。密钥只来自运行环境，不进入数据库或 API 响应；读取端支持 keyring，便于在不中断既有配置读取的前提下轮换密钥。`audit_logs` 通过统一写入函数记录操作者、动作、资源和上下文，领域模块不直接拼装表字段。
+`system_settings` 只接受代码注册表中声明的非敏感键，并在写入前执行类型校验；每次变更同步追加到 `system_setting_versions`，保留版本、操作者与变更原因。部署密钥来自运行环境，Provider 凭据使用 AES-256-GCM 加密并存入独立连接表，不进入普通设置接口。`audit_logs` 通过统一写入函数记录操作者、动作、资源和安全上下文，领域模块不直接拼装表字段，也不得写入密码、令牌或 Provider 密钥。
 
 ### 外部集成
 

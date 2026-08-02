@@ -40,6 +40,41 @@ export interface AccessPermission {
   description: string | null;
 }
 
+export interface SystemSetting {
+  key: string;
+  group: 'general' | 'localization';
+  groupLabel: string;
+  label: string;
+  description: string;
+  type: 'text' | 'email' | 'url' | 'select';
+  defaultValue: string;
+  options?: { label: string; value: string }[];
+  value: string;
+  isDefault: boolean;
+  version: number;
+  updatedAt: string | null;
+}
+
+export interface SystemSettingVersion {
+  id: string;
+  version: number;
+  value: string;
+  changeReason: string | null;
+  createdAt: string;
+  actor: { id: string; email: string; displayName: string } | null;
+}
+
+export interface AuditItem {
+  id: string;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  actorId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+  actor: { id: string; email: string; displayName: string } | null;
+}
+
 export interface IntegrationField {
   key: string;
   label: string;
@@ -250,6 +285,80 @@ export async function fetchAccessRoles(): Promise<AccessRole[]> {
 
 export async function fetchAccessPermissions(): Promise<AccessPermission[]> {
   return (await apiRequest<{ items: AccessPermission[] }>('/api/access/permissions')).items;
+}
+
+export async function createAccessAccount(input: {
+  email: string;
+  displayName: string;
+  password: string;
+  roleCodes: string[];
+}): Promise<void> {
+  await apiRequest('/api/access/accounts', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updateAccessAccount(
+  accountId: string,
+  input: { displayName?: string; status?: 'active' | 'suspended'; roleCodes?: string[] },
+): Promise<void> {
+  await apiRequest(`/api/access/accounts/${accountId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function createAccessRole(input: {
+  code: string;
+  name: string;
+  description?: string;
+  permissions: string[];
+}): Promise<void> {
+  await apiRequest('/api/access/roles', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updateAccessRole(
+  roleId: string,
+  input: { name?: string; description?: string; permissions?: string[] },
+): Promise<void> {
+  await apiRequest(`/api/access/roles/${roleId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchSystemSettings(): Promise<SystemSetting[]> {
+  return (await apiRequest<{ items: SystemSetting[] }>('/api/system/settings')).items;
+}
+
+export async function updateSystemSetting(
+  key: string,
+  value: string,
+  reason?: string,
+): Promise<void> {
+  await apiRequest(`/api/system/settings/${encodeURIComponent(key)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ value, ...(reason ? { reason } : {}) }),
+  });
+}
+
+export async function fetchSystemSettingHistory(key: string): Promise<SystemSettingVersion[]> {
+  return (
+    await apiRequest<{ items: SystemSettingVersion[] }>(
+      `/api/system/settings/${encodeURIComponent(key)}/history`,
+    )
+  ).items;
+}
+
+export async function fetchAuditItems(filters?: {
+  search?: string;
+  resourceType?: string;
+  page?: number;
+}): Promise<{ items: AuditItem[]; total: number; page: number; pageSize: number }> {
+  const params = new URLSearchParams();
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.resourceType) params.set('resourceType', filters.resourceType);
+  if (filters?.page) params.set('page', String(filters.page));
+  const query = params.size ? `?${params.toString()}` : '';
+  return apiRequest(`/api/audit${query}`);
 }
 
 export async function fetchIntegrationProviders(): Promise<IntegrationProvider[]> {

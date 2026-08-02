@@ -1,0 +1,249 @@
+import { Button } from '@lingcoo/frame-ui/button';
+import { Dialog, DialogContent, DialogHeader } from '@lingcoo/frame-ui/dialog';
+import { Input } from '@lingcoo/frame-ui/input';
+import { useEffect, useState, type FormEvent } from 'react';
+
+import { fetchAuditItems, type AuditItem } from '../api/client';
+import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
+import { PageFrame } from '../components/shared/PageFrame';
+import { ResourceSection } from '../components/shared/ResourceSection';
+import { StatusPill } from '../components/shared/StatusPill';
+import { sections } from '../lib/foundation';
+
+function actionLabel(action: string): string {
+  const labels: Record<string, string> = {
+    'iam.account_created': '创建账号',
+    'iam.account_updated': '更新账号',
+    'iam.role_created': '创建角色',
+    'iam.role_updated': '更新角色',
+    'system.setting_updated': '更新设置',
+    'auth.login_succeeded': '登录成功',
+    'auth.password_changed': '修改密码',
+  };
+  return labels[action] ?? action;
+}
+
+export function AuditPage() {
+  const [items, setItems] = useState<AuditItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
+  const [resourceType, setResourceType] = useState('');
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<AuditItem | null>(null);
+  const [error, setError] = useState('');
+
+  async function load(nextPage = 1, filters?: { search?: string; resourceType?: string }) {
+    try {
+      const result = await fetchAuditItems({ ...filters, page: nextPage });
+      setItems(result.items);
+      setTotal(result.total);
+      setPage(result.page);
+      setError('');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '审计日志加载失败');
+    }
+  }
+
+  useEffect(() => {
+    fetchAuditItems()
+      .then((result) => {
+        setItems(result.items);
+        setTotal(result.total);
+      })
+      .catch(() => setError('审计日志加载失败'));
+  }, []);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void load(1, { search, resourceType });
+  }
+
+  const totalPages = Math.max(1, Math.ceil(total / 30));
+
+  const columns: DataTableColumn<AuditItem>[] = [
+    {
+      key: 'action',
+      header: '事件',
+      cell: (item) => (
+        <div className="table-primary">
+          <strong>{actionLabel(item.action)}</strong>
+          <small>{item.action}</small>
+        </div>
+      ),
+    },
+    {
+      key: 'resource',
+      header: '资源',
+      cell: (item) => (
+        <div className="table-primary">
+          <strong>{item.resourceType}</strong>
+          <small>{item.resourceId ?? '无资源 ID'}</small>
+        </div>
+      ),
+    },
+    {
+      key: 'actor',
+      header: '操作者',
+      cell: (item) =>
+        item.actor ? (
+          <div className="table-primary">
+            <strong>{item.actor.displayName}</strong>
+            <small>{item.actor.email}</small>
+          </div>
+        ) : (
+          <StatusPill tone="neutral">系统</StatusPill>
+        ),
+    },
+    {
+      key: 'time',
+      header: '时间',
+      cell: (item) => new Date(item.createdAt).toLocaleString('zh-CN'),
+    },
+    {
+      key: 'actions',
+      header: '操作',
+      align: 'right',
+      cell: (item) => (
+        <Button onClick={() => setSelected(item)} size="sm" variant="ghost">
+          详情
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <PageFrame section={sections.audit}>
+      <div className="metric-grid access-metrics">
+        <article className="metric-card">
+          <span>审计事件</span>
+          <strong>{total}</strong>
+          <small>按发生时间倒序保留</small>
+        </article>
+        <article className="metric-card">
+          <span>当前页</span>
+          <strong>{items.length}</strong>
+          <small>默认加载最近 30 条</small>
+        </article>
+        <article className="metric-card">
+          <span>数据内容</span>
+          <strong>Metadata</strong>
+          <small>禁止写入密钥和密码</small>
+        </article>
+        <article className="metric-card">
+          <span>访问控制</span>
+          <strong>audit.read</strong>
+          <small>独立审计权限</small>
+        </article>
+      </div>
+      {error ? <p className="integration-notice error">{error}</p> : null}
+      <ResourceSection
+        title="操作记录"
+        description="统一追踪身份、设置、集成、任务、通知和资产等基础能力的关键变更。"
+      >
+        <form className="audit-toolbar" onSubmit={submit}>
+          <Input
+            aria-label="搜索审计记录"
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="搜索动作、资源类型或资源 ID"
+            value={search}
+          />
+          <Input
+            aria-label="资源类型"
+            onChange={(event) => setResourceType(event.target.value)}
+            placeholder="资源类型，如 account"
+            value={resourceType}
+          />
+          <Button size="sm" type="submit">
+            查询
+          </Button>
+          <Button
+            onClick={() => {
+              setSearch('');
+              setResourceType('');
+              void load(1);
+            }}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            重置
+          </Button>
+        </form>
+        <DataTable
+          columns={columns}
+          emptyTitle="暂无审计记录"
+          getRowKey={(item) => item.id}
+          rows={items}
+        />
+        <div className="audit-pagination">
+          <span>
+            第 {page} / {totalPages} 页 · 共 {total} 条
+          </span>
+          <div className="integration-actions">
+            <Button
+              disabled={page <= 1}
+              onClick={() => void load(page - 1, { search, resourceType })}
+              size="sm"
+              variant="ghost"
+            >
+              上一页
+            </Button>
+            <Button
+              disabled={page >= totalPages}
+              onClick={() => void load(page + 1, { search, resourceType })}
+              size="sm"
+              variant="ghost"
+            >
+              下一页
+            </Button>
+          </div>
+        </div>
+      </ResourceSection>
+      <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent
+          header={
+            <DialogHeader
+              title={selected ? actionLabel(selected.action) : '审计详情'}
+              description={selected?.action}
+            />
+          }
+        >
+          {selected ? (
+            <dl className="audit-detail">
+              <div>
+                <dt>事件 ID</dt>
+                <dd>
+                  <code>{selected.id}</code>
+                </dd>
+              </div>
+              <div>
+                <dt>资源</dt>
+                <dd>
+                  {selected.resourceType} · {selected.resourceId ?? '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>操作者</dt>
+                <dd>
+                  {selected.actor
+                    ? `${selected.actor.displayName} · ${selected.actor.email}`
+                    : (selected.actorId ?? '系统')}
+                </dd>
+              </div>
+              <div>
+                <dt>发生时间</dt>
+                <dd>{new Date(selected.createdAt).toLocaleString('zh-CN')}</dd>
+              </div>
+              <div>
+                <dt>元数据</dt>
+                <dd>
+                  <pre>{JSON.stringify(selected.metadata ?? {}, null, 2)}</pre>
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </PageFrame>
+  );
+}
