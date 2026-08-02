@@ -36,6 +36,10 @@ const envSchema = z
     WORKER_STALE_TIMEOUT_MS: z.coerce.number().int().min(10_000).max(3_600_000).default(300_000),
     WORKER_HEALTH_PORT: z.coerce.number().int().positive().default(8091),
     LOG_LEVEL: logLevelSchema.default('info'),
+    METRICS_BEARER_TOKEN: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(24).optional(),
+    ),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV === 'production' && !env.DATABASE_URL.startsWith('postgres')) {

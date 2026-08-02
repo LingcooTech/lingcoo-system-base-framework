@@ -66,6 +66,7 @@ AUTH_BOOTSTRAP_EMAIL=<first-owner-email>
 AUTH_BOOTSTRAP_PASSWORD=<temporary-password-at-least-12-characters>
 AUTH_BOOTSTRAP_DISPLAY_NAME=系统所有者
 LOG_LEVEL=info
+METRICS_BEARER_TOKEN=<optional-at-least-24-random-characters>
 CADDY_SITE_ADDRESS=:80
 LINGCOO_BASE_HTTP_PORT=18093
 LINGCOO_BASE_HTTPS_PORT=18449
@@ -74,6 +75,9 @@ LINGCOO_BASE_HTTPS_PORT=18449
 `AUTH_BOOTSTRAP_EMAIL` and `AUTH_BOOTSTRAP_PASSWORD` are only needed until the
 first owner is created. Remove the bootstrap password from `.env` after the
 first successful deployment; the owner must replace it on first login.
+
+`METRICS_BEARER_TOKEN` 为空时 `/metrics` 返回 404。需要接入 Prometheus 时再生成独立令牌，
+并使用 `Authorization: Bearer <token>` 抓取；不要复用登录密码、JWT 密钥或 Provider 凭据。
 
 The host Nginx terminates TLS for `frame.lingcoo.com` and proxies requests to
 `http://127.0.0.1:18093`.

@@ -138,6 +138,7 @@ export const auditLogs = pgTable(
     resourceType: text('resource_type').notNull(),
     resourceId: text('resource_id'),
     actorId: text('actor_id'),
+    requestId: text('request_id'),
     metadata: jsonb('metadata'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -146,6 +147,51 @@ export const auditLogs = pgTable(
     index('audit_logs_action_created_idx').on(table.action, table.createdAt),
     index('audit_logs_resource_created_idx').on(table.resourceType, table.createdAt),
     index('audit_logs_actor_created_idx').on(table.actorId, table.createdAt),
+    index('audit_logs_request_created_idx').on(table.requestId, table.createdAt),
+  ],
+);
+
+export const serviceHeartbeats = pgTable(
+  'service_heartbeats',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    serviceType: text('service_type').notNull(),
+    instanceId: text('instance_id').notNull(),
+    version: text('version').notNull(),
+    status: text('status').notNull().default('healthy'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('service_heartbeats_type_instance_idx').on(table.serviceType, table.instanceId),
+    index('service_heartbeats_type_seen_idx').on(table.serviceType, table.lastSeenAt),
+  ],
+);
+
+export const systemIncidents = pgTable(
+  'system_incidents',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    fingerprint: text('fingerprint').notNull().unique(),
+    category: text('category').notNull(),
+    title: text('title').notNull(),
+    severity: text('severity').notNull().default('error'),
+    status: text('status').notNull().default('open'),
+    serviceType: text('service_type').notNull(),
+    errorName: text('error_name').notNull(),
+    method: text('method'),
+    route: text('route'),
+    latestRequestId: text('latest_request_id'),
+    occurrenceCount: integer('occurrence_count').notNull().default(1),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    resolvedBy: uuid('resolved_by').references(() => accounts.id, { onDelete: 'set null' }),
+  },
+  (table) => [
+    index('system_incidents_status_seen_idx').on(table.status, table.lastSeenAt),
+    index('system_incidents_service_seen_idx').on(table.serviceType, table.lastSeenAt),
   ],
 );
 

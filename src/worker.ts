@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { createDatabase } from './db/client.js';
 import { recordAuditEvent } from './lib/audit.js';
 import { loadEnv } from './lib/env.js';
+import { serializeSafeError, writeServiceLog } from './lib/structured-log.js';
 import { createIntegrationProviderRegistry } from './modules/integrations/registry.js';
 import { QiniuService } from './modules/integrations/providers/qiniu-service.js';
 import { IntegrationService } from './modules/integrations/service.js';
@@ -13,11 +14,14 @@ import { JobService } from './modules/jobs/service.js';
 import { NotificationDeliveryService } from './modules/notifications/delivery.js';
 import { registerNotificationPolicies } from './modules/notifications/policies.js';
 import { NotificationService } from './modules/notifications/service.js';
+import { MetricsRegistry } from './modules/observability/metrics.js';
+import { ObservabilityService } from './modules/observability/service.js';
 import { assetDeleteJobPayloadSchema } from './modules/assets/schemas.js';
 import { AssetService } from './modules/assets/service.js';
 
 const env = loadEnv();
 const workerId = `worker_${randomUUID()}`;
+const workerStartedAt = new Date();
 const { db, pool } = createDatabase(env.DATABASE_URL);
 const jobs = new JobService(db);
 const outbox = new OutboxService(db);
@@ -31,6 +35,13 @@ const integrations = new IntegrationService(
 const delivery = new NotificationDeliveryService(db, integrations);
 const notifications = new NotificationService(db);
 const assets = new AssetService(db, new QiniuService(integrations));
+const observability = new ObservabilityService(db, new MetricsRegistry());
+const redactionSecrets = [
+  env.AUTH_JWT_SECRET,
+  env.SETTINGS_ENCRYPTION_KEY,
+  env.AUTH_BOOTSTRAP_PASSWORD,
+  env.METRICS_BEARER_TOKEN,
+];
 jobHandlers.register('notification.email.deliver', ({ payload }) => delivery.deliverEmail(payload));
 jobHandlers.register('storage.asset.delete', ({ payload }) =>
   assets.executeDelete(assetDeleteJobPayloadSchema.parse(payload).assetId),
@@ -43,6 +54,7 @@ registerNotificationPolicies(subscribers, notifications);
 let stopping = false;
 let lastLoopAt = new Date();
 let lastRecoveryAt = 0;
+let heartbeatTimer: NodeJS.Timeout | undefined;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -69,7 +81,11 @@ async function recoverStaleWork() {
     outbox.recoverStale(env.WORKER_STALE_TIMEOUT_MS),
   ]);
   if (jobCount + eventCount > 0) {
-    console.warn('[worker] recovered stale work', { jobCount, eventCount });
+    writeServiceLog('warn', 'worker', 'stale_work_recovered', {
+      instanceId: workerId,
+      jobCount,
+      eventCount,
+    });
   }
 }
 
@@ -86,11 +102,21 @@ async function processOutbox(): Promise<boolean> {
     });
     await outbox.markPublished(event.id);
   } catch (error) {
-    await outbox.markFailed(event, error);
-    console.error('[worker] outbox dispatch failed', {
+    const safeError = serializeSafeError(error, redactionSecrets);
+    await outbox.markFailed(event, new Error(safeError.message));
+    await observability
+      .captureIncident({
+        category: 'worker_error',
+        serviceType: 'worker',
+        error,
+        route: `outbox:${event.topic}`,
+      })
+      .catch(() => undefined);
+    writeServiceLog('error', 'worker', 'outbox_dispatch_failed', {
+      instanceId: workerId,
       eventId: event.id,
       topic: event.topic,
-      error,
+      error: safeError,
     });
   }
   return true;
@@ -113,7 +139,8 @@ async function processJob(): Promise<boolean> {
       metadata: { kind: job.kind, attempts: job.attempts, workerId },
     });
   } catch (error) {
-    const status = await jobs.markFailed(job, error);
+    const safeError = serializeSafeError(error, redactionSecrets);
+    const status = await jobs.markFailed(job, new Error(safeError.message));
     await recordAuditEvent(db, {
       action: status === 'dead' ? 'job.dead' : 'job.retry_scheduled',
       resourceType: 'job_run',
@@ -122,10 +149,26 @@ async function processJob(): Promise<boolean> {
         kind: job.kind,
         attempts: job.attempts,
         workerId,
-        error: (error instanceof Error ? error.message : 'Unknown job error').slice(0, 500),
+        errorName: safeError.name,
+        errorMessage: safeError.message.slice(0, 500),
       },
     });
-    console.error('[worker] job failed', { jobId: job.id, kind: job.kind, status, error });
+    await observability
+      .captureIncident({
+        category: 'worker_error',
+        serviceType: 'worker',
+        error,
+        route: `job:${job.kind}`,
+        severity: status === 'dead' ? 'critical' : 'error',
+      })
+      .catch(() => undefined);
+    writeServiceLog('error', 'worker', 'job_failed', {
+      instanceId: workerId,
+      jobId: job.id,
+      kind: job.kind,
+      status,
+      error: safeError,
+    });
   }
   return true;
 }
@@ -135,7 +178,26 @@ async function main() {
     healthServer.once('error', reject);
     healthServer.listen(env.WORKER_HEALTH_PORT, env.API_HOST, () => resolve());
   });
-  console.log(`[worker] started ${workerId}`);
+  const sendHeartbeat = (status: 'healthy' | 'stopping' | 'degraded' = 'healthy') =>
+    observability.heartbeat({
+      serviceType: 'worker',
+      instanceId: workerId,
+      version: env.APP_VERSION,
+      status,
+      startedAt: workerStartedAt,
+      metadata: { lastLoopAt: lastLoopAt.toISOString() },
+    });
+  await sendHeartbeat();
+  heartbeatTimer = setInterval(() => {
+    void sendHeartbeat().catch((error) => {
+      writeServiceLog('warn', 'worker', 'heartbeat_failed', {
+        instanceId: workerId,
+        error: serializeSafeError(error, redactionSecrets),
+      });
+    });
+  }, 15_000);
+  heartbeatTimer.unref();
+  writeServiceLog('info', 'worker', 'started', { instanceId: workerId });
   while (!stopping) {
     lastLoopAt = new Date();
     await recoverStaleWork();
@@ -147,7 +209,18 @@ async function main() {
 function requestShutdown(signal: string) {
   if (stopping) return;
   stopping = true;
-  console.log(`[worker] stopping on ${signal}`);
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  writeServiceLog('info', 'worker', 'stopping', { instanceId: workerId, signal });
+  void observability
+    .heartbeat({
+      serviceType: 'worker',
+      instanceId: workerId,
+      version: env.APP_VERSION,
+      status: 'stopping',
+      startedAt: workerStartedAt,
+      metadata: { signal },
+    })
+    .catch(() => undefined);
   healthServer.close();
 }
 
@@ -156,7 +229,19 @@ process.on('SIGINT', () => requestShutdown('SIGINT'));
 
 main()
   .catch((error) => {
-    console.error('[worker] startup failed', error);
+    writeServiceLog('error', 'worker', 'startup_failed', {
+      instanceId: workerId,
+      error: serializeSafeError(error, redactionSecrets),
+    });
+    void observability
+      .captureIncident({
+        category: 'worker_error',
+        serviceType: 'worker',
+        error,
+        route: 'startup',
+        severity: 'critical',
+      })
+      .catch(() => undefined);
     process.exitCode = 1;
     requestShutdown('startup-error');
   })

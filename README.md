@@ -18,12 +18,13 @@
 - 治理基础：类型化非敏感系统设置、版本历史、统一审计写入与后台查询
 - 数据基础：类型化数据字典、层级分类、扁平标签、资源关联和版本化数据集交换
 - 统一搜索：权限感知的 Search Provider 注册表和 `⌘/Ctrl + K` 管理后台入口
+- 运行可观测性：Request ID、脱敏结构化日志、服务心跳、5xx 聚合和 Prometheus 指标
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
-`data-exchange`、`integrations`、`jobs`、`notifications` 和 `assets` 基础模块，没有商品、课程、
-订单、内容等领域概念。
+`data-exchange`、`integrations`、`jobs`、`notifications`、`assets` 和 `observability` 基础模块，
+没有商品、课程、订单、内容等领域概念。
 
 ## 架构来源
 
@@ -118,6 +119,7 @@ docker compose -f docker-compose.prod.yml up -d
 - [后台任务、Outbox 与通知](docs/jobs-notifications.md)
 - [文件与媒体资产中心](docs/media-assets.md)
 - [元数据、统一搜索与数据交换](docs/metadata-search-exchange.md)
+- [运行可观测性](docs/observability.md)
 - [领域扩展指南](docs/domain-extension.md)
 
 ## 当前边界
@@ -125,5 +127,5 @@ docker compose -f docker-compose.prod.yml up -d
 这是持续演进的空白业务框架。共享 UI、身份与 RBAC、类型化系统设置、可查询审计和外部集成
 生命周期已经进入基础层；SMTP、七牛云、支付宝、微信支付 API v3 与 OpenRouter 均已安装真实
 适配器。持久化任务、事务 Outbox、独立 Worker、站内通知、邮件投递、文件与媒体资产中心也已
-进入基础层；数据字典、分类标签、统一搜索和版本化 JSON 数据交换也已完成。日志、指标和链路追踪
-仍按成熟系统的共同约束分批进入框架。
+进入基础层；数据字典、分类标签、统一搜索和版本化 JSON 数据交换也已完成。Request ID、脱敏日志、
+API/Worker 心跳、错误聚合和 Prometheus 指标已经进入基础层；外部告警和分布式追踪保持可选适配器边界。

@@ -1,16 +1,11 @@
 import type { AppModule } from '../types.js';
-import { baseDatasetAdapters } from './adapters.js';
-import { DatasetRegistry } from './registry.js';
 import { datasetParamsSchema, exchangeRunsQuerySchema, importDocumentSchema } from './schemas.js';
 import { DataExchangeService } from './service.js';
 
 export const dataExchangeModule: AppModule = {
   name: 'data-exchange',
   register(app) {
-    const registry = new DatasetRegistry();
-    for (const adapter of baseDatasetAdapters) registry.register(adapter);
-    app.decorate('datasetRegistry', registry);
-    const service = new DataExchangeService(app.db, registry);
+    const service = new DataExchangeService(app.db, app.datasetRegistry);
     app.get(
       '/api/data-exchange/datasets',
       { preHandler: app.requirePermission('data_exchange.read') },

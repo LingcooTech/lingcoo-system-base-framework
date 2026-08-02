@@ -1176,6 +1176,33 @@ a {
   background: #fae7e5;
 }
 
+.observability-services {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.observability-service {
+  align-items: center;
+  border: 1px solid #e4e9e4;
+  border-radius: 14px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.observability-service > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.observability-service code,
+.observability-service small {
+  color: #78847c;
+  font-size: 12px;
+}
+
 .integration-form {
   display: grid;
   gap: 18px;

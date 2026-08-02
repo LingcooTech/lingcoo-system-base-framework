@@ -3,6 +3,7 @@ import type { AppEnv } from '../lib/env.js';
 import type { PermissionCode } from '../lib/rbac.js';
 import type { SearchProviderRegistry } from '../modules/search/registry.js';
 import type { DatasetRegistry } from '../modules/data-exchange/registry.js';
+import type { ObservabilityService } from '../modules/observability/service.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -10,6 +11,7 @@ declare module 'fastify' {
     db: Database;
     searchRegistry: SearchProviderRegistry;
     datasetRegistry: DatasetRegistry;
+    observability: ObservabilityService;
     authenticate: (request: import('fastify').FastifyRequest) => Promise<void>;
     requirePermission: (
       permission: PermissionCode | PermissionCode[],
@@ -17,6 +19,7 @@ declare module 'fastify' {
   }
 
   interface FastifyRequest {
+    metricsStartedAt: bigint | null;
     auth: {
       accountId: string;
       sessionId: string;

@@ -144,7 +144,7 @@ export function AuditPage() {
           <Input
             aria-label="搜索审计记录"
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="搜索动作、资源类型或资源 ID"
+            placeholder="搜索动作、资源或 Request ID"
             value={search}
           />
           <Input
@@ -220,6 +220,12 @@ export function AuditPage() {
                 <dt>资源</dt>
                 <dd>
                   {selected.resourceType} · {selected.resourceId ?? '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Request ID</dt>
+                <dd>
+                  <code>{selected.requestId ?? '—'}</code>
                 </dd>
               </div>
               <div>

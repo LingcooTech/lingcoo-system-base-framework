@@ -1,4 +1,5 @@
 import {
+  Activity,
   Bell,
   DatabaseZap,
   Gauge,
@@ -19,6 +20,7 @@ export type SectionKey =
   | 'integrations'
   | 'assets'
   | 'operations'
+  | 'observability'
   | 'notifications'
   | 'metadata'
   | 'audit'
@@ -64,7 +66,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '12', note: '含 metadata · search · data-exchange' },
+      { label: '内置模块', value: '13', note: '含 observability · search · data-exchange' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -122,6 +124,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '任务队列', value: 'PostgreSQL', note: '行锁领取 · 不丢失' },
       { label: '失败恢复', value: 'Backoff', note: '指数退避与人工重试' },
+    ],
+  },
+  observability: {
+    id: 'observability',
+    group: '运行',
+    title: '运行状态',
+    navLabel: '运行监控',
+    description: '查看 API、Worker、数据库、请求指标与聚合异常的实时状态。',
+    href: '/observability',
+    icon: Activity,
+    permission: 'observability.read',
+    context: [
+      { label: '关联标识', value: 'Request ID', note: '贯穿响应 · 日志 · 审计 · 异常' },
+      { label: '指标出口', value: 'Prometheus', note: '独立令牌保护 · 可按需启用' },
     ],
   },
   notifications: {

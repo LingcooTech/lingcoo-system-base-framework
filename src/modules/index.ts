@@ -7,6 +7,7 @@ import { integrationsModule } from './integrations/index.js';
 import { jobsModule } from './jobs/index.js';
 import { metadataModule } from './metadata/index.js';
 import { notificationsModule } from './notifications/index.js';
+import { observabilityModule } from './observability/index.js';
 import { searchModule } from './search/index.js';
 import { settingsModule } from './settings/index.js';
 import { systemModule } from './system/index.js';
@@ -21,6 +22,7 @@ export const appModules: AppModule[] = [
   metadataModule,
   dataExchangeModule,
   searchModule,
+  observabilityModule,
   integrationsModule,
   assetsModule,
   jobsModule,

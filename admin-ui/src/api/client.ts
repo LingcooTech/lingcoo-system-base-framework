@@ -70,9 +70,68 @@ export interface AuditItem {
   resourceType: string;
   resourceId: string | null;
   actorId: string | null;
+  requestId: string | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
   actor: { id: string; email: string; displayName: string } | null;
+}
+
+export interface ObservabilitySummary {
+  runtime: {
+    startedAt: string;
+    uptimeSeconds: number;
+    activeRequests: number;
+    requestCount: number;
+    errorCount: number;
+    errorRate: number;
+    averageDurationMs: number;
+    p95DurationMs: number;
+    memoryRssBytes: number;
+    heapUsedBytes: number;
+  };
+  incidents: { open: number; resolved: number };
+  services: ObservabilityServiceStatus[];
+  database: { status: 'healthy' | 'unavailable'; latencyMs: number };
+  metricsEndpointEnabled: boolean;
+}
+
+export interface ObservabilityServiceStatus {
+  id: string;
+  serviceType: 'api' | 'worker';
+  instanceId: string;
+  version: string;
+  status: 'healthy' | 'stopping' | 'degraded';
+  metadata: Record<string, unknown>;
+  startedAt: string;
+  lastSeenAt: string;
+  fresh: boolean;
+}
+
+export interface RequestMetric {
+  method: string;
+  route: string;
+  requestCount: number;
+  errorCount: number;
+  averageDurationMs: number;
+  maxDurationMs: number;
+}
+
+export interface SystemIncident {
+  id: string;
+  category: 'request_error' | 'worker_error';
+  title: string;
+  severity: 'error' | 'critical';
+  status: 'open' | 'resolved';
+  serviceType: 'api' | 'worker';
+  errorName: string;
+  method: string | null;
+  route: string | null;
+  latestRequestId: string | null;
+  occurrenceCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  resolvedAt: string | null;
+  resolvedBy: { id: string; email: string; displayName: string } | null;
 }
 
 export interface MetadataSummary {
@@ -343,6 +402,28 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
 
 export function fetchRuntime(): Promise<RuntimeInfo> {
   return apiRequest<RuntimeInfo>('/api/system/runtime');
+}
+
+export function fetchObservabilitySummary(): Promise<ObservabilitySummary> {
+  return apiRequest('/api/observability/summary');
+}
+
+export async function fetchRequestMetrics(): Promise<RequestMetric[]> {
+  return (await apiRequest<{ items: RequestMetric[] }>('/api/observability/requests')).items;
+}
+
+export async function fetchSystemIncidents(): Promise<SystemIncident[]> {
+  return (await apiRequest<{ items: SystemIncident[] }>('/api/observability/incidents')).items;
+}
+
+export async function updateSystemIncident(
+  incidentId: string,
+  status: 'open' | 'resolved',
+): Promise<void> {
+  await apiRequest(`/api/observability/incidents/${incidentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
 }
 
 export async function login(email: string, password: string): Promise<AuthAccount> {

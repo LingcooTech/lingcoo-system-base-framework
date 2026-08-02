@@ -14,6 +14,8 @@ export const basePermissions = [
   'search.use',
   'data_exchange.read',
   'data_exchange.write',
+  'observability.read',
+  'observability.manage',
   'integrations.read',
   'integrations.write',
   'jobs.read',

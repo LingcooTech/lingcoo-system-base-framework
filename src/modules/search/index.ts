@@ -1,16 +1,11 @@
 import type { AppModule } from '../types.js';
-import { baseSearchProviders } from './providers.js';
-import { SearchProviderRegistry } from './registry.js';
 import { searchQuerySchema } from './schemas.js';
 import { SearchService } from './service.js';
 
 export const searchModule: AppModule = {
   name: 'search',
   register(app) {
-    const registry = new SearchProviderRegistry();
-    for (const provider of baseSearchProviders) registry.register(provider);
-    app.decorate('searchRegistry', registry);
-    const service = new SearchService(app.db, registry);
+    const service = new SearchService(app.db, app.searchRegistry);
     app.get(
       '/api/search/sources',
       { preHandler: app.requirePermission('search.use') },

@@ -26,6 +26,7 @@ export class AuditService {
         ilike(auditLogs.action, pattern),
         ilike(auditLogs.resourceType, pattern),
         ilike(auditLogs.resourceId, pattern),
+        ilike(auditLogs.requestId, pattern),
       );
       if (searchCondition) conditions.push(searchCondition);
     }
@@ -49,6 +50,7 @@ export class AuditService {
         resourceType: auditLogs.resourceType,
         resourceId: auditLogs.resourceId,
         actorId: auditLogs.actorId,
+        requestId: auditLogs.requestId,
         metadata: auditLogs.metadata,
         createdAt: auditLogs.createdAt,
         actor: {
@@ -74,6 +76,7 @@ export class AuditService {
         resourceType: auditLogs.resourceType,
         resourceId: auditLogs.resourceId,
         actorId: auditLogs.actorId,
+        requestId: auditLogs.requestId,
         metadata: auditLogs.metadata,
         createdAt: auditLogs.createdAt,
         actor: {

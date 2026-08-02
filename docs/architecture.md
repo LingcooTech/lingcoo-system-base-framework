@@ -48,6 +48,7 @@ src/
     assets/            文件身份、上传意图、引用与删除生命周期
     jobs/              持久化任务、Outbox 与处理器注册表
     notifications/     站内通知、公告策略与邮件投递
+    observability/      请求指标、服务心跳与异常聚合
     index.ts            模块组合根
 drizzle/               有序 SQL 迁移
 deploy/                入口代理配置
@@ -114,6 +115,8 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `taxonomies` / `taxonomy_terms`：层级分类或扁平标签及其词条
 - `resource_terms`：领域资源到分类词条的通用关联
 - `data_exchange_runs`：注册数据集的导入导出结果与摘要
+- `service_heartbeats`：API 与 Worker 实例的最新运行心跳
+- `system_incidents`：按安全指纹聚合的 API 与 Worker 异常
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
@@ -153,6 +156,14 @@ AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用
 JSON 适配器，执行版本校验、引用预检、事务 Upsert、运行记录和审计。完整约束见
 [元数据、统一搜索与数据交换](metadata-search-exchange.md)。
 
+### 运行可观测性
+
+每个 HTTP 请求都有可校验或自动生成的 Request ID，并通过响应头、结构化日志、审计事件和 5xx
+异常分组贯通。API 与 Worker 每 15 秒写入心跳；管理后台展示服务新鲜度、数据库探测、进程内请求
+计数与耗时。`/metrics` 只在配置独立令牌后开放 Prometheus 文本，不复用管理员会话。异常记录只
+保留错误类型、路由、次数和关联 ID，不持久化请求体、堆栈或凭据。完整约束见
+[运行可观测性](observability.md)。
+
 ### 部署
 
 开发拓扑只启动 PostgreSQL，API、Worker 和两个 Web 应用由本机 Node.js 进程运行。生产拓扑包含：
@@ -183,8 +194,8 @@ src/modules/catalog/
 
 ## 6. 暂不纳入的能力
 
-以下能力很可能是共享能力，但需要在 Core、Edu、Retail 的真实实现中继续对照后再固化：
+以下能力保持可选扩展，只有具体系统确有跨服务需求时才接入：
 
-- 日志、指标和链路追踪
+- 外部指标存储、告警通知和分布式追踪 Exporter
 
-第一阶段保留接入位置，不提前选择无法被成熟系统共同验证的抽象。
+基础框架不强制依赖 Sentry、Grafana、OpenTelemetry Collector 或云监控。

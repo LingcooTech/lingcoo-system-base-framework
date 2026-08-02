@@ -7,6 +7,7 @@ import sensible from '@fastify/sensible';
 import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
 import { existsSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ZodError } from 'zod';
@@ -14,8 +15,17 @@ import { ZodError } from 'zod';
 import { createDatabase } from './db/client.js';
 import type { AppEnv } from './lib/env.js';
 import { hasAnyPermission, type PermissionCode } from './lib/rbac.js';
+import { runWithRequestContext, setRequestActor } from './lib/request-context.js';
+import { serializeSafeError } from './lib/structured-log.js';
 import { appModules } from './modules/index.js';
 import { AuthRepository } from './modules/auth/repository.js';
+import { baseDatasetAdapters } from './modules/data-exchange/adapters.js';
+import { DatasetRegistry } from './modules/data-exchange/registry.js';
+import { installObservability } from './modules/observability/index.js';
+import { MetricsRegistry } from './modules/observability/metrics.js';
+import { ObservabilityService } from './modules/observability/service.js';
+import { baseSearchProviders } from './modules/search/providers.js';
+import { SearchProviderRegistry } from './modules/search/registry.js';
 
 const sourceDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,13 +50,44 @@ function resolveJwtSecret(env: AppEnv): string {
 
 export async function buildApp(env: AppEnv) {
   const app = Fastify({
-    logger: { level: env.LOG_LEVEL },
+    logger: {
+      level: env.LOG_LEVEL,
+      redact: {
+        paths: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'res.headers.set-cookie',
+          '*.password',
+          '*.secret',
+          '*.token',
+          '*.apiKey',
+        ],
+        censor: '[REDACTED]',
+      },
+    },
+    genReqId(request) {
+      const provided = request.headers['x-request-id'];
+      const candidate = Array.isArray(provided) ? provided[0] : provided;
+      return candidate && /^[a-zA-Z0-9._:-]{8,120}$/.test(candidate) ? candidate : randomUUID();
+    },
     trustProxy: true,
   });
   const { db, pool } = createDatabase(env.DATABASE_URL);
 
   app.decorate('appEnv', env);
   app.decorate('db', db);
+  const searchRegistry = new SearchProviderRegistry();
+  for (const provider of baseSearchProviders) searchRegistry.register(provider);
+  app.decorate('searchRegistry', searchRegistry);
+  const datasetRegistry = new DatasetRegistry();
+  for (const adapter of baseDatasetAdapters) datasetRegistry.register(adapter);
+  app.decorate('datasetRegistry', datasetRegistry);
+  app.decorate('observability', new ObservabilityService(db, new MetricsRegistry()));
+  app.addHook('onRequest', (request, reply, done) => {
+    reply.header('x-request-id', request.id);
+    runWithRequestContext({ requestId: request.id }, done);
+  });
+  installObservability(app);
   app.addHook('onClose', async () => {
     await pool.end();
   });
@@ -106,6 +147,7 @@ export async function buildApp(env: AppEnv) {
       roleCodes: access.roles.map((role) => role.code),
       permissions: access.permissions,
     };
+    setRequestActor(resolved.account.id);
     await repository.touchSession(resolved.session.id, resolved.session.lastSeenAt);
   });
   app.decorate('requirePermission', (required: PermissionCode | PermissionCode[]) => {
@@ -142,8 +184,7 @@ export async function buildApp(env: AppEnv) {
     });
   }
 
-  app.setErrorHandler((error, request, reply) => {
-    request.log.error({ err: error }, 'request failed');
+  app.setErrorHandler(async (error, request, reply) => {
     if (error instanceof ZodError) {
       return reply.code(400).send({
         error: 'ValidationError',
@@ -156,6 +197,26 @@ export async function buildApp(env: AppEnv) {
       typeof (error as { statusCode?: unknown }).statusCode === 'number'
         ? (error as { statusCode: number }).statusCode
         : 500;
+    const safeError = serializeSafeError(error, [
+      env.AUTH_JWT_SECRET,
+      env.SETTINGS_ENCRYPTION_KEY,
+      env.AUTH_BOOTSTRAP_PASSWORD,
+      env.METRICS_BEARER_TOKEN,
+    ]);
+    request.log.error(
+      { errorName: safeError.name, errorMessage: safeError.message, requestId: request.id },
+      'request failed',
+    );
+    if (statusCode >= 500 && app.observability) {
+      await app.observability
+        .captureRequestError({
+          error,
+          requestId: request.id,
+          method: request.method,
+          route: request.routeOptions.url || request.url.split('?')[0],
+        })
+        .catch(() => undefined);
+    }
     return reply.code(statusCode).send({
       error: statusCode >= 500 ? 'InternalServerError' : normalized.name,
       message: statusCode >= 500 ? '服务器开小差了，请稍后再试' : normalized.message,
