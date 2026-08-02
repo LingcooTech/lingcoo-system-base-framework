@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ComponentPropsWithoutRef,
   type MouseEvent,
   type ReactNode,
 } from 'react';
@@ -56,23 +57,29 @@ export function Link({
   href,
   className,
   title,
-  children,
+  onNavigate,
+  ...rest
 }: {
   href: string;
   className?: string;
   title?: string;
-  children: ReactNode;
-}) {
+  onNavigate?(): void;
+} & Omit<ComponentPropsWithoutRef<'a'>, 'href' | 'className' | 'title' | 'onClick'>) {
   const { navigate } = useRouter();
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
       return;
     event.preventDefault();
     navigate(href);
+    onNavigate?.();
   }
   return (
-    <a className={className} href={`${basePath}${href}`} onClick={handleClick} title={title}>
-      {children}
-    </a>
+    <a
+      className={className}
+      href={`${basePath}${href}`}
+      onClick={handleClick}
+      title={title}
+      {...rest}
+    />
   );
 }

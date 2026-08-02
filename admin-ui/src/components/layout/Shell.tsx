@@ -1,150 +1,133 @@
-import { Bell, ChevronLeft, ChevronRight, Layers3, LogOut, Menu, Search } from 'lucide-react';
+import { TooltipProvider } from '@lingcoo/frame-ui/tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { fetchUnreadNotificationCount } from '../../api/client';
+import { fetchSystemSettings, fetchUnreadNotificationCount } from '../../api/client';
 import { useAuth } from '../../lib/auth';
 import { getSectionByPath, sectionList } from '../../lib/foundation';
-import { Link, useRouter } from '../../lib/router';
+import { useRouter } from '../../lib/router';
 import { GlobalSearch } from './GlobalSearch';
+import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
+
+const COLLAPSE_STORAGE_KEY = 'lingcoo-frame-admin-sidebar-collapsed';
+
+function readCollapsedPreference() {
+  try {
+    return window.localStorage.getItem(COLLAPSE_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 export function Shell({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsedPreference);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [brandName, setBrandName] = useState('Lingcoo Base');
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
   const visibleSections = sectionList.filter((section) => hasPermission(section.permission));
-  const initials =
-    account?.displayName
-      .split(/\s+/)
-      .map((part) => part[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'LC';
+  const canSearch = hasPermission('search.use');
+  const canReadNotifications = hasPermission('notifications.read');
+  const canReadSettings = hasPermission('system.settings.read');
 
   useEffect(() => {
+    if (!canReadNotifications) return;
     fetchUnreadNotificationCount()
       .then(setUnreadNotifications)
       .catch(() => undefined);
-  }, [pathname]);
+  }, [canReadNotifications, pathname]);
+
+  useEffect(() => {
+    if (!canReadSettings) return;
+    fetchSystemSettings()
+      .then((settings) => {
+        const systemName = settings.find((setting) => setting.key === 'general.system_name')?.value;
+        if (systemName?.trim()) setBrandName(systemName.trim());
+      })
+      .catch(() => undefined);
+  }, [canReadSettings]);
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      if (canSearch && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setSearchOpen(true);
       }
     }
     window.addEventListener('keydown', handleShortcut);
     return () => window.removeEventListener('keydown', handleShortcut);
-  }, []);
+  }, [canSearch]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [mobileOpen]);
+
+  if (!account) return null;
+
+  function toggleCollapsed() {
+    setCollapsed((value) => {
+      const nextValue = !value;
+      try {
+        window.localStorage.setItem(COLLAPSE_STORAGE_KEY, String(nextValue));
+      } catch {
+        // The UI remains functional when storage is unavailable.
+      }
+      return nextValue;
+    });
+  }
 
   return (
-    <div className={collapsed ? 'app-shell shell-collapsed' : 'app-shell'}>
-      <div className={mobileOpen ? 'sidebar-slot mobile-open' : 'sidebar-slot'}>
-        <aside className={collapsed ? 'sidebar sidebar-collapsed' : 'sidebar'}>
-          <div className="brand">
-            <span className="brand-mark">
-              <Layers3 size={18} />
-            </span>
-            {!collapsed ? (
-              <span>
-                <strong>Lingcoo Base</strong>
-                <small>Framework Console</small>
-              </span>
-            ) : null}
-          </div>
-          <nav aria-label="基础框架后台导航">
-            {visibleSections.map((section) => {
-              const Icon = section.icon;
-              const active =
-                section.href === '/' ? pathname === '/' : pathname.startsWith(section.href);
-              return (
-                <Link
-                  className={active ? 'nav-item nav-item-active' : 'nav-item'}
-                  href={section.href}
-                  key={section.id}
-                  title={collapsed ? section.navLabel : undefined}
-                >
-                  <Icon size={17} />
-                  {!collapsed ? <span>{section.navLabel}</span> : null}
-                </Link>
-              );
-            })}
-          </nav>
+    <TooltipProvider delayDuration={250}>
+      <div className={collapsed ? 'app-shell shell-collapsed' : 'app-shell'}>
+        <div className={mobileOpen ? 'sidebar-slot mobile-open' : 'sidebar-slot'}>
+          <Sidebar
+            account={account}
+            brandName={brandName}
+            canReadNotifications={canReadNotifications}
+            canReadSettings={canReadSettings}
+            collapsed={collapsed && !mobileOpen}
+            mobile={mobileOpen}
+            onCloseMobile={() => setMobileOpen(false)}
+            onLogout={() => void logout()}
+            onToggleCollapsed={toggleCollapsed}
+            pathname={pathname}
+            sections={visibleSections}
+          />
+        </div>
+        {mobileOpen ? (
           <button
-            className="collapse-button"
-            onClick={() => setCollapsed((value) => !value)}
+            aria-label="关闭导航"
+            className="mobile-scrim"
+            onClick={() => setMobileOpen(false)}
             type="button"
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-            {!collapsed ? '收起导航' : null}
-          </button>
-        </aside>
+          />
+        ) : null}
+        <div className="main-column">
+          <Topbar
+            activeSection={activeSection}
+            canReadNotifications={canReadNotifications}
+            canSearch={canSearch}
+            onOpenMobile={() => setMobileOpen(true)}
+            onOpenSearch={() => setSearchOpen(true)}
+            unreadNotifications={unreadNotifications}
+          />
+          <main>{children}</main>
+        </div>
+        {canSearch ? <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} /> : null}
       </div>
-      {mobileOpen ? (
-        <button
-          className="mobile-scrim"
-          aria-label="关闭导航"
-          onClick={() => setMobileOpen(false)}
-        />
-      ) : null}
-      <div className="main-column">
-        <header className="topbar">
-          <button
-            aria-label="切换导航"
-            className="icon-button mobile-menu"
-            onClick={() => setMobileOpen((value) => !value)}
-            type="button"
-          >
-            <Menu size={18} />
-          </button>
-          <div>
-            <span>{activeSection.group}</span>
-            <strong>{activeSection.navLabel}</strong>
-          </div>
-          <button
-            className="command-button"
-            disabled={!hasPermission('search.use')}
-            onClick={() => setSearchOpen(true)}
-            type="button"
-          >
-            <Search size={15} />
-            <span>搜索页面和资源</span>
-            <kbd>⌘ K</kbd>
-          </button>
-          <div className="account-actions">
-            <Link
-              className="icon-button notification-button"
-              href="/notifications"
-              title="通知中心"
-            >
-              <Bell size={17} />
-              {unreadNotifications > 0 ? <span>{Math.min(unreadNotifications, 99)}</span> : null}
-            </Link>
-            <span className="account-copy">
-              <strong>{account?.displayName}</strong>
-              <small>{account?.roles.map((role) => role.name).join('、')}</small>
-            </span>
-            <span className="avatar">{initials}</span>
-            <button
-              aria-label="退出登录"
-              className="logout-button"
-              onClick={() => void logout()}
-              title="退出登录"
-              type="button"
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
-        </header>
-        <main>{children}</main>
-      </div>
-      {hasPermission('search.use') ? (
-        <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
-      ) : null}
-    </div>
+    </TooltipProvider>
   );
 }

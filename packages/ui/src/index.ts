@@ -1,10 +1,13 @@
 export * from './Badge';
+export * from './Avatar';
 export * from './Button';
 export * from './Card';
 export * from './Dialog';
+export * from './DropdownMenu';
 export * from './EmptyState';
 export * from './FormField';
 export * from './Input';
 export * from './Spinner';
 export * from './Textarea';
+export * from './Tooltip';
 export { cx } from './lib/cx';
