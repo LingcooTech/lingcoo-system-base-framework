@@ -34,6 +34,7 @@ Frame 只定义系统都会需要的身份内核：
 - `iam.roles.read` / `iam.roles.write`
 - `audit.read`
 - `integrations.read` / `integrations.write`
+- `assets.read` / `assets.write` / `assets.manage`
 
 领域模块通过迁移注册自己的权限，例如 `catalog.products.write`，不能把行业权限硬编码进身份模块。
 

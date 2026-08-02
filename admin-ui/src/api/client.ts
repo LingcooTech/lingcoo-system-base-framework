@@ -144,6 +144,42 @@ export interface NotificationDelivery {
   jobId: string | null;
 }
 
+export interface StorageAsset {
+  id: string;
+  connectionId: string;
+  providerCode: 'qiniu';
+  objectKey: string;
+  originalFilename: string;
+  displayName: string;
+  mediaKind: 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
+  mimeType: string;
+  byteSize: number;
+  checksum: string | null;
+  visibility: 'public' | 'private';
+  status: 'pending' | 'active' | 'archived' | 'deleting' | 'deleted' | 'failed';
+  publicUrl: string | null;
+  metadata: Record<string, unknown>;
+  referenceCount: number;
+  createdAt: string;
+  confirmedAt: string | null;
+}
+
+export interface AssetSummary {
+  status: Record<string, number>;
+  kind: Record<string, number>;
+  totalBytes: number;
+}
+
+export interface AssetUploadIntent {
+  asset: StorageAsset;
+  upload: {
+    token: string;
+    key: string;
+    uploadHost: string;
+    expiresInSeconds: number;
+  };
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -412,4 +448,62 @@ export async function publishAnnouncement(input: {
       { method: 'POST', body: JSON.stringify(input) },
     )
   ).result;
+}
+
+export async function fetchAssets(): Promise<{ items: StorageAsset[]; total: number }> {
+  return apiRequest('/api/assets?limit=100');
+}
+
+export async function fetchAssetSummary(): Promise<AssetSummary> {
+  return apiRequest('/api/assets/summary');
+}
+
+export async function createAssetUploadIntent(input: {
+  connectionId: string;
+  filename: string;
+  mimeType: string;
+  byteSize: number;
+  visibility: 'public' | 'private';
+}): Promise<AssetUploadIntent> {
+  return apiRequest('/api/assets/upload-intents', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function uploadAssetFile(intent: AssetUploadIntent, file: File): Promise<void> {
+  const form = new FormData();
+  form.set('token', intent.upload.token);
+  form.set('key', intent.upload.key);
+  form.set('file', file);
+  const response = await fetch(intent.upload.uploadHost, { method: 'POST', body: form });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(detail || `云存储上传失败 (${response.status})`);
+  }
+}
+
+export async function completeAssetUpload(assetId: string): Promise<StorageAsset> {
+  return (
+    await apiRequest<{ asset: StorageAsset }>(`/api/assets/${assetId}/complete`, {
+      method: 'POST',
+    })
+  ).asset;
+}
+
+export async function fetchAssetAccessUrl(assetId: string): Promise<string> {
+  return (await apiRequest<{ result: { url: string } }>(`/api/assets/${assetId}/access-url`)).result
+    .url;
+}
+
+export async function archiveAsset(assetId: string): Promise<void> {
+  await apiRequest(`/api/assets/${assetId}/archive`, { method: 'POST' });
+}
+
+export async function restoreAsset(assetId: string): Promise<void> {
+  await apiRequest(`/api/assets/${assetId}/restore`, { method: 'POST' });
+}
+
+export async function deleteAsset(assetId: string): Promise<void> {
+  await apiRequest(`/api/assets/${assetId}`, { method: 'DELETE' });
 }

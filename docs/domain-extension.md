@@ -35,6 +35,10 @@ export const exampleModule: AppModule = {
 
 路由不直接承载业务规则，Service 不依赖 Fastify Request 或 Reply。
 
+领域中的封面、附件、音视频等字段应保存 `assetId`，并调用 `AssetService.linkReference()` 声明
+`ownerType + ownerId + field` 引用。不要保存七牛对象键或永久复制公开 URL；读取时通过资产服务解析
+访问地址。替换资产引用后，旧资产才能进入安全删除流程。
+
 ## 3. 增加前端页面
 
 公共 Web 和管理后台保持独立入口，但使用相同的领域名称组织页面：

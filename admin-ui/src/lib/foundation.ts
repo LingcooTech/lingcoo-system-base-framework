@@ -1,6 +1,7 @@
 import {
   Bell,
   Gauge,
+  Images,
   ListChecks,
   PlugZap,
   Settings2,
@@ -10,7 +11,14 @@ import {
 } from 'lucide-react';
 
 export type SectionKey =
-  'dashboard' | 'modules' | 'access' | 'integrations' | 'operations' | 'notifications' | 'settings';
+  | 'dashboard'
+  | 'modules'
+  | 'access'
+  | 'integrations'
+  | 'assets'
+  | 'operations'
+  | 'notifications'
+  | 'settings';
 
 export interface SectionMeta {
   id: SectionKey;
@@ -52,7 +60,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '6', note: '含 jobs · notifications' },
+      { label: '内置模块', value: '7', note: '含 jobs · notifications · assets' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -82,6 +90,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '凭据存储', value: 'AES-256-GCM', note: '密钥与普通配置物理分离' },
       { label: '接入方式', value: 'Provider', note: '服务适配器显式注册并版本化' },
+    ],
+  },
+  assets: {
+    id: 'assets',
+    group: '资源',
+    title: '媒体资产中心',
+    navLabel: '媒体资源库',
+    description: '统一管理文件身份、云存储对象、访问方式和领域引用关系。',
+    href: '/assets',
+    icon: Images,
+    permission: 'assets.read',
+    context: [
+      { label: '资产身份', value: 'Asset ID', note: '领域不直接绑定对象 URL' },
+      { label: '存储通道', value: 'Qiniu', note: '直传 · 复核 · 异步删除' },
     ],
   },
   operations: {

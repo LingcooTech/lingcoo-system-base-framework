@@ -45,6 +45,7 @@ src/
     auth/              登录、会话与密码生命周期
     access/            账号、角色与权限管理
     integrations/      Provider、加密凭据与连接生命周期
+    assets/            文件身份、上传意图、引用与删除生命周期
     jobs/              持久化任务、Outbox 与处理器注册表
     notifications/     站内通知、公告策略与邮件投递
     index.ts            模块组合根
@@ -106,6 +107,8 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `outbox_events`：与业务写入共享事务的可靠领域事件
 - `notifications`：账号级站内通知与阅读状态
 - `notification_deliveries`：外部通知通道的投递状态
+- `storage_assets`：经过云对象复核的稳定文件身份和生命周期
+- `storage_asset_references`：领域资源到资产的显式引用
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
@@ -129,9 +132,17 @@ AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用
 同败；订阅器必须自行保持幂等。通知中心在此基础上提供站内通知、全员公告和 SMTP 邮件投递，
 不引入 Redis 作为最小运行依赖。完整约束见 [后台任务、Outbox 与通知](jobs-notifications.md)。
 
+### 文件与媒体资产
+
+资产中心把云存储对象提升为系统内的稳定资源。浏览器先向 API 创建上传意图，获得精确对象键、
+禁止覆盖且限制大小和 MIME 的短期凭证，再直传七牛云。上传后 API 通过 Provider 重新查询对象，
+以服务端取得的哈希、大小和类型激活资产。领域数据只保存 `assetId`，并通过引用表声明占用；仍被
+引用的资产不能删除。归档可恢复，最终删除由 Worker 异步执行。完整约束见
+[文件与媒体资产中心](media-assets.md)。
+
 ### 部署
 
-开发拓扑只启动 PostgreSQL，三个应用由本机 Node.js 进程运行。生产拓扑包含：
+开发拓扑只启动 PostgreSQL，API、Worker 和两个 Web 应用由本机 Node.js 进程运行。生产拓扑包含：
 
 - PostgreSQL
 - 一次性迁移容器

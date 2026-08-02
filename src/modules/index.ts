@@ -1,4 +1,5 @@
 import { accessModule } from './access/index.js';
+import { assetsModule } from './assets/index.js';
 import { authModule } from './auth/index.js';
 import { integrationsModule } from './integrations/index.js';
 import { jobsModule } from './jobs/index.js';
@@ -11,6 +12,7 @@ export const appModules: AppModule[] = [
   authModule,
   accessModule,
   integrationsModule,
+  assetsModule,
   jobsModule,
   notificationsModule,
 ];

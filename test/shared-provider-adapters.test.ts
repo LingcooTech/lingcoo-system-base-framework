@@ -25,6 +25,10 @@ test('Qiniu adapter issues scoped upload tokens without exposing its secret', ()
   assert.equal(result.publicUrl, 'https://assets.example.test/uploads/avatar.png');
   assert.match(result.token, /^test_access_key:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+$/);
   assert.equal(JSON.stringify(result).includes('never-return-this-secret'), false);
+  const policy = JSON.parse(Buffer.from(result.token.split(':')[2], 'base64url').toString()) as {
+    insertOnly: number;
+  };
+  assert.equal(policy.insertOnly, 1);
 });
 
 test('OpenRouter adapter lists models and captures chat usage', async () => {

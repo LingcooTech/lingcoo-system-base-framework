@@ -5,6 +5,7 @@ import { createDatabase } from './db/client.js';
 import { recordAuditEvent } from './lib/audit.js';
 import { loadEnv } from './lib/env.js';
 import { createIntegrationProviderRegistry } from './modules/integrations/registry.js';
+import { QiniuService } from './modules/integrations/providers/qiniu-service.js';
 import { IntegrationService } from './modules/integrations/service.js';
 import { OutboxService } from './modules/jobs/outbox.js';
 import { JobHandlerRegistry, OutboxSubscriberRegistry } from './modules/jobs/registry.js';
@@ -12,6 +13,8 @@ import { JobService } from './modules/jobs/service.js';
 import { NotificationDeliveryService } from './modules/notifications/delivery.js';
 import { registerNotificationPolicies } from './modules/notifications/policies.js';
 import { NotificationService } from './modules/notifications/service.js';
+import { assetDeleteJobPayloadSchema } from './modules/assets/schemas.js';
+import { AssetService } from './modules/assets/service.js';
 
 const env = loadEnv();
 const workerId = `worker_${randomUUID()}`;
@@ -27,7 +30,14 @@ const integrations = new IntegrationService(
 );
 const delivery = new NotificationDeliveryService(db, integrations);
 const notifications = new NotificationService(db);
+const assets = new AssetService(db, new QiniuService(integrations));
 jobHandlers.register('notification.email.deliver', ({ payload }) => delivery.deliverEmail(payload));
+jobHandlers.register('storage.asset.delete', ({ payload }) =>
+  assets.executeDelete(assetDeleteJobPayloadSchema.parse(payload).assetId),
+);
+jobHandlers.register('storage.asset.expire-upload', ({ payload }) =>
+  assets.expireUpload(assetDeleteJobPayloadSchema.parse(payload).assetId),
+);
 registerNotificationPolicies(subscribers, notifications);
 
 let stopping = false;

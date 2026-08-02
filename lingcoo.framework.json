@@ -7,8 +7,16 @@
     "referenceProject": "lingcoo-edu-system",
     "strategy": "architecture extraction, not source mirroring"
   },
-  "surfaces": ["public-web", "admin-ui", "api"],
+  "surfaces": ["public-web", "admin-ui", "api", "worker"],
   "infrastructure": ["postgresql", "docker", "caddy"],
-  "foundationModules": ["system", "auth", "access"],
+  "foundationModules": [
+    "system",
+    "auth",
+    "access",
+    "integrations",
+    "jobs",
+    "notifications",
+    "assets"
+  ],
   "domainModules": []
 }

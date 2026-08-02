@@ -14,6 +14,9 @@ export const basePermissions = [
   'jobs.write',
   'notifications.read',
   'notifications.manage',
+  'assets.read',
+  'assets.write',
+  'assets.manage',
 ] as const;
 
 export type BasePermission = (typeof basePermissions)[number];

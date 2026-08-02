@@ -74,3 +74,23 @@ test('job and notification management routes require authentication', async () =
   assert.equal(notifications.statusCode, 401);
   await app.close();
 });
+
+test('asset library routes require authentication', async () => {
+  const app = await buildApp(testEnv());
+  const [assets, upload] = await Promise.all([
+    app.inject({ method: 'GET', url: '/api/assets' }),
+    app.inject({
+      method: 'POST',
+      url: '/api/assets/upload-intents',
+      payload: {
+        filename: 'example.png',
+        mimeType: 'image/png',
+        byteSize: 128,
+        visibility: 'public',
+      },
+    }),
+  ]);
+  assert.equal(assets.statusCode, 401);
+  assert.equal(upload.statusCode, 401);
+  await app.close();
+});

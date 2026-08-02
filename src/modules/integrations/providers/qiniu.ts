@@ -26,6 +26,14 @@ export interface QiniuObjectItem {
   putTime: number;
 }
 
+export interface QiniuObjectStat {
+  key: string;
+  hash: string;
+  size: number;
+  mimeType: string;
+  putTime: number;
+}
+
 function urlSafeBase64(value: string | Buffer): string {
   return Buffer.from(value).toString('base64url');
 }
@@ -77,6 +85,7 @@ async function qiniuRequest<T>(
   url: URL,
   signal: AbortSignal,
   init: RequestInit = {},
+  acceptedStatuses: number[] = [],
 ): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -88,10 +97,15 @@ async function qiniuRequest<T>(
     signal,
   });
   const text = await response.text();
-  const payload = text
-    ? (JSON.parse(text) as T & { error?: string })
-    : ({} as T & { error?: string });
-  if (!response.ok) {
+  let payload = {} as T & { error?: string };
+  if (text) {
+    try {
+      payload = JSON.parse(text) as T & { error?: string };
+    } catch {
+      payload = { error: text } as T & { error?: string };
+    }
+  }
+  if (!response.ok && !acceptedStatuses.includes(response.status)) {
     throw new Error(`七牛云请求失败 (${response.status})：${payload.error ?? '未知错误'}`);
   }
   return payload;
@@ -106,6 +120,7 @@ export class QiniuProvider implements IntegrationProvider {
   readonly capabilities = [
     'object.upload-token',
     'object.list',
+    'object.stat',
     'object.delete',
     'object.sign',
     'connection.test',
@@ -210,7 +225,12 @@ export class QiniuProvider implements IntegrationProvider {
   createUploadToken(
     config: Record<string, unknown>,
     credentials: Record<string, unknown>,
-    input: { key: string; expiresInSeconds?: number },
+    input: {
+      key: string;
+      expiresInSeconds?: number;
+      maxSizeBytes?: number;
+      mimeType?: string;
+    },
   ) {
     const settings = parseSettings(config, credentials);
     const key = this.resolveKey(settings, input.key);
@@ -219,6 +239,9 @@ export class QiniuProvider implements IntegrationProvider {
       JSON.stringify({
         scope: `${settings.bucketName}:${key}`,
         deadline: Math.floor(Date.now() / 1000) + expiresInSeconds,
+        insertOnly: 1,
+        ...(input.maxSizeBytes ? { fsizeLimit: input.maxSizeBytes } : {}),
+        ...(input.mimeType ? { mimeLimit: input.mimeType } : {}),
       }),
     );
     return {
@@ -240,11 +263,42 @@ export class QiniuProvider implements IntegrationProvider {
     const key = this.resolveKey(settings, rawKey, false);
     const entry = urlSafeBase64(`${settings.bucketName}:${key}`);
     const url = new URL(`https://rs.qiniuapi.com/delete/${entry}`);
-    await qiniuRequest<Record<string, never>>(settings, url, signal, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
+    await qiniuRequest<Record<string, never>>(
+      settings,
+      url,
+      signal,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+      [612],
+    );
     return { key };
+  }
+
+  async statObject(
+    config: Record<string, unknown>,
+    credentials: Record<string, unknown>,
+    rawKey: string,
+    signal: AbortSignal,
+  ): Promise<QiniuObjectStat> {
+    const settings = parseSettings(config, credentials);
+    const key = this.resolveKey(settings, rawKey, false);
+    const entry = urlSafeBase64(`${settings.bucketName}:${key}`);
+    const url = new URL(`https://rs.qiniuapi.com/stat/${entry}`);
+    const value = await qiniuRequest<{
+      hash?: string;
+      fsize?: number;
+      mimeType?: string;
+      putTime?: number;
+    }>(settings, url, signal);
+    return {
+      key,
+      hash: value.hash ?? '',
+      size: value.fsize ?? 0,
+      mimeType: value.mimeType ?? 'application/octet-stream',
+      putTime: value.putTime ?? 0,
+    };
   }
 
   createPrivateUrl(

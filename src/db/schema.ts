@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -287,5 +288,62 @@ export const notificationDeliveries = pgTable(
       table.notificationId,
       table.channel,
     ),
+  ],
+);
+
+export const storageAssets = pgTable(
+  'storage_assets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    connectionId: uuid('connection_id')
+      .notNull()
+      .references(() => integrationConnections.id, { onDelete: 'restrict' }),
+    providerCode: text('provider_code').notNull().default('qiniu'),
+    objectKey: text('object_key').notNull(),
+    originalFilename: text('original_filename').notNull(),
+    displayName: text('display_name').notNull(),
+    mediaKind: text('media_kind').notNull().default('other'),
+    mimeType: text('mime_type').notNull().default('application/octet-stream'),
+    byteSize: bigint('byte_size', { mode: 'number' }).notNull().default(0),
+    checksum: text('checksum'),
+    visibility: text('visibility').notNull().default('public'),
+    status: text('status').notNull().default('pending'),
+    publicUrl: text('public_url'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    uploadExpiresAt: timestamp('upload_expires_at', { withTimezone: true }),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('storage_assets_connection_object_idx').on(table.connectionId, table.objectKey),
+    index('storage_assets_status_created_idx').on(table.status, table.createdAt),
+    index('storage_assets_kind_created_idx').on(table.mediaKind, table.createdAt),
+  ],
+);
+
+export const storageAssetReferences = pgTable(
+  'storage_asset_references',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    assetId: uuid('asset_id')
+      .notNull()
+      .references(() => storageAssets.id, { onDelete: 'cascade' }),
+    ownerType: text('owner_type').notNull(),
+    ownerId: text('owner_id').notNull(),
+    field: text('field').notNull().default('default'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('storage_asset_references_owner_field_idx').on(
+      table.ownerType,
+      table.ownerId,
+      table.field,
+    ),
+    index('storage_asset_references_asset_idx').on(table.assetId),
   ],
 );

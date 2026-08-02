@@ -47,7 +47,12 @@ export class QiniuService {
 
   createUploadToken(
     connectionId: string,
-    input: { key: string; expiresInSeconds?: number },
+    input: {
+      key: string;
+      expiresInSeconds?: number;
+      maxSizeBytes?: number;
+      mimeType?: string;
+    },
     actorId?: string,
   ) {
     return this.execute({
@@ -70,6 +75,18 @@ export class QiniuService {
         provider.deleteObject(config, credentials, key, signal),
       message: (value) => `已删除七牛云对象 ${value.key}`,
       metadata: (value) => ({ key: value.key }),
+    });
+  }
+
+  statObject(connectionId: string, key: string, actorId?: string) {
+    return this.execute({
+      connectionId,
+      operation: 'qiniu.object.stat',
+      actorId,
+      run: (provider, config, credentials, signal) =>
+        provider.statObject(config, credentials, key, signal),
+      message: (value) => `已核验七牛云对象 ${value.key}`,
+      metadata: (value) => ({ key: value.key, size: value.size, mimeType: value.mimeType }),
     });
   }
 
