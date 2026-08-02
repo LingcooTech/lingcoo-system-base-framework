@@ -1,5 +1,6 @@
 import {
   Bell,
+  DatabaseZap,
   Gauge,
   Images,
   ListChecks,
@@ -19,6 +20,7 @@ export type SectionKey =
   | 'assets'
   | 'operations'
   | 'notifications'
+  | 'metadata'
   | 'audit'
   | 'settings';
 
@@ -62,7 +64,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '9', note: '含 settings · audit · assets' },
+      { label: '内置模块', value: '12', note: '含 metadata · search · data-exchange' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -134,6 +136,24 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '站内状态', value: 'Inbox', note: '未读 · 已读 · 归档' },
       { label: '邮件投递', value: 'Async', note: 'SMTP Provider · Worker' },
+    ],
+  },
+  metadata: {
+    id: 'metadata',
+    group: '数据',
+    title: '通用数据基础',
+    navLabel: '数据字典与分类',
+    description: '管理非业务化的数据字典、分类法、标签和版本化数据交换。',
+    href: '/metadata',
+    icon: DatabaseZap,
+    permission: 'metadata.read',
+    context: [
+      {
+        label: '组织模型',
+        value: 'Dictionary + Taxonomy',
+        note: '稳定代码 · 可选层级 · 资源关联',
+      },
+      { label: '数据交换', value: 'Adapter', note: '版本化 JSON · 预检 · 原子 Upsert' },
     ],
   },
   audit: {

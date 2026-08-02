@@ -9,6 +9,7 @@ import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
+import { MetadataPage } from './pages/MetadataPage';
 import { ModulesPage } from './pages/ModulesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { OperationsPage } from './pages/OperationsPage';
@@ -68,6 +69,8 @@ function RoutedApp() {
     <AssetsPage />
   ) : pathname.startsWith('/integrations') ? (
     <IntegrationsPage />
+  ) : pathname.startsWith('/metadata') ? (
+    <MetadataPage />
   ) : pathname.startsWith('/modules') ? (
     <ModulesPage />
   ) : pathname.startsWith('/operations') ? (

@@ -938,11 +938,142 @@ a {
   text-transform: uppercase;
 }
 
+.term-color {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgb(20 35 27 / 12%);
+}
+
+.exchange-datasets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.exchange-datasets article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #e2e8e3;
+  border-radius: 12px;
+}
+
+.exchange-datasets article > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.exchange-datasets strong {
+  color: #334138;
+  font-size: 12px;
+}
+
+.exchange-datasets code,
+.exchange-datasets p {
+  margin: 0;
+  color: #78847c;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.exchange-preview {
+  display: grid;
+  gap: 5px;
+  padding: 13px 15px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.exchange-preview.success {
+  color: #27623f;
+  background: #e2f3e7;
+}
+
+.exchange-preview.error {
+  color: #8b3838;
+  background: #fae7e5;
+}
+
+.global-search-dialog .lc-dialog-body {
+  display: grid;
+  gap: 15px;
+}
+
+.global-search-results {
+  display: grid;
+  max-height: min(58vh, 560px);
+  overflow-y: auto;
+}
+
+.global-search-results section {
+  display: grid;
+  gap: 3px;
+  padding: 10px 0;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.global-search-results h3 {
+  margin: 0 0 5px;
+  color: #829087;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.global-search-results button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  padding: 11px 12px;
+  color: #344139;
+  background: transparent;
+  border-radius: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.global-search-results button:hover,
+.global-search-results button:focus-visible {
+  background: #f1f6f2;
+  outline: none;
+}
+
+.global-search-results button span {
+  display: grid;
+  gap: 3px;
+}
+
+.global-search-results button small,
+.global-search-results button code,
+.global-search-results > p {
+  margin: 0;
+  color: #7c8981;
+  font-size: 11px;
+}
+
+.global-search-results > p {
+  padding: 28px 4px;
+  text-align: center;
+}
+
 @media (max-width: 760px) {
   .setting-card,
   .setting-history article,
   .audit-toolbar,
   .permission-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .exchange-datasets {
     grid-template-columns: 1fr;
   }
 

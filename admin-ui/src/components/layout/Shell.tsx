@@ -5,11 +5,13 @@ import { fetchUnreadNotificationCount } from '../../api/client';
 import { useAuth } from '../../lib/auth';
 import { getSectionByPath, sectionList } from '../../lib/foundation';
 import { Link, useRouter } from '../../lib/router';
+import { GlobalSearch } from './GlobalSearch';
 
 export function Shell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
@@ -27,6 +29,17 @@ export function Shell({ children }: { children: ReactNode }) {
       .then(setUnreadNotifications)
       .catch(() => undefined);
   }, [pathname]);
+
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, []);
 
   return (
     <div className={collapsed ? 'app-shell shell-collapsed' : 'app-shell'}>
@@ -92,7 +105,12 @@ export function Shell({ children }: { children: ReactNode }) {
             <span>{activeSection.group}</span>
             <strong>{activeSection.navLabel}</strong>
           </div>
-          <button className="command-button" type="button">
+          <button
+            className="command-button"
+            disabled={!hasPermission('search.use')}
+            onClick={() => setSearchOpen(true)}
+            type="button"
+          >
             <Search size={15} />
             <span>搜索页面和资源</span>
             <kbd>⌘ K</kbd>
@@ -124,6 +142,9 @@ export function Shell({ children }: { children: ReactNode }) {
         </header>
         <main>{children}</main>
       </div>
+      {hasPermission('search.use') ? (
+        <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+      ) : null}
     </div>
   );
 }

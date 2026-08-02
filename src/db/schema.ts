@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   index,
@@ -145,6 +146,132 @@ export const auditLogs = pgTable(
     index('audit_logs_action_created_idx').on(table.action, table.createdAt),
     index('audit_logs_resource_created_idx').on(table.resourceType, table.createdAt),
     index('audit_logs_actor_created_idx').on(table.actorId, table.createdAt),
+  ],
+);
+
+export const metadataDictionaries = pgTable(
+  'metadata_dictionaries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    code: text('code').notNull().unique(),
+    name: text('name').notNull(),
+    description: text('description'),
+    valueType: text('value_type').notNull().default('string'),
+    status: text('status').notNull().default('active'),
+    isSystem: boolean('is_system').notNull().default(false),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('metadata_dictionaries_status_idx').on(table.status)],
+);
+
+export const metadataDictionaryItems = pgTable(
+  'metadata_dictionary_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    dictionaryId: uuid('dictionary_id')
+      .notNull()
+      .references(() => metadataDictionaries.id, { onDelete: 'cascade' }),
+    code: text('code').notNull(),
+    label: text('label').notNull(),
+    value: jsonb('value').notNull(),
+    description: text('description'),
+    sortOrder: integer('sort_order').notNull().default(100),
+    status: text('status').notNull().default('active'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('metadata_dictionary_items_dictionary_code_idx').on(table.dictionaryId, table.code),
+    index('metadata_dictionary_items_dictionary_sort_idx').on(table.dictionaryId, table.sortOrder),
+  ],
+);
+
+export const taxonomies = pgTable(
+  'taxonomies',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    code: text('code').notNull().unique(),
+    name: text('name').notNull(),
+    kind: text('kind').notNull().default('tag'),
+    description: text('description'),
+    hierarchical: boolean('hierarchical').notNull().default(false),
+    status: text('status').notNull().default('active'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('taxonomies_kind_status_idx').on(table.kind, table.status)],
+);
+
+export const taxonomyTerms = pgTable(
+  'taxonomy_terms',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    taxonomyId: uuid('taxonomy_id')
+      .notNull()
+      .references(() => taxonomies.id, { onDelete: 'cascade' }),
+    parentId: uuid('parent_id').references((): AnyPgColumn => taxonomyTerms.id, {
+      onDelete: 'restrict',
+    }),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    color: text('color'),
+    sortOrder: integer('sort_order').notNull().default(100),
+    status: text('status').notNull().default('active'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('taxonomy_terms_taxonomy_code_idx').on(table.taxonomyId, table.code),
+    index('taxonomy_terms_taxonomy_parent_idx').on(table.taxonomyId, table.parentId),
+  ],
+);
+
+export const resourceTerms = pgTable(
+  'resource_terms',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => taxonomyTerms.id, { onDelete: 'cascade' }),
+    resourceType: text('resource_type').notNull(),
+    resourceId: text('resource_id').notNull(),
+    assignedBy: uuid('assigned_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('resource_terms_resource_term_idx').on(
+      table.resourceType,
+      table.resourceId,
+      table.termId,
+    ),
+    index('resource_terms_resource_idx').on(table.resourceType, table.resourceId),
+    index('resource_terms_term_idx').on(table.termId),
+  ],
+);
+
+export const dataExchangeRuns = pgTable(
+  'data_exchange_runs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    datasetCode: text('dataset_code').notNull(),
+    direction: text('direction').notNull(),
+    format: text('format').notNull().default('json'),
+    status: text('status').notNull(),
+    recordCount: integer('record_count').notNull().default(0),
+    summary: jsonb('summary').$type<Record<string, unknown>>().notNull().default({}),
+    errorMessage: text('error_message'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('data_exchange_runs_dataset_created_idx').on(table.datasetCode, table.createdAt),
+    index('data_exchange_runs_direction_created_idx').on(table.direction, table.createdAt),
   ],
 );
 

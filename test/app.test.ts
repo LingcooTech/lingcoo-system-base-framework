@@ -94,3 +94,16 @@ test('asset library routes require authentication', async () => {
   assert.equal(upload.statusCode, 401);
   await app.close();
 });
+
+test('metadata, search and data exchange routes require authentication', async () => {
+  const app = await buildApp(testEnv());
+  const [metadata, search, datasets] = await Promise.all([
+    app.inject({ method: 'GET', url: '/api/metadata/summary' }),
+    app.inject({ method: 'GET', url: '/api/search?q=test' }),
+    app.inject({ method: 'GET', url: '/api/data-exchange/datasets' }),
+  ]);
+  assert.equal(metadata.statusCode, 401);
+  assert.equal(search.statusCode, 401);
+  assert.equal(datasets.statusCode, 401);
+  await app.close();
+});

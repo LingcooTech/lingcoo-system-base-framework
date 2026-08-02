@@ -75,6 +75,104 @@ export interface AuditItem {
   actor: { id: string; email: string; displayName: string } | null;
 }
 
+export interface MetadataSummary {
+  dictionaries: number;
+  dictionaryItems: number;
+  taxonomies: number;
+  terms: number;
+  assignments: number;
+}
+
+export interface MetadataDictionary {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  valueType: 'string' | 'number' | 'boolean' | 'json';
+  status: 'active' | 'inactive';
+  isSystem: boolean;
+  itemCount: number;
+}
+
+export interface MetadataDictionaryItem {
+  id: string;
+  dictionaryId: string;
+  code: string;
+  label: string;
+  value: unknown;
+  description: string | null;
+  sortOrder: number;
+  status: 'active' | 'inactive';
+}
+
+export interface Taxonomy {
+  id: string;
+  code: string;
+  name: string;
+  kind: 'tag' | 'category';
+  description: string | null;
+  hierarchical: boolean;
+  status: 'active' | 'inactive';
+  termCount: number;
+}
+
+export interface TaxonomyTerm {
+  id: string;
+  taxonomyId: string;
+  parentId: string | null;
+  code: string;
+  name: string;
+  color: string | null;
+  sortOrder: number;
+  status: 'active' | 'inactive';
+  metadata: Record<string, unknown>;
+}
+
+export interface ExchangeDataset {
+  code: string;
+  name: string;
+  description: string;
+  format: 'json';
+  formatVersion: 1;
+}
+
+export interface ExchangePreview {
+  valid: boolean;
+  recordCount: number;
+  creates: number;
+  updates: number;
+  errors: string[];
+}
+
+export interface ExchangeRun {
+  id: string;
+  datasetCode: string;
+  direction: 'import' | 'export';
+  format: 'json';
+  status: 'succeeded' | 'failed';
+  recordCount: number;
+  summary: Record<string, unknown>;
+  errorMessage: string | null;
+  createdAt: string;
+  actor: { id: string; email: string; displayName: string } | null;
+}
+
+export interface SearchResult {
+  id: string;
+  source: string;
+  sourceLabel: string;
+  kind: string;
+  title: string;
+  subtitle: string;
+  href: string;
+}
+
+export interface SearchGroup {
+  source: string;
+  label: string;
+  items: SearchResult[];
+}
+
 export interface IntegrationField {
   key: string;
   label: string;
@@ -359,6 +457,193 @@ export async function fetchAuditItems(filters?: {
   if (filters?.page) params.set('page', String(filters.page));
   const query = params.size ? `?${params.toString()}` : '';
   return apiRequest(`/api/audit${query}`);
+}
+
+export async function fetchMetadataSummary(): Promise<MetadataSummary> {
+  return apiRequest('/api/metadata/summary');
+}
+
+export async function fetchMetadataDictionaries(): Promise<MetadataDictionary[]> {
+  return (await apiRequest<{ items: MetadataDictionary[] }>('/api/metadata/dictionaries')).items;
+}
+
+export async function createMetadataDictionary(input: {
+  code: string;
+  name: string;
+  description?: string;
+  valueType: MetadataDictionary['valueType'];
+}): Promise<void> {
+  await apiRequest('/api/metadata/dictionaries', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updateMetadataDictionary(
+  code: string,
+  input: {
+    name?: string;
+    description?: string;
+    status?: MetadataDictionary['status'];
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/dictionaries/${encodeURIComponent(code)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchMetadataDictionaryItems(
+  code: string,
+): Promise<MetadataDictionaryItem[]> {
+  return (
+    await apiRequest<{ items: MetadataDictionaryItem[] }>(
+      `/api/metadata/dictionaries/${encodeURIComponent(code)}/items`,
+    )
+  ).items;
+}
+
+export async function createMetadataDictionaryItem(
+  code: string,
+  input: {
+    code: string;
+    label: string;
+    value: unknown;
+    description?: string;
+    sortOrder: number;
+    status: MetadataDictionaryItem['status'];
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/dictionaries/${encodeURIComponent(code)}/items`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateMetadataDictionaryItem(
+  code: string,
+  itemId: string,
+  input: {
+    label?: string;
+    value?: unknown;
+    description?: string;
+    sortOrder?: number;
+    status?: MetadataDictionaryItem['status'];
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/dictionaries/${encodeURIComponent(code)}/items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchTaxonomies(): Promise<Taxonomy[]> {
+  return (await apiRequest<{ items: Taxonomy[] }>('/api/metadata/taxonomies')).items;
+}
+
+export async function createTaxonomy(input: {
+  code: string;
+  name: string;
+  kind: Taxonomy['kind'];
+  description?: string;
+  hierarchical: boolean;
+}): Promise<void> {
+  await apiRequest('/api/metadata/taxonomies', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updateTaxonomy(
+  code: string,
+  input: {
+    name?: string;
+    description?: string;
+    status?: Taxonomy['status'];
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/taxonomies/${encodeURIComponent(code)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchTaxonomyTerms(code: string): Promise<TaxonomyTerm[]> {
+  return (
+    await apiRequest<{ items: TaxonomyTerm[] }>(
+      `/api/metadata/taxonomies/${encodeURIComponent(code)}/terms`,
+    )
+  ).items;
+}
+
+export async function createTaxonomyTerm(
+  code: string,
+  input: {
+    code: string;
+    name: string;
+    parentId?: string | null;
+    color?: string | null;
+    sortOrder: number;
+    status: TaxonomyTerm['status'];
+    metadata: Record<string, unknown>;
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/taxonomies/${encodeURIComponent(code)}/terms`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateTaxonomyTerm(
+  code: string,
+  termId: string,
+  input: {
+    name?: string;
+    parentId?: string | null;
+    color?: string | null;
+    sortOrder?: number;
+    status?: TaxonomyTerm['status'];
+  },
+): Promise<void> {
+  await apiRequest(`/api/metadata/taxonomies/${encodeURIComponent(code)}/terms/${termId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchExchangeDatasets(): Promise<ExchangeDataset[]> {
+  return (await apiRequest<{ items: ExchangeDataset[] }>('/api/data-exchange/datasets')).items;
+}
+
+export async function fetchExchangeRuns(): Promise<ExchangeRun[]> {
+  return (await apiRequest<{ items: ExchangeRun[] }>('/api/data-exchange/runs')).items;
+}
+
+export async function exportExchangeDataset(code: string): Promise<Record<string, unknown>> {
+  return apiRequest(`/api/data-exchange/datasets/${encodeURIComponent(code)}/export`);
+}
+
+export async function previewExchangeImport(
+  code: string,
+  document: unknown,
+): Promise<ExchangePreview> {
+  return (
+    await apiRequest<{ preview: ExchangePreview }>(
+      `/api/data-exchange/datasets/${encodeURIComponent(code)}/preview`,
+      { method: 'POST', body: JSON.stringify({ document }) },
+    )
+  ).preview;
+}
+
+export async function applyExchangeImport(
+  code: string,
+  document: unknown,
+): Promise<ExchangePreview> {
+  return (
+    await apiRequest<{ result: ExchangePreview }>(
+      `/api/data-exchange/datasets/${encodeURIComponent(code)}/import`,
+      { method: 'POST', body: JSON.stringify({ document }) },
+    )
+  ).result;
+}
+
+export async function searchResources(query: string): Promise<SearchGroup[]> {
+  return (await apiRequest<{ groups: SearchGroup[] }>(`/api/search?q=${encodeURIComponent(query)}`))
+    .groups;
 }
 
 export async function fetchIntegrationProviders(): Promise<IntegrationProvider[]> {

@@ -110,6 +110,10 @@ PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定
 - `notification_deliveries`：外部通知通道的投递状态
 - `storage_assets`：经过云对象复核的稳定文件身份和生命周期
 - `storage_asset_references`：领域资源到资产的显式引用
+- `metadata_dictionaries` / `metadata_dictionary_items`：类型化数据字典和稳定代码条目
+- `taxonomies` / `taxonomy_terms`：层级分类或扁平标签及其词条
+- `resource_terms`：领域资源到分类词条的通用关联
+- `data_exchange_runs`：注册数据集的导入导出结果与摘要
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。
@@ -140,6 +144,14 @@ AES-256-GCM 独立加密且 API 只暴露已配置字段名。连接默认停用
 以服务端取得的哈希、大小和类型激活资产。领域数据只保存 `assetId`，并通过引用表声明占用；仍被
 引用的资产不能删除。归档可恢复，最终删除由 Worker 异步执行。完整约束见
 [文件与媒体资产中心](media-assets.md)。
+
+### 元数据、搜索与数据交换
+
+数据字典负责稳定枚举及其类型约束；分类法负责可选层级的 Category 和扁平 Tag，领域资源通过
+`resource_type + resource_id` 与词条关联。统一搜索由 Provider 注册表聚合，每个搜索源声明独立读取
+权限，结果只会返回当前账号本来就能访问的资源。数据交换同样采用注册表；基础层内置字典和分类法
+JSON 适配器，执行版本校验、引用预检、事务 Upsert、运行记录和审计。完整约束见
+[元数据、统一搜索与数据交换](metadata-search-exchange.md)。
 
 ### 部署
 
