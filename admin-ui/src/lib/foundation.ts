@@ -1,6 +1,7 @@
 import {
   Activity,
   Bell,
+  BookOpenText,
   DatabaseZap,
   Gauge,
   Images,
@@ -26,6 +27,7 @@ export type SectionKey =
   | 'metadata'
   | 'audit'
   | 'presentation'
+  | 'cms'
   | 'settings';
 
 export interface SectionMeta {
@@ -68,7 +70,7 @@ export const sections: Record<SectionKey, SectionMeta> = {
     icon: Waypoints,
     permission: 'admin.access',
     context: [
-      { label: '内置模块', value: '14', note: '含 presentation · search · data-exchange' },
+      { label: '内置模块', value: '15', note: '含 cms · presentation · data-exchange' },
       { label: '扩展目录', value: 'src/modules', note: '业务模块显式注册' },
     ],
   },
@@ -200,6 +202,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '资源引用', value: 'Asset ID', note: 'Logo 与站点图片不绑定存储 URL' },
       { label: '发布方式', value: 'Public profile', note: '只公开安全的品牌呈现字段' },
+    ],
+  },
+  cms: {
+    id: 'cms',
+    group: '站点',
+    title: '轻量内容中心',
+    navLabel: '内容管理',
+    description: '管理通用页面与文章，保留清晰的草稿、发布、版本和分类边界。',
+    href: '/cms',
+    icon: BookOpenText,
+    permission: 'cms.read',
+    context: [
+      { label: '内容类型', value: 'Page + Article', note: '不预设任何行业内容模型' },
+      { label: '正文格式', value: 'Markdown', note: '版本化保存 · 安全公共渲染' },
     ],
   },
   settings: {

@@ -2,6 +2,7 @@ import { ilike, or } from 'drizzle-orm';
 
 import {
   accounts,
+  cmsContentEntries,
   integrationConnections,
   metadataDictionaries,
   storageAssets,
@@ -34,6 +35,34 @@ export const baseSearchProviders: SearchProvider[] = [
         title: row.displayName,
         subtitle: `${row.email} · ${row.status === 'active' ? '启用' : '停用'}`,
         href: '/access',
+      }));
+    },
+  },
+  {
+    code: 'cms',
+    label: '内容中心',
+    permission: 'cms.read',
+    async search(db, query, limit) {
+      const pattern = `%${query}%`;
+      const rows = await db
+        .select({
+          id: cmsContentEntries.id,
+          title: cmsContentEntries.title,
+          slug: cmsContentEntries.slug,
+          type: cmsContentEntries.type,
+          status: cmsContentEntries.status,
+        })
+        .from(cmsContentEntries)
+        .where(or(ilike(cmsContentEntries.title, pattern), ilike(cmsContentEntries.slug, pattern)))
+        .limit(limit);
+      return rows.map((row) => ({
+        id: row.id,
+        source: 'cms',
+        sourceLabel: '内容中心',
+        kind: row.type,
+        title: row.title,
+        subtitle: `${row.slug} · ${row.status}`,
+        href: `/cms/${row.id}`,
       }));
     },
   },

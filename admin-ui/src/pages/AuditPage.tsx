@@ -18,6 +18,11 @@ function actionLabel(action: string): string {
     'iam.role_updated': '更新角色',
     'system.setting_updated': '更新设置',
     'presentation.updated': '更新品牌呈现',
+    'cms.content_created': '创建内容',
+    'cms.content_updated': '更新内容',
+    'cms.content_published': '发布内容',
+    'cms.content_draft': '撤回内容',
+    'cms.content_archived': '归档内容',
     'auth.login_succeeded': '登录成功',
     'auth.password_changed': '修改密码',
   };

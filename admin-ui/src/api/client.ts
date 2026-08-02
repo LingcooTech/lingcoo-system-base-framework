@@ -402,6 +402,61 @@ export type PresentationUpdate = Omit<
   'id' | 'version' | 'updatedAt' | 'assets'
 > & { changeReason?: string };
 
+export interface CmsTerm {
+  id: string;
+  code: string;
+  name: string;
+  color: string | null;
+  taxonomyCode: string;
+  taxonomyName: string;
+  taxonomyKind: 'tag' | 'category';
+}
+
+export interface CmsContent {
+  id: string;
+  type: 'article' | 'page';
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  bodyFormat: 'markdown';
+  coverAssetId: string | null;
+  socialImageAssetId: string | null;
+  status: 'draft' | 'published' | 'archived';
+  pinned: boolean;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  publishedAt: string | null;
+  currentVersion: number;
+  updatedAt: string;
+  author: { id: string; displayName: string } | null;
+  terms: CmsTerm[];
+  assets: Record<string, PresentationAsset>;
+}
+
+export interface CmsContentInput {
+  type: CmsContent['type'];
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  coverAssetId: string | null;
+  socialImageAssetId: string | null;
+  pinned: boolean;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  termIds: string[];
+  changeReason?: string;
+}
+
+export interface CmsVersion {
+  id: string;
+  version: number;
+  changeReason: string | null;
+  createdAt: string;
+  actor: { id: string; displayName: string } | null;
+}
+
 export interface AssetUploadIntent {
   asset: StorageAsset;
   upload: {
@@ -560,6 +615,58 @@ export async function updatePresentation(input: PresentationUpdate): Promise<Pre
       body: JSON.stringify(input),
     })
   ).presentation;
+}
+
+export async function fetchCmsContents(
+  filters: { type?: string; status?: string; search?: string } = {},
+): Promise<{ items: CmsContent[]; total: number }> {
+  const params = new URLSearchParams();
+  if (filters.type) params.set('type', filters.type);
+  if (filters.status) params.set('status', filters.status);
+  if (filters.search) params.set('search', filters.search);
+  return apiRequest(`/api/cms/entries${params.size ? `?${params}` : ''}`);
+}
+
+export async function fetchCmsContent(contentId: string): Promise<CmsContent> {
+  return (await apiRequest<{ content: CmsContent }>(`/api/cms/entries/${contentId}`)).content;
+}
+
+export async function createCmsContent(input: CmsContentInput): Promise<CmsContent> {
+  return (
+    await apiRequest<{ content: CmsContent }>('/api/cms/entries', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  ).content;
+}
+
+export async function updateCmsContent(
+  contentId: string,
+  input: CmsContentInput,
+): Promise<CmsContent> {
+  return (
+    await apiRequest<{ content: CmsContent }>(`/api/cms/entries/${contentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    })
+  ).content;
+}
+
+export async function updateCmsStatus(
+  contentId: string,
+  status: CmsContent['status'],
+): Promise<CmsContent> {
+  return (
+    await apiRequest<{ content: CmsContent }>(`/api/cms/entries/${contentId}/status`, {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    })
+  ).content;
+}
+
+export async function fetchCmsVersions(contentId: string): Promise<CmsVersion[]> {
+  return (await apiRequest<{ items: CmsVersion[] }>(`/api/cms/entries/${contentId}/versions`))
+    .items;
 }
 
 export async function updateSystemSetting(

@@ -6,6 +6,7 @@ import { AccessPage } from './pages/AccessPage';
 import { AssetsPage } from './pages/AssetsPage';
 import { AuditPage } from './pages/AuditPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { CmsPage } from './pages/CmsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
@@ -67,6 +68,8 @@ function RoutedApp() {
     <AccessPage />
   ) : pathname.startsWith('/audit') ? (
     <AuditPage />
+  ) : pathname.startsWith('/cms') ? (
+    <CmsPage />
   ) : pathname.startsWith('/assets') ? (
     <AssetsPage />
   ) : pathname.startsWith('/integrations') ? (

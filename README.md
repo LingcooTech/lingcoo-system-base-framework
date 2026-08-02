@@ -16,6 +16,7 @@
 - 通知中心：站内通知、系统公告、未读状态和通过 SMTP 异步执行的邮件投递
 - 资产中心：受约束的浏览器直传、对象复核、统一资产身份、引用保护和异步删除
 - 品牌呈现：版本化品牌档案、Asset ID 图片引用、公共站点配置和管理端实时预览
+- 轻量 CMS：通用页面与文章、Markdown、草稿预览、发布归档、版本和分类标签
 - 治理基础：类型化非敏感系统设置、版本历史、统一审计写入与后台查询
 - 数据基础：类型化数据字典、层级分类、扁平标签、资源关联和版本化数据集交换
 - 统一搜索：权限感知的 Search Provider 注册表和 `⌘/Ctrl + K` 管理后台入口
@@ -24,8 +25,8 @@
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
-`data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation` 和 `observability` 基础模块，
-没有商品、课程、订单、内容等领域概念。
+`data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`cms` 和 `observability` 基础模块，
+没有商品、课程、订单等具体行业领域概念；CMS 仅提供通用页面与文章边界。
 
 ## 架构来源
 
@@ -120,6 +121,7 @@ docker compose -f docker-compose.prod.yml up -d
 - [后台任务、Outbox 与通知](docs/jobs-notifications.md)
 - [文件与媒体资产中心](docs/media-assets.md)
 - [品牌与站点呈现](docs/presentation.md)
+- [轻量内容中心](docs/cms-lite.md)
 - [元数据、统一搜索与数据交换](docs/metadata-search-exchange.md)
 - [运行可观测性](docs/observability.md)
 - [领域扩展指南](docs/domain-extension.md)

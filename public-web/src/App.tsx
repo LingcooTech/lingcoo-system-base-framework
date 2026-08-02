@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
 import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface PublicPresentation {
   displayName: string;
@@ -26,6 +28,117 @@ interface PublicPresentation {
   footerCopyright: string | null;
   filingInfo: string | null;
   assets: Record<string, { publicUrl: string | null }>;
+}
+
+interface CmsContent {
+  id: string;
+  type: 'article' | 'page';
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  coverAssetId: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  publishedAt: string | null;
+  author: { displayName: string } | null;
+  terms: { id: string; name: string; color: string | null }[];
+  assets: Record<string, { publicUrl: string | null }>;
+}
+
+function CmsContentView({ endpoint, preview = false }: { endpoint: string; preview?: boolean }) {
+  const [content, setContent] = useState<CmsContent | null>(null);
+  const [missing, setMissing] = useState(false);
+
+  useEffect(() => {
+    fetch(endpoint)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('missing'))))
+      .then((result: { content: CmsContent }) => {
+        setContent(result.content);
+        document.title = result.content.seoTitle || result.content.title;
+        const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+        if (description && result.content.seoDescription)
+          description.content = result.content.seoDescription;
+      })
+      .catch(() => setMissing(true));
+  }, [endpoint]);
+
+  if (missing)
+    return (
+      <main className="cms-public-state">
+        <h1>内容不存在或暂不可访问</h1>
+        <a href="/">返回首页</a>
+      </main>
+    );
+  if (!content)
+    return (
+      <main className="cms-public-state">
+        <p>正在加载内容…</p>
+      </main>
+    );
+  const coverUrl = content.coverAssetId ? content.assets[content.coverAssetId]?.publicUrl : null;
+  return (
+    <main className="cms-public-page">
+      <header className="cms-public-header">
+        <a href="/">← 返回首页</a>
+        {preview ? <span>草稿预览</span> : null}
+      </header>
+      <article>
+        <p className="cms-public-type">{content.type === 'page' ? 'Page' : 'Article'}</p>
+        <h1>{content.title}</h1>
+        {content.excerpt ? <p className="cms-public-excerpt">{content.excerpt}</p> : null}
+        {content.type === 'article' ? (
+          <div className="cms-public-meta">
+            <span>{content.author?.displayName || '系统编辑'}</span>
+            {content.publishedAt ? (
+              <time>{new Date(content.publishedAt).toLocaleDateString()}</time>
+            ) : null}
+          </div>
+        ) : null}
+        {coverUrl ? <img className="cms-public-cover" alt="" src={coverUrl} /> : null}
+        {content.terms.length ? (
+          <div className="cms-public-terms">
+            {content.terms.map((term) => (
+              <span key={term.id} style={term.color ? { borderColor: term.color } : undefined}>
+                {term.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div className="cms-markdown">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.body}</ReactMarkdown>
+        </div>
+      </article>
+    </main>
+  );
+}
+
+function ArticleIndex() {
+  const [items, setItems] = useState<CmsContent[]>([]);
+  useEffect(() => {
+    fetch('/api/public/cms/articles')
+      .then((response) => response.json())
+      .then((result: { items: CmsContent[] }) => setItems(result.items))
+      .catch(() => setItems([]));
+  }, []);
+  return (
+    <main className="cms-public-index">
+      <header>
+        <a href="/">← 返回首页</a>
+        <p>Content</p>
+        <h1>文章</h1>
+      </header>
+      <div>
+        {items.map((item) => (
+          <a href={'/articles/' + item.slug} key={item.id}>
+            <small>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}</small>
+            <h2>{item.title}</h2>
+            <p>{item.excerpt}</p>
+          </a>
+        ))}
+      </div>
+    </main>
+  );
 }
 
 const layers = [
@@ -88,6 +201,19 @@ function App() {
         { label: '基础架构', href: '#architecture' },
         { label: '运行状态', href: '/health' },
       ];
+
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  if (pathParts[0] === 'preview' && pathParts[1] === 'content' && pathParts[2]) {
+    return <CmsContentView endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'} preview />;
+  }
+  if (pathParts[0] === 'articles' && !pathParts[1]) return <ArticleIndex />;
+  if ((pathParts[0] === 'articles' || pathParts[0] === 'pages') && pathParts[1]) {
+    return (
+      <CmsContentView
+        endpoint={'/api/public/cms/' + pathParts[0] + '/' + encodeURIComponent(pathParts[1])}
+      />
+    );
+  }
 
   return (
     <main>

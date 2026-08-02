@@ -609,3 +609,60 @@ export const presentationProfileVersions = pgTable(
     ),
   ],
 );
+
+export const cmsContentEntries = pgTable(
+  'cms_content_entries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    type: text('type').notNull(),
+    slug: text('slug').notNull(),
+    title: text('title').notNull(),
+    excerpt: text('excerpt'),
+    body: text('body').notNull().default(''),
+    bodyFormat: text('body_format').notNull().default('markdown'),
+    coverAssetId: uuid('cover_asset_id').references(() => storageAssets.id, {
+      onDelete: 'restrict',
+    }),
+    socialImageAssetId: uuid('social_image_asset_id').references(() => storageAssets.id, {
+      onDelete: 'restrict',
+    }),
+    status: text('status').notNull().default('draft'),
+    pinned: boolean('pinned').notNull().default(false),
+    seoTitle: text('seo_title'),
+    seoDescription: text('seo_description'),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    currentVersion: integer('current_version').notNull().default(1),
+    authorId: uuid('author_id').references(() => accounts.id, { onDelete: 'set null' }),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    updatedBy: uuid('updated_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('cms_content_entries_type_slug_idx').on(table.type, table.slug),
+    index('cms_content_entries_type_status_published_idx').on(
+      table.type,
+      table.status,
+      table.publishedAt,
+    ),
+  ],
+);
+
+export const cmsContentVersions = pgTable(
+  'cms_content_versions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    contentId: uuid('content_id')
+      .notNull()
+      .references(() => cmsContentEntries.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+    changeReason: text('change_reason'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('cms_content_versions_content_version_idx').on(table.contentId, table.version),
+    index('cms_content_versions_content_created_idx').on(table.contentId, table.createdAt),
+  ],
+);

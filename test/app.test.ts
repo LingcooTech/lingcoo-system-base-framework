@@ -102,6 +102,13 @@ test('brand presentation management requires authentication', async () => {
   await app.close();
 });
 
+test('CMS management requires authentication', async () => {
+  const app = await buildApp(testEnv());
+  const response = await app.inject({ method: 'GET', url: '/api/cms/entries' });
+  assert.equal(response.statusCode, 401);
+  await app.close();
+});
+
 test('metadata, search and data exchange routes require authentication', async () => {
   const app = await buildApp(testEnv());
   const [metadata, search, datasets] = await Promise.all([
