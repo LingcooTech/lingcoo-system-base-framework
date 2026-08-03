@@ -1,27 +1,41 @@
 import { Button } from '@lingcoo/frame-ui/button';
 import { Input } from '@lingcoo/frame-ui/input';
 import { Textarea } from '@lingcoo/frame-ui/textarea';
-import { Archive, ExternalLink, FilePlus2, Plus, Send } from 'lucide-react';
+import { useToast } from '@lingcoo/frame-ui/toast';
+import { Archive, CalendarClock, ExternalLink, FilePlus2, Plus, Send } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import {
   createCmsContent,
+  createCmsRedirect,
+  deleteCmsRedirect,
   fetchCmsContent,
   fetchCmsContents,
+  fetchCmsRedirects,
+  fetchPresentation,
   fetchCmsVersions,
   fetchTaxonomies,
   fetchTaxonomyTerms,
+  scheduleCmsContent,
   updateCmsContent,
+  updateCmsRedirect,
   updateCmsStatus,
   type CmsContent,
   type CmsContentInput,
+  type CmsRedirect,
+  type CmsRedirectInput,
   type CmsVersion,
   type PresentationAsset,
+  type PresentationProfile,
   type StorageAsset,
   type TaxonomyTerm,
 } from '../api/client';
 import { AssetPicker } from '../components/shared/AssetPicker';
+import { AdminPagination } from '../components/shared/AdminPagination';
+import { BulkActionBar } from '../components/shared/BulkActionBar';
+import { useConfirm } from '../components/shared/ConfirmProvider';
 import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
+import { FilterBar } from '../components/shared/FilterBar';
 import { PageFrame } from '../components/shared/PageFrame';
 import { ResourceSection } from '../components/shared/ResourceSection';
 import { StatusPill } from '../components/shared/StatusPill';
@@ -43,22 +57,279 @@ const emptyDraft = (type: 'article' | 'page'): CmsContentInput => ({
   termIds: [],
 });
 
+const cmsPageSize = 20;
+
+function RedirectManager({ canWrite }: { canWrite: boolean }) {
+  const confirm = useConfirm();
+  const { toast } = useToast();
+  const [items, setItems] = useState<CmsRedirect[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<CmsRedirectInput>({
+    sourcePath: '',
+    targetPath: '',
+    statusCode: 301,
+    enabled: true,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    try {
+      setItems(await fetchCmsRedirects());
+    } catch (error) {
+      toast({
+        title: '重定向加载失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchCmsRedirects()
+      .then(setItems)
+      .catch(() => toast({ title: '重定向加载失败', tone: 'danger' }))
+      .finally(() => setLoading(false));
+  }, [toast]);
+
+  function reset() {
+    setEditingId(null);
+    setDraft({ sourcePath: '', targetPath: '', statusCode: 301, enabled: true });
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      if (editingId) await updateCmsRedirect(editingId, draft);
+      else await createCmsRedirect(draft);
+      toast({ title: editingId ? '重定向已更新' : '重定向已创建', tone: 'success' });
+      reset();
+      await load();
+    } catch (error) {
+      toast({
+        title: '重定向保存失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove(item: CmsRedirect) {
+    if (
+      !(await confirm({
+        title: '删除重定向',
+        description: `${item.sourcePath} 将不再跳转到 ${item.targetPath}。`,
+        confirmLabel: '删除',
+        tone: 'danger',
+      }))
+    )
+      return;
+    try {
+      await deleteCmsRedirect(item.id);
+      if (editingId === item.id) reset();
+      await load();
+      toast({ title: '重定向已删除', tone: 'success' });
+    } catch (error) {
+      toast({
+        title: '重定向删除失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
+  }
+
+  async function toggle(item: CmsRedirect) {
+    try {
+      await updateCmsRedirect(item.id, {
+        sourcePath: item.sourcePath,
+        targetPath: item.targetPath,
+        statusCode: item.statusCode,
+        enabled: !item.enabled,
+      });
+      await load();
+      toast({ title: item.enabled ? '重定向已停用' : '重定向已启用', tone: 'success' });
+    } catch (error) {
+      toast({
+        title: '重定向状态更新失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
+  }
+
+  const columns: DataTableColumn<CmsRedirect>[] = [
+    { key: 'source', header: '来源路径', cell: (item) => <code>{item.sourcePath}</code> },
+    { key: 'target', header: '目标路径', cell: (item) => <code>{item.targetPath}</code> },
+    { key: 'code', header: '状态码', cell: (item) => item.statusCode },
+    {
+      key: 'enabled',
+      header: '状态',
+      cell: (item) => (
+        <StatusPill tone={item.enabled ? 'ok' : 'neutral'}>
+          {item.enabled ? '已启用' : '已停用'}
+        </StatusPill>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '操作',
+      align: 'right',
+      cell: (item) =>
+        canWrite ? (
+          <div className="integration-actions">
+            <Button
+              onClick={() => {
+                setEditingId(item.id);
+                setDraft({
+                  sourcePath: item.sourcePath,
+                  targetPath: item.targetPath,
+                  statusCode: item.statusCode,
+                  enabled: item.enabled,
+                });
+              }}
+              size="sm"
+              variant="ghost"
+            >
+              编辑
+            </Button>
+            <Button onClick={() => void toggle(item)} size="sm" variant="ghost">
+              {item.enabled ? '停用' : '启用'}
+            </Button>
+            <Button onClick={() => void remove(item)} size="sm" variant="ghost">
+              删除
+            </Button>
+          </div>
+        ) : null,
+    },
+  ];
+
+  return (
+    <ResourceSection
+      title="URL 重定向"
+      description="仅对不存在的公共路径执行站内 301 或 302 跳转。"
+    >
+      {canWrite ? (
+        <form className="cms-redirect-form" onSubmit={submit}>
+          <Input
+            aria-label="来源路径"
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, sourcePath: event.target.value }))
+            }
+            placeholder="/old-path"
+            required
+            value={draft.sourcePath}
+          />
+          <Input
+            aria-label="目标路径"
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, targetPath: event.target.value }))
+            }
+            placeholder="/pages/new-path"
+            required
+            value={draft.targetPath}
+          />
+          <select
+            aria-label="重定向状态码"
+            className="integration-select"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                statusCode: Number(event.target.value) as 301 | 302,
+              }))
+            }
+            value={draft.statusCode}
+          >
+            <option value={301}>301 永久</option>
+            <option value={302}>302 临时</option>
+          </select>
+          <Button loading={saving} size="sm" type="submit">
+            {editingId ? '保存修改' : '添加重定向'}
+          </Button>
+          {editingId ? (
+            <Button onClick={reset} size="sm" type="button" variant="ghost">
+              取消编辑
+            </Button>
+          ) : null}
+        </form>
+      ) : null}
+      <DataTable
+        columns={columns}
+        emptyTitle="暂无重定向"
+        getRowKey={(item) => item.id}
+        loading={loading}
+        rows={items}
+      />
+    </ResourceSection>
+  );
+}
+
 function CmsList() {
   const { hasPermission } = useAuth();
+  const confirm = useConfirm();
+  const { toast } = useToast();
   const [items, setItems] = useState<CmsContent[]>([]);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [status, setStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCmsContents({
       type: type || undefined,
       status: status || undefined,
       search: search || undefined,
+      page,
+      pageSize: cmsPageSize,
     })
-      .then((result) => setItems(result.items))
-      .catch(() => setItems([]));
-  }, [search, status, type]);
+      .then((result) => {
+        setItems(result.items);
+        setTotal(result.total);
+        setSelectedKeys([]);
+      })
+      .catch(() => toast({ title: '内容列表加载失败', tone: 'danger' }))
+      .finally(() => setLoading(false));
+  }, [page, search, status, toast, type]);
+
+  async function bulkStatus(nextStatus: CmsContent['status']) {
+    const label = nextStatus === 'published' ? '发布' : nextStatus === 'archived' ? '归档' : '撤回';
+    if (
+      !(await confirm({
+        title: `批量${label}内容`,
+        description: `将处理 ${selectedKeys.length} 项内容。`,
+      }))
+    )
+      return;
+    try {
+      await Promise.all(selectedKeys.map((id) => updateCmsStatus(id, nextStatus)));
+      toast({ title: `已批量${label} ${selectedKeys.length} 项内容`, tone: 'success' });
+      const result = await fetchCmsContents({
+        type: type || undefined,
+        status: status || undefined,
+        search: search || undefined,
+        page,
+        pageSize: cmsPageSize,
+      });
+      setItems(result.items);
+      setTotal(result.total);
+      setSelectedKeys([]);
+    } catch (error) {
+      toast({
+        title: `批量${label}失败`,
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
+  }
 
   const columns: DataTableColumn<CmsContent>[] = [
     {
@@ -87,7 +358,13 @@ function CmsList() {
             row.status === 'published' ? 'ok' : row.status === 'archived' ? 'danger' : 'neutral'
           }
         >
-          {row.status === 'published' ? '已发布' : row.status === 'archived' ? '已归档' : '草稿'}
+          {row.status === 'published'
+            ? '已发布'
+            : row.status === 'archived'
+              ? '已归档'
+              : row.scheduledPublishAt
+                ? '计划发布'
+                : '草稿'}
         </StatusPill>
       ),
     },
@@ -99,11 +376,29 @@ function CmsList() {
         title="页面与文章"
         description="只管理通用内容；行业内容类型由对应领域模块注册。"
       >
-        <div className="cms-toolbar">
+        <FilterBar
+          actions={
+            <Button size="sm" type="submit">
+              查询
+            </Button>
+          }
+          onReset={() => {
+            setSearchInput('');
+            setSearch('');
+            setType('');
+            setStatus('');
+            setPage(1);
+          }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSearch(searchInput);
+            setPage(1);
+          }}
+        >
           <Input
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => setSearchInput(event.target.value)}
             placeholder="搜索标题或 Slug"
-            value={search}
+            value={searchInput}
           />
           <select
             className="integration-select"
@@ -124,6 +419,19 @@ function CmsList() {
             <option value="published">已发布</option>
             <option value="archived">已归档</option>
           </select>
+        </FilterBar>
+        <BulkActionBar onClear={() => setSelectedKeys([])} selectedCount={selectedKeys.length}>
+          <Button onClick={() => void bulkStatus('published')} size="sm">
+            发布
+          </Button>
+          <Button onClick={() => void bulkStatus('draft')} size="sm" variant="ghost">
+            撤回
+          </Button>
+          <Button onClick={() => void bulkStatus('archived')} size="sm" variant="danger">
+            归档
+          </Button>
+        </BulkActionBar>
+        <div className="cms-toolbar cms-toolbar--actions">
           {hasPermission('cms.write') ? (
             <div className="cms-create-actions">
               <Button asChild size="sm" variant="secondary">
@@ -145,11 +453,61 @@ function CmsList() {
           columns={columns}
           emptyTitle="还没有页面或文章"
           getRowKey={(row) => row.id}
+          loading={loading}
+          onSelectionChange={hasPermission('cms.publish') ? setSelectedKeys : undefined}
           rows={items}
+          selectedKeys={selectedKeys}
         />
+        <AdminPagination onPageChange={setPage} page={page} pageSize={cmsPageSize} total={total} />
       </ResourceSection>
+      <RedirectManager canWrite={hasPermission('cms.write')} />
     </PageFrame>
   );
+}
+
+function SeoPreview({
+  assets,
+  draft,
+  presentation,
+}: {
+  assets: Record<string, PresentationAsset>;
+  draft: CmsContentInput;
+  presentation: PresentationProfile | null;
+}) {
+  const title = draft.seoTitle || draft.title || '页面标题';
+  const description = draft.seoDescription || draft.excerpt || '页面描述会显示在这里。';
+  const path = `/${draft.type === 'article' ? 'articles' : 'pages'}/${draft.slug || 'slug'}`;
+  const url = `${presentation?.publicUrl || window.location.origin}${path}`;
+  const imageId = draft.socialImageAssetId || draft.coverAssetId;
+  const imageUrl = imageId ? assets[imageId]?.publicUrl : null;
+  return (
+    <section className="cms-seo-preview" aria-label="SEO 预览">
+      <div className="cms-search-preview">
+        <small>{url}</small>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+      <div className="cms-social-preview">
+        {imageUrl ? (
+          <img alt="" src={imageUrl} />
+        ) : (
+          <div aria-hidden className="cms-social-preview__empty" />
+        )}
+        <div>
+          <small>{presentation?.displayName || 'Lingcoo Frame'}</small>
+          <strong>{title}</strong>
+          <p>{description}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function toDateTimeInput(value: string | null) {
+  if (!value) return '';
+  const date = new Date(value);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
 }
 
 function CmsEditor({
@@ -161,17 +519,27 @@ function CmsEditor({
 }) {
   const { hasPermission } = useAuth();
   const { navigate } = useRouter();
+  const confirm = useConfirm();
+  const { toast } = useToast();
   const [content, setContent] = useState<CmsContent | null>(null);
   const [draft, setDraft] = useState<CmsContentInput>(emptyDraft(initialType));
   const [assets, setAssets] = useState<Record<string, PresentationAsset>>({});
   const [terms, setTerms] = useState<(TaxonomyTerm & { taxonomyName: string })[]>([]);
   const [versions, setVersions] = useState<CmsVersion[]>([]);
+  const [presentation, setPresentation] = useState<PresentationProfile | null>(null);
+  const [scheduleAt, setScheduleAt] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [scheduleMin] = useState(() =>
+    toDateTimeInput(new Date(Date.now() + 60_000).toISOString()),
+  );
   const canWrite = hasPermission('cms.write');
   const canPublish = hasPermission('cms.publish');
 
   useEffect(() => {
+    fetchPresentation()
+      .then(setPresentation)
+      .catch(() => undefined);
     fetchTaxonomies()
       .then(async (taxonomies) =>
         (
@@ -207,6 +575,7 @@ function CmsEditor({
         });
         setAssets(item.assets);
         setVersions(history);
+        setScheduleAt(toDateTimeInput(item.scheduledPublishAt));
       })
       .catch(() => setMessage('内容加载失败。'));
   }, [contentId]);
@@ -244,10 +613,16 @@ function CmsEditor({
       setContent(saved);
       setAssets(saved.assets);
       setMessage('内容已保存。');
+      toast({ title: '内容已保存', tone: 'success' });
       if (!contentId) navigate('/cms/' + saved.id);
       else setVersions(await fetchCmsVersions(saved.id));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '保存失败');
+      toast({
+        title: '内容保存失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
     } finally {
       setSaving(false);
     }
@@ -255,6 +630,16 @@ function CmsEditor({
 
   async function changeStatus(status: CmsContent['status']) {
     if (!content) return;
+    if (
+      status === 'archived' &&
+      !(await confirm({
+        title: '归档内容',
+        description: '归档后公共地址将不再展示该内容。',
+        confirmLabel: '归档',
+        tone: 'danger',
+      }))
+    )
+      return;
     try {
       const saved = await updateCmsStatus(content.id, status);
       setContent(saved);
@@ -265,8 +650,41 @@ function CmsEditor({
             ? '内容已归档。'
             : '内容已转为草稿。',
       );
+      toast({
+        title:
+          status === 'published'
+            ? '内容已发布'
+            : status === 'archived'
+              ? '内容已归档'
+              : '内容已撤回',
+        tone: 'success',
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '状态修改失败');
+      toast({
+        title: '内容状态更新失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
+  }
+
+  async function updateSchedule(publishAt: string | null) {
+    if (!content) return;
+    try {
+      const saved = await scheduleCmsContent(
+        content.id,
+        publishAt ? new Date(publishAt).toISOString() : null,
+      );
+      setContent(saved);
+      setScheduleAt(toDateTimeInput(saved.scheduledPublishAt));
+      toast({ title: publishAt ? '发布计划已设置' : '发布计划已取消', tone: 'success' });
+    } catch (error) {
+      toast({
+        title: '发布计划更新失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
     }
   }
 
@@ -430,6 +848,47 @@ function CmsEditor({
                 value={draft.seoDescription ?? ''}
               />
             </label>
+            <SeoPreview assets={assets} draft={draft} presentation={presentation} />
+            {content && canPublish && content.status !== 'archived' ? (
+              <div className="cms-schedule-control">
+                <label>
+                  计划发布时间
+                  <Input
+                    min={scheduleMin}
+                    onChange={(event) => setScheduleAt(event.target.value)}
+                    type="datetime-local"
+                    value={scheduleAt}
+                  />
+                </label>
+                <div>
+                  <Button
+                    disabled={!scheduleAt}
+                    leadingIcon={<CalendarClock size={15} />}
+                    onClick={() => void updateSchedule(scheduleAt)}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    设置计划
+                  </Button>
+                  {content.scheduledPublishAt ? (
+                    <Button
+                      onClick={() => void updateSchedule(null)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      取消计划
+                    </Button>
+                  ) : null}
+                </div>
+                {content.scheduledPublishAt ? (
+                  <small>
+                    将在 {new Date(content.scheduledPublishAt).toLocaleString()} 自动发布
+                  </small>
+                ) : null}
+              </div>
+            ) : null}
             <label>
               修改说明
               <Input

@@ -7,7 +7,12 @@ import { buildApp } from '../src/app.js';
 import { accountRoles, accounts, passwordCredentials, roles } from '../src/db/schema.js';
 import { loadEnv } from '../src/lib/env.js';
 import { hashPassword } from '../src/lib/password.js';
-import { cmsContentInputSchema } from '../src/modules/cms/schemas.js';
+import {
+  cmsContentInputSchema,
+  cmsRedirectInputSchema,
+  cmsScheduleSchema,
+  publicCmsListSchema,
+} from '../src/modules/cms/schemas.js';
 
 test('CMS schema keeps content generic and validates stable slugs', () => {
   const base = {
@@ -25,6 +30,60 @@ test('CMS schema keeps content generic and validates stable slugs', () => {
   };
   assert.equal(cmsContentInputSchema.parse(base).slug, 'about-us');
   assert.equal(cmsContentInputSchema.safeParse({ ...base, slug: 'About Us' }).success, false);
+  assert.deepEqual(publicCmsListSchema.parse({ page: '2', limit: '20' }), {
+    page: 2,
+    pageSize: 20,
+  });
+});
+
+test('CMS redirect and schedule schemas reject unsafe workflow inputs', () => {
+  assert.deepEqual(
+    cmsRedirectInputSchema.parse({
+      sourcePath: '/old-about',
+      targetPath: '/pages/about',
+      statusCode: 301,
+      enabled: true,
+    }),
+    {
+      sourcePath: '/old-about',
+      targetPath: '/pages/about',
+      statusCode: 301,
+      enabled: true,
+    },
+  );
+  assert.equal(
+    cmsRedirectInputSchema.safeParse({
+      sourcePath: '//external.example/path',
+      targetPath: '/pages/about',
+    }).success,
+    false,
+  );
+  assert.equal(
+    cmsRedirectInputSchema.safeParse({
+      sourcePath: '/old-about?preview=true',
+      targetPath: '/pages/about',
+    }).success,
+    false,
+  );
+  assert.equal(
+    cmsRedirectInputSchema.safeParse({
+      sourcePath: '/same-path',
+      targetPath: '/same-path',
+    }).success,
+    false,
+  );
+  assert.equal(
+    cmsRedirectInputSchema.safeParse({
+      sourcePath: '/old-about',
+      targetPath: 'https://external.example/about',
+    }).success,
+    false,
+  );
+  assert.equal(
+    cmsScheduleSchema.parse({ publishAt: '2026-08-03T14:30:00+08:00' }).publishAt,
+    '2026-08-03T14:30:00+08:00',
+  );
+  assert.equal(cmsScheduleSchema.parse({ publishAt: null }).publishAt, null);
 });
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -141,6 +200,84 @@ test(
     });
     assert.equal(publicContent.statusCode, 200);
     assert.equal(publicContent.json().content.title, 'Frame CMS Test');
+    const publicList = await app.inject({
+      method: 'GET',
+      url: '/api/public/cms/articles?page=1&pageSize=12',
+    });
+    assert.equal(publicList.statusCode, 200);
+    assert.equal(publicList.json().page, 1);
+    assert.ok(publicList.json().total >= 1);
+    assert.ok(publicList.json().items.some((item: { id: string }) => item.id === contentId));
+
+    const sitemap = await app.inject({ method: 'GET', url: '/sitemap.xml' });
+    assert.equal(sitemap.statusCode, 200);
+    assert.match(sitemap.body, /articles\/frame-cms-test/);
+    const robots = await app.inject({ method: 'GET', url: '/robots.txt' });
+    assert.equal(robots.statusCode, 200);
+    assert.match(robots.body, /Sitemap:/);
+
+    const publishAt = new Date(Date.now() + 10 * 60_000).toISOString();
+    const scheduled = await app.inject({
+      method: 'POST',
+      url: `/api/cms/entries/${contentId}/schedule`,
+      headers: { cookie },
+      payload: { publishAt },
+    });
+    assert.equal(scheduled.statusCode, 200);
+    assert.equal(scheduled.json().content.status, 'draft');
+    assert.equal(scheduled.json().content.scheduledPublishAt, publishAt);
+    const cancelled = await app.inject({
+      method: 'POST',
+      url: `/api/cms/entries/${contentId}/schedule`,
+      headers: { cookie },
+      payload: { publishAt: null },
+    });
+    assert.equal(cancelled.statusCode, 200);
+    assert.equal(cancelled.json().content.scheduledPublishAt, null);
+
+    const sourcePath = `/legacy-${contentId}`;
+    const redirectCreated = await app.inject({
+      method: 'POST',
+      url: '/api/cms/redirects',
+      headers: { cookie },
+      payload: {
+        sourcePath,
+        targetPath: '/articles/frame-cms-test',
+        statusCode: 301,
+        enabled: true,
+      },
+    });
+    assert.equal(redirectCreated.statusCode, 201);
+    const redirectId = redirectCreated.json().redirect.id as string;
+    const redirected = await app.inject({ method: 'GET', url: sourcePath });
+    assert.equal(redirected.statusCode, 301);
+    assert.equal(redirected.headers.location, '/articles/frame-cms-test');
+    const redirectList = await app.inject({
+      method: 'GET',
+      url: '/api/cms/redirects',
+      headers: { cookie },
+    });
+    assert.equal(redirectList.statusCode, 200);
+    assert.ok(redirectList.json().items.some((item: { id: string }) => item.id === redirectId));
+    const redirectUpdated = await app.inject({
+      method: 'PATCH',
+      url: `/api/cms/redirects/${redirectId}`,
+      headers: { cookie },
+      payload: {
+        sourcePath,
+        targetPath: '/articles/frame-cms-test',
+        statusCode: 302,
+        enabled: false,
+      },
+    });
+    assert.equal(redirectUpdated.statusCode, 200);
+    assert.equal(redirectUpdated.json().redirect.enabled, false);
+    const redirectDeleted = await app.inject({
+      method: 'DELETE',
+      url: `/api/cms/redirects/${redirectId}`,
+      headers: { cookie },
+    });
+    assert.equal(redirectDeleted.statusCode, 204);
     await app.close();
   },
 );

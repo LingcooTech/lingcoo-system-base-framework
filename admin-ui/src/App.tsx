@@ -9,6 +9,7 @@ import { AuditPage } from './pages/AuditPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { CmsPage } from './pages/CmsPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { HelpPage } from './pages/HelpPage';
 import { LoginPage } from './pages/LoginPage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
 import { MetadataPage } from './pages/MetadataPage';
@@ -73,6 +74,8 @@ function RoutedApp() {
     <AuditPage />
   ) : pathname.startsWith('/cms') ? (
     <CmsPage />
+  ) : pathname.startsWith('/help') ? (
+    <HelpPage />
   ) : pathname.startsWith('/assets') ? (
     <AssetsPage />
   ) : pathname.startsWith('/integrations') ? (

@@ -1,10 +1,13 @@
 import { Button } from '@lingcoo/frame-ui/button';
-import { Dialog, DialogContent, DialogHeader } from '@lingcoo/frame-ui/dialog';
 import { Input } from '@lingcoo/frame-ui/input';
+import { useToast } from '@lingcoo/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { fetchAuditItems, type AuditItem } from '../api/client';
+import { AdminPagination } from '../components/shared/AdminPagination';
 import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
+import { DetailDrawer } from '../components/shared/DetailDrawer';
+import { FilterBar } from '../components/shared/FilterBar';
 import { PageFrame } from '../components/shared/PageFrame';
 import { ResourceSection } from '../components/shared/ResourceSection';
 import { StatusPill } from '../components/shared/StatusPill';
@@ -23,6 +26,11 @@ function actionLabel(action: string): string {
     'cms.content_published': '发布内容',
     'cms.content_draft': '撤回内容',
     'cms.content_archived': '归档内容',
+    'cms.content_scheduled': '设置发布计划',
+    'cms.content_schedule_cancelled': '取消发布计划',
+    'cms.redirect_created': '创建重定向',
+    'cms.redirect_updated': '更新重定向',
+    'cms.redirect_deleted': '删除重定向',
     'auth.login_succeeded': '登录成功',
     'auth.login': '账号登录',
     'auth.logout': '退出登录',
@@ -42,6 +50,7 @@ function actionLabel(action: string): string {
 }
 
 export function AuditPage() {
+  const { toast } = useToast();
   const [items, setItems] = useState<AuditItem[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -49,8 +58,10 @@ export function AuditPage() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<AuditItem | null>(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   async function load(nextPage = 1, filters?: { search?: string; resourceType?: string }) {
+    setLoading(true);
     try {
       const result = await fetchAuditItems({ ...filters, page: nextPage });
       setItems(result.items);
@@ -59,6 +70,9 @@ export function AuditPage() {
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '审计日志加载失败');
+      toast({ title: '审计日志加载失败', tone: 'danger' });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -68,15 +82,14 @@ export function AuditPage() {
         setItems(result.items);
         setTotal(result.total);
       })
-      .catch(() => setError('审计日志加载失败'));
+      .catch(() => setError('审计日志加载失败'))
+      .finally(() => setLoading(false));
   }, []);
 
   function submit(event: FormEvent) {
     event.preventDefault();
     void load(1, { search, resourceType });
   }
-
-  const totalPages = Math.max(1, Math.ceil(total / 30));
 
   const columns: DataTableColumn<AuditItem>[] = [
     {
@@ -158,7 +171,19 @@ export function AuditPage() {
         title="操作记录"
         description="统一追踪身份、设置、集成、任务、通知和资产等基础能力的关键变更。"
       >
-        <form className="audit-toolbar" onSubmit={submit}>
+        <FilterBar
+          actions={
+            <Button size="sm" type="submit">
+              查询
+            </Button>
+          }
+          onReset={() => {
+            setSearch('');
+            setResourceType('');
+            void load(1);
+          }}
+          onSubmit={submit}
+        >
           <Input
             aria-label="搜索审计记录"
             onChange={(event) => setSearch(event.target.value)}
@@ -171,103 +196,68 @@ export function AuditPage() {
             placeholder="资源类型，如 account"
             value={resourceType}
           />
-          <Button size="sm" type="submit">
-            查询
-          </Button>
-          <Button
-            onClick={() => {
-              setSearch('');
-              setResourceType('');
-              void load(1);
-            }}
-            size="sm"
-            type="button"
-            variant="ghost"
-          >
-            重置
-          </Button>
-        </form>
+        </FilterBar>
         <DataTable
           columns={columns}
           emptyTitle="暂无审计记录"
           getRowKey={(item) => item.id}
+          loading={loading}
           rows={items}
         />
-        <div className="audit-pagination">
-          <span>
-            第 {page} / {totalPages} 页 · 共 {total} 条
-          </span>
-          <div className="integration-actions">
-            <Button
-              disabled={page <= 1}
-              onClick={() => void load(page - 1, { search, resourceType })}
-              size="sm"
-              variant="ghost"
-            >
-              上一页
-            </Button>
-            <Button
-              disabled={page >= totalPages}
-              onClick={() => void load(page + 1, { search, resourceType })}
-              size="sm"
-              variant="ghost"
-            >
-              下一页
-            </Button>
-          </div>
-        </div>
+        <AdminPagination
+          onPageChange={(nextPage) => void load(nextPage, { search, resourceType })}
+          page={page}
+          pageSize={30}
+          total={total}
+        />
       </ResourceSection>
-      <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent
-          header={
-            <DialogHeader
-              title={selected ? actionLabel(selected.action) : '审计详情'}
-              description={selected?.action}
-            />
-          }
-        >
-          {selected ? (
-            <dl className="audit-detail">
-              <div>
-                <dt>事件 ID</dt>
-                <dd>
-                  <code>{selected.id}</code>
-                </dd>
-              </div>
-              <div>
-                <dt>资源</dt>
-                <dd>
-                  {selected.resourceType} · {selected.resourceId ?? '—'}
-                </dd>
-              </div>
-              <div>
-                <dt>Request ID</dt>
-                <dd>
-                  <code>{selected.requestId ?? '—'}</code>
-                </dd>
-              </div>
-              <div>
-                <dt>操作者</dt>
-                <dd>
-                  {selected.actor
-                    ? `${selected.actor.displayName} · ${selected.actor.email}`
-                    : (selected.actorId ?? '系统')}
-                </dd>
-              </div>
-              <div>
-                <dt>发生时间</dt>
-                <dd>{new Date(selected.createdAt).toLocaleString('zh-CN')}</dd>
-              </div>
-              <div>
-                <dt>元数据</dt>
-                <dd>
-                  <pre>{JSON.stringify(selected.metadata ?? {}, null, 2)}</pre>
-                </dd>
-              </div>
-            </dl>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <DetailDrawer
+        description={selected?.action}
+        onOpenChange={(open) => !open && setSelected(null)}
+        open={Boolean(selected)}
+        title={selected ? actionLabel(selected.action) : '审计详情'}
+      >
+        {selected ? (
+          <dl className="audit-detail">
+            <div>
+              <dt>事件 ID</dt>
+              <dd>
+                <code>{selected.id}</code>
+              </dd>
+            </div>
+            <div>
+              <dt>资源</dt>
+              <dd>
+                {selected.resourceType} · {selected.resourceId ?? '—'}
+              </dd>
+            </div>
+            <div>
+              <dt>Request ID</dt>
+              <dd>
+                <code>{selected.requestId ?? '—'}</code>
+              </dd>
+            </div>
+            <div>
+              <dt>操作者</dt>
+              <dd>
+                {selected.actor
+                  ? `${selected.actor.displayName} · ${selected.actor.email}`
+                  : (selected.actorId ?? '系统')}
+              </dd>
+            </div>
+            <div>
+              <dt>发生时间</dt>
+              <dd>{new Date(selected.createdAt).toLocaleString('zh-CN')}</dd>
+            </div>
+            <div>
+              <dt>元数据</dt>
+              <dd>
+                <pre>{JSON.stringify(selected.metadata ?? {}, null, 2)}</pre>
+              </dd>
+            </div>
+          </dl>
+        ) : null}
+      </DetailDrawer>
     </PageFrame>
   );
 }

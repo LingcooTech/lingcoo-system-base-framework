@@ -2,7 +2,7 @@ import { Button } from '@lingcoo/frame-ui/button';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
 import { Textarea } from '@lingcoo/frame-ui/textarea';
-import { Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import {
@@ -45,10 +45,18 @@ function LinkEditor({
   value: { label: string; href: string }[];
   onChange(value: { label: string; href: string }[]): void;
 }) {
+  function move(index: number, offset: -1 | 1) {
+    const target = index + offset;
+    if (target < 0 || target >= value.length) return;
+    const next = [...value];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  }
+
   return (
     <div className="presentation-link-editor">
       {value.map((item, index) => (
-        <div className="presentation-link-row" key={`${index}-${item.href}`}>
+        <div className="presentation-link-row" key={index}>
           <Input
             aria-label="链接名称"
             disabled={disabled}
@@ -76,13 +84,35 @@ function LinkEditor({
             value={item.href}
           />
           {!disabled ? (
-            <button
-              aria-label="删除链接"
-              onClick={() => onChange(value.filter((_, itemIndex) => itemIndex !== index))}
-              type="button"
-            >
-              <Trash2 size={15} />
-            </button>
+            <div className="presentation-link-actions">
+              <button
+                aria-label="上移链接"
+                disabled={index === 0}
+                onClick={() => move(index, -1)}
+                title="上移"
+                type="button"
+              >
+                <ArrowUp size={15} />
+              </button>
+              <button
+                aria-label="下移链接"
+                disabled={index === value.length - 1}
+                onClick={() => move(index, 1)}
+                title="下移"
+                type="button"
+              >
+                <ArrowDown size={15} />
+              </button>
+              <button
+                aria-label="删除链接"
+                className="presentation-link-delete"
+                onClick={() => onChange(value.filter((_, itemIndex) => itemIndex !== index))}
+                title="删除"
+                type="button"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
           ) : null}
         </div>
       ))}

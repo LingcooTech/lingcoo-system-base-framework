@@ -1,4 +1,4 @@
-import { Bell, Menu, Search } from 'lucide-react';
+import { Bell, CircleHelp, Menu, Search } from 'lucide-react';
 
 import type { SectionMeta } from '../../lib/foundation';
 import { Link } from '../../lib/router';
@@ -42,6 +42,9 @@ export function Topbar({
             <kbd>⌘ K</kbd>
           </button>
         ) : null}
+        <Link aria-label="框架帮助" className="topbar-icon" href="/help" title="框架帮助">
+          <CircleHelp size={17} />
+        </Link>
         {canReadNotifications ? (
           <Link
             aria-label={

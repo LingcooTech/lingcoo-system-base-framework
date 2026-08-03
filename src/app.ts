@@ -19,6 +19,7 @@ import { runWithRequestContext, setRequestActor } from './lib/request-context.js
 import { serializeSafeError } from './lib/structured-log.js';
 import { appModules } from './modules/index.js';
 import { AuthRepository } from './modules/auth/repository.js';
+import { CmsService } from './modules/cms/service.js';
 import { baseDatasetAdapters } from './modules/data-exchange/adapters.js';
 import { DatasetRegistry } from './modules/data-exchange/registry.js';
 import { installObservability } from './modules/observability/index.js';
@@ -73,6 +74,7 @@ export async function buildApp(env: AppEnv) {
     trustProxy: true,
   });
   const { db, pool } = createDatabase(env.DATABASE_URL);
+  const cms = new CmsService(db);
 
   app.decorate('appEnv', env);
   app.decorate('db', db);
@@ -223,7 +225,7 @@ export async function buildApp(env: AppEnv) {
     });
   });
 
-  app.setNotFoundHandler((request, reply) => {
+  app.setNotFoundHandler(async (request, reply) => {
     if (request.method !== 'GET') {
       return reply.code(404).send({ error: 'NotFound', message: '接口不存在' });
     }
@@ -232,6 +234,10 @@ export async function buildApp(env: AppEnv) {
     }
     if (request.url.startsWith('/admin') && existsSync(adminDist)) {
       return reply.sendFile('index.html', adminDist);
+    }
+    const redirect = await cms.resolveRedirect(request.url.split('?')[0]);
+    if (redirect) {
+      return reply.code(redirect.statusCode).header('Location', redirect.targetPath).send();
     }
     if (existsSync(publicDist)) {
       return reply.sendFile('index.html', publicDist);

@@ -660,6 +660,7 @@ export const cmsContentEntries = pgTable(
     seoTitle: text('seo_title'),
     seoDescription: text('seo_description'),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    scheduledPublishAt: timestamp('scheduled_publish_at', { withTimezone: true }),
     currentVersion: integer('current_version').notNull().default(1),
     authorId: uuid('author_id').references(() => accounts.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
@@ -674,6 +675,25 @@ export const cmsContentEntries = pgTable(
       table.status,
       table.publishedAt,
     ),
+  ],
+);
+
+export const cmsRedirects = pgTable(
+  'cms_redirects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sourcePath: text('source_path').notNull(),
+    targetPath: text('target_path').notNull(),
+    statusCode: integer('status_code').notNull().default(301),
+    enabled: boolean('enabled').notNull().default(true),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    updatedBy: uuid('updated_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('cms_redirects_source_path_idx').on(table.sourcePath),
+    index('cms_redirects_enabled_idx').on(table.enabled),
   ],
 );
 

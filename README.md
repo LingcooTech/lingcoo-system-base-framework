@@ -7,7 +7,7 @@
 ## 当前包含什么
 
 - 公共 Web：React、TypeScript、Vite、Tailwind CSS
-- 管理后台：独立 React 应用，包含导航、页面容器、状态、表格和资源区块等基础界面
+- 管理后台：独立 React 应用，包含导航、筛选、分页、批量操作、详情抽屉和统一反馈
 - 共享 UI：npm workspace 管理 Design Tokens 与无业务含义的 React 组件
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
 - 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
@@ -16,8 +16,8 @@
 - 异步执行：PostgreSQL 持久化任务、事务 Outbox、幂等键、并发锁、退避重试和独立 Worker
 - 通知中心：站内通知、系统公告、未读状态和通过 SMTP 异步执行的邮件投递
 - 资产中心：受约束的浏览器直传、对象复核、统一资产身份、引用保护和异步删除
-- 品牌呈现：版本化品牌档案、Asset ID 图片引用、公共站点配置和管理端实时预览
-- 轻量 CMS：通用页面与文章、Markdown、草稿预览、发布归档、版本和分类标签
+- 品牌呈现：版本化品牌档案、Asset ID 图片引用、可排序站点导航和管理端实时预览
+- 轻量 CMS：通用页面与文章、Markdown、SEO 预览、定时发布、站内重定向和版本管理
 - 治理基础：类型化非敏感系统设置、版本历史、统一审计写入与后台查询
 - 数据基础：类型化数据字典、层级分类、扁平标签、资源关联和版本化数据集交换
 - 统一搜索：权限感知的 Search Provider 注册表和 `⌘/Ctrl + K` 管理后台入口
@@ -26,7 +26,7 @@
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
-`data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`cms` 和 `observability` 基础模块，
+`data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`cms`、`public-site` 和 `observability` 基础模块，
 没有商品、课程、订单等具体行业领域概念；CMS 仅提供通用页面与文章边界。
 
 ## 架构来源

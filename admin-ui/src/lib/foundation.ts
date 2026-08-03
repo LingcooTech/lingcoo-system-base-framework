@@ -12,6 +12,7 @@ import {
   Settings2,
   ShieldCheck,
   UserRound,
+  CircleHelp,
   Waypoints,
   type LucideIcon,
 } from 'lucide-react';
@@ -30,7 +31,8 @@ export type SectionKey =
   | 'presentation'
   | 'cms'
   | 'account'
-  | 'settings';
+  | 'settings'
+  | 'help';
 
 export interface SectionMeta {
   id: SectionKey;
@@ -246,6 +248,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '配置方式', value: 'Typed registry', note: '只允许登记过的非敏感设置' },
       { label: '变更历史', value: 'Versioned', note: '每次保存保留操作者与原因' },
+    ],
+  },
+  help: {
+    id: 'help',
+    group: '支持',
+    title: '框架帮助',
+    navLabel: '框架帮助',
+    description: '查看基础框架的能力边界、扩展入口和常用运行流程。',
+    href: '/help',
+    icon: CircleHelp,
+    permission: 'admin.access',
+    context: [
+      { label: '系统形态', value: 'Modular monolith', note: '统一部署 · 领域边界清晰' },
+      { label: '扩展原则', value: 'Explicit', note: 'Schema · Service · Route 显式注册' },
     ],
   },
 };

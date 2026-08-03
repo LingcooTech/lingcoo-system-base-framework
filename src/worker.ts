@@ -18,6 +18,8 @@ import { MetricsRegistry } from './modules/observability/metrics.js';
 import { ObservabilityService } from './modules/observability/service.js';
 import { assetDeleteJobPayloadSchema } from './modules/assets/schemas.js';
 import { AssetService } from './modules/assets/service.js';
+import { cmsScheduledJobSchema } from './modules/cms/schemas.js';
+import { CmsService } from './modules/cms/service.js';
 
 const env = loadEnv();
 const workerId = `worker_${randomUUID()}`;
@@ -35,6 +37,7 @@ const integrations = new IntegrationService(
 const delivery = new NotificationDeliveryService(db, integrations, env.SETTINGS_ENCRYPTION_KEY);
 const notifications = new NotificationService(db);
 const assets = new AssetService(db, new QiniuService(integrations));
+const cms = new CmsService(db);
 const observability = new ObservabilityService(db, new MetricsRegistry());
 const redactionSecrets = [
   env.AUTH_JWT_SECRET,
@@ -49,6 +52,10 @@ jobHandlers.register('storage.asset.delete', ({ payload }) =>
 jobHandlers.register('storage.asset.expire-upload', ({ payload }) =>
   assets.expireUpload(assetDeleteJobPayloadSchema.parse(payload).assetId),
 );
+jobHandlers.register('cms.content.publish-scheduled', ({ payload }) => {
+  const input = cmsScheduledJobSchema.parse(payload);
+  return cms.publishScheduled(input.contentId, input.publishAt, input.actorId);
+});
 registerNotificationPolicies(subscribers, notifications);
 
 let stopping = false;

@@ -458,6 +458,7 @@ export interface CmsContent {
   seoTitle: string | null;
   seoDescription: string | null;
   publishedAt: string | null;
+  scheduledPublishAt: string | null;
   currentVersion: number;
   updatedAt: string;
   author: { id: string; displayName: string } | null;
@@ -486,6 +487,22 @@ export interface CmsVersion {
   changeReason: string | null;
   createdAt: string;
   actor: { id: string; displayName: string } | null;
+}
+
+export interface CmsRedirect {
+  id: string;
+  sourcePath: string;
+  targetPath: string;
+  statusCode: 301 | 302;
+  enabled: boolean;
+  updatedAt: string;
+}
+
+export interface CmsRedirectInput {
+  sourcePath: string;
+  targetPath: string;
+  statusCode: 301 | 302;
+  enabled: boolean;
 }
 
 export interface AssetUploadIntent {
@@ -523,6 +540,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     throw new ApiError(payload?.message ?? `请求失败 (${response.status})`, response.status);
   }
 
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -695,12 +713,21 @@ export async function updatePresentation(input: PresentationUpdate): Promise<Pre
 }
 
 export async function fetchCmsContents(
-  filters: { type?: string; status?: string; search?: string } = {},
+  filters: {
+    type?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  } = {},
 ): Promise<{ items: CmsContent[]; total: number }> {
   const params = new URLSearchParams();
   if (filters.type) params.set('type', filters.type);
   if (filters.status) params.set('status', filters.status);
   if (filters.search) params.set('search', filters.search);
+  const pageSize = filters.pageSize ?? 20;
+  params.set('limit', String(pageSize));
+  params.set('offset', String(((filters.page ?? 1) - 1) * pageSize));
   return apiRequest(`/api/cms/entries${params.size ? `?${params}` : ''}`);
 }
 
@@ -739,6 +766,47 @@ export async function updateCmsStatus(
       body: JSON.stringify({ status }),
     })
   ).content;
+}
+
+export async function scheduleCmsContent(
+  contentId: string,
+  publishAt: string | null,
+): Promise<CmsContent> {
+  return (
+    await apiRequest<{ content: CmsContent }>(`/api/cms/entries/${contentId}/schedule`, {
+      method: 'POST',
+      body: JSON.stringify({ publishAt }),
+    })
+  ).content;
+}
+
+export async function fetchCmsRedirects(): Promise<CmsRedirect[]> {
+  return (await apiRequest<{ items: CmsRedirect[] }>('/api/cms/redirects')).items;
+}
+
+export async function createCmsRedirect(input: CmsRedirectInput): Promise<CmsRedirect> {
+  return (
+    await apiRequest<{ redirect: CmsRedirect }>('/api/cms/redirects', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  ).redirect;
+}
+
+export async function updateCmsRedirect(
+  redirectId: string,
+  input: CmsRedirectInput,
+): Promise<CmsRedirect> {
+  return (
+    await apiRequest<{ redirect: CmsRedirect }>(`/api/cms/redirects/${redirectId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    })
+  ).redirect;
+}
+
+export async function deleteCmsRedirect(redirectId: string): Promise<void> {
+  await apiRequest(`/api/cms/redirects/${redirectId}`, { method: 'DELETE' });
 }
 
 export async function fetchCmsVersions(contentId: string): Promise<CmsVersion[]> {

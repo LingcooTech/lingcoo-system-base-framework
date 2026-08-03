@@ -5,6 +5,8 @@ import {
   accounts,
   cmsContentEntries,
   cmsContentVersions,
+  cmsRedirects,
+  jobRuns,
   outboxEvents,
   resourceTerms,
   storageAssetReferences,
@@ -14,7 +16,7 @@ import {
 } from '../../db/schema.js';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
-import type { CmsContentInput } from './schemas.js';
+import type { CmsContentInput, CmsRedirectInput } from './schemas.js';
 
 const resourceType = 'cms.content';
 const assetFields = ['coverAssetId', 'socialImageAssetId'] as const;
@@ -293,6 +295,7 @@ export class CmsService {
         .set({
           status,
           publishedAt: status === 'published' ? new Date() : current.publishedAt,
+          scheduledPublishAt: null,
           updatedBy: actorId,
           updatedAt: new Date(),
         })
@@ -318,6 +321,151 @@ export class CmsService {
       actorId,
     });
     return this.enrich(updated);
+  }
+
+  async schedule(contentId: string, publishAt: string | null, actorId: string) {
+    const current = await this.requireEntry(contentId);
+    if (current.status === 'archived')
+      throw httpError(409, '已归档内容不能计划发布', 'ConflictError');
+    if (publishAt && !current.body.trim())
+      throw httpError(422, '正文为空，不能计划发布', 'ValidationError');
+    const scheduledAt = publishAt ? new Date(publishAt) : null;
+    if (scheduledAt && scheduledAt.getTime() <= Date.now() + 30_000)
+      throw httpError(422, '计划发布时间必须晚于当前时间', 'ValidationError');
+
+    const updated = await this.db.transaction(async (transaction) => {
+      const [row] = await transaction
+        .update(cmsContentEntries)
+        .set({
+          status: current.status === 'published' && scheduledAt ? 'draft' : current.status,
+          scheduledPublishAt: scheduledAt,
+          updatedBy: actorId,
+          updatedAt: new Date(),
+        })
+        .where(eq(cmsContentEntries.id, contentId))
+        .returning();
+      if (scheduledAt) {
+        await transaction
+          .insert(jobRuns)
+          .values({
+            kind: 'cms.content.publish-scheduled',
+            queue: 'default',
+            payload: { contentId, publishAt: scheduledAt.toISOString(), actorId },
+            availableAt: scheduledAt,
+            dedupeKey: `cms-publish:${contentId}:${scheduledAt.toISOString()}`,
+            relatedEntityType: resourceType,
+            relatedEntityId: contentId,
+            createdBy: actorId,
+          })
+          .onConflictDoNothing({ target: jobRuns.dedupeKey });
+      }
+      return row;
+    });
+    await recordAuditEvent(this.db, {
+      action: scheduledAt ? 'cms.content_scheduled' : 'cms.content_schedule_cancelled',
+      resourceType,
+      resourceId: contentId,
+      actorId,
+      metadata: scheduledAt ? { publishAt: scheduledAt.toISOString() } : undefined,
+    });
+    return this.enrich(updated);
+  }
+
+  async publishScheduled(contentId: string, publishAt: string, actorId: string) {
+    const current = await this.requireEntry(contentId);
+    if (
+      !current.scheduledPublishAt ||
+      current.scheduledPublishAt.toISOString() !== publishAt ||
+      current.status === 'archived'
+    ) {
+      return { skipped: true, reason: 'schedule_changed' };
+    }
+    if (current.scheduledPublishAt.getTime() > Date.now()) {
+      throw new Error('计划发布时间尚未到达');
+    }
+    await this.setStatus(contentId, 'published', actorId);
+    return { published: true, contentId };
+  }
+
+  async listRedirects() {
+    return this.db.select().from(cmsRedirects).orderBy(desc(cmsRedirects.updatedAt));
+  }
+
+  private async validateRedirect(input: CmsRedirectInput, currentId?: string) {
+    const redirects = await this.db.select().from(cmsRedirects);
+    const duplicate = redirects.find(
+      (item) => item.sourcePath === input.sourcePath && item.id !== currentId,
+    );
+    if (duplicate) throw httpError(409, '来源路径已经存在重定向', 'ConflictError');
+    const nextBySource = new Map(
+      redirects
+        .filter((item) => item.enabled && item.id !== currentId)
+        .map((item) => [item.sourcePath, item.targetPath]),
+    );
+    let next: string | undefined = input.targetPath;
+    for (let depth = 0; next && depth <= redirects.length; depth += 1) {
+      if (next === input.sourcePath)
+        throw httpError(422, '重定向配置会形成循环', 'ValidationError');
+      next = nextBySource.get(next);
+    }
+  }
+
+  async createRedirect(input: CmsRedirectInput, actorId: string) {
+    await this.validateRedirect(input);
+    const [created] = await this.db
+      .insert(cmsRedirects)
+      .values({ ...input, createdBy: actorId, updatedBy: actorId })
+      .returning();
+    await recordAuditEvent(this.db, {
+      action: 'cms.redirect_created',
+      resourceType: 'cms.redirect',
+      resourceId: created.id,
+      actorId,
+      metadata: { sourcePath: created.sourcePath, targetPath: created.targetPath },
+    });
+    return created;
+  }
+
+  async updateRedirect(redirectId: string, input: CmsRedirectInput, actorId: string) {
+    await this.validateRedirect(input, redirectId);
+    const [updated] = await this.db
+      .update(cmsRedirects)
+      .set({ ...input, updatedBy: actorId, updatedAt: new Date() })
+      .where(eq(cmsRedirects.id, redirectId))
+      .returning();
+    if (!updated) throw httpError(404, '重定向不存在', 'NotFoundError');
+    await recordAuditEvent(this.db, {
+      action: 'cms.redirect_updated',
+      resourceType: 'cms.redirect',
+      resourceId: redirectId,
+      actorId,
+      metadata: { sourcePath: updated.sourcePath, targetPath: updated.targetPath },
+    });
+    return updated;
+  }
+
+  async deleteRedirect(redirectId: string, actorId: string) {
+    const [deleted] = await this.db
+      .delete(cmsRedirects)
+      .where(eq(cmsRedirects.id, redirectId))
+      .returning();
+    if (!deleted) throw httpError(404, '重定向不存在', 'NotFoundError');
+    await recordAuditEvent(this.db, {
+      action: 'cms.redirect_deleted',
+      resourceType: 'cms.redirect',
+      resourceId: redirectId,
+      actorId,
+      metadata: { sourcePath: deleted.sourcePath, targetPath: deleted.targetPath },
+    });
+  }
+
+  async resolveRedirect(path: string) {
+    const [redirect] = await this.db
+      .select({ targetPath: cmsRedirects.targetPath, statusCode: cmsRedirects.statusCode })
+      .from(cmsRedirects)
+      .where(and(eq(cmsRedirects.sourcePath, path), eq(cmsRedirects.enabled, true)))
+      .limit(1);
+    return redirect ?? null;
   }
 
   async versions(contentId: string) {
@@ -352,13 +500,39 @@ export class CmsService {
     return this.enrich(row);
   }
 
-  async listPublicArticles(limit: number) {
-    const rows = await this.db
-      .select()
+  async listPublicArticles(page: number, pageSize: number) {
+    const where = and(
+      eq(cmsContentEntries.type, 'article'),
+      eq(cmsContentEntries.status, 'published'),
+    );
+    const [rows, [{ value: total }]] = await Promise.all([
+      this.db
+        .select()
+        .from(cmsContentEntries)
+        .where(where)
+        .orderBy(desc(cmsContentEntries.pinned), desc(cmsContentEntries.publishedAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      this.db.select({ value: count() }).from(cmsContentEntries).where(where),
+    ]);
+    return {
+      items: await Promise.all(rows.map((row) => this.enrich(row))),
+      page,
+      pageSize,
+      total,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
+  }
+
+  async listPublicRoutes() {
+    return this.db
+      .select({
+        type: cmsContentEntries.type,
+        slug: cmsContentEntries.slug,
+        updatedAt: cmsContentEntries.updatedAt,
+      })
       .from(cmsContentEntries)
-      .where(and(eq(cmsContentEntries.type, 'article'), eq(cmsContentEntries.status, 'published')))
-      .orderBy(desc(cmsContentEntries.pinned), desc(cmsContentEntries.publishedAt))
-      .limit(limit);
-    return Promise.all(rows.map((row) => this.enrich(row)));
+      .where(eq(cmsContentEntries.status, 'published'))
+      .orderBy(desc(cmsContentEntries.updatedAt));
   }
 }

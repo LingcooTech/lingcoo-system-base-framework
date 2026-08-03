@@ -1259,7 +1259,8 @@ footer p {
   display: block;
 }
 
-.cms-public-index__items {
+.cms-public-index__items,
+.cms-article-list {
   display: grid;
   gap: 14px;
 }
@@ -1278,6 +1279,100 @@ footer p {
 .cms-public-index__items > a:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 46px rgb(28 49 38 / 7%);
+}
+
+.cms-article-card {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e3e9e5;
+  border-radius: 8px;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.cms-article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 46px rgb(28 49 38 / 7%);
+}
+
+.cms-article-card > a {
+  display: grid;
+  min-height: 150px;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+}
+
+.cms-article-card__media {
+  height: 100%;
+  min-height: 150px;
+}
+
+.cms-article-card__image {
+  height: 100%;
+}
+
+.cms-article-card__content {
+  align-self: center;
+  padding: 24px 28px;
+}
+
+.cms-article-card time {
+  color: #87958d;
+  font-size: 11px;
+}
+
+.cms-article-card h2 {
+  margin: 7px 0 8px;
+  color: #24352b;
+  font-size: 21px;
+  letter-spacing: 0;
+}
+
+.cms-article-card p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #6e7e75;
+  font-size: 13px;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cms-public-index .lc-pagination {
+  margin-top: 38px;
+}
+
+.public-system-state {
+  min-height: 650px;
+}
+
+.public-system-state > .public-container {
+  position: relative;
+  display: grid;
+  align-content: center;
+}
+
+.public-system-state .lc-empty-state {
+  position: relative;
+  z-index: 1;
+}
+
+.public-system-code {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  margin: 0;
+  color: rgb(49 95 71 / 7%);
+  font-size: 180px;
+  font-weight: 800;
+  letter-spacing: 0;
+  transform: translate(-50%, -58%);
+}
+
+.public-page-loading {
+  display: grid;
+  width: 100%;
+  gap: 24px;
 }
 
 .public-site-footer {
@@ -1433,6 +1528,18 @@ footer p {
     flex-direction: column;
     gap: 18px;
     margin-bottom: 52px;
+  }
+
+  .cms-article-card > a {
+    grid-template-columns: 1fr;
+  }
+
+  .cms-article-card__media {
+    min-height: 0;
+  }
+
+  .public-system-code {
+    font-size: 120px;
   }
 
   .public-site-footer__main {

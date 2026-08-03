@@ -10,6 +10,7 @@ import { metadataModule } from './metadata/index.js';
 import { notificationsModule } from './notifications/index.js';
 import { observabilityModule } from './observability/index.js';
 import { presentationModule } from './presentation/index.js';
+import { publicSiteModule } from './public-site/index.js';
 import { searchModule } from './search/index.js';
 import { settingsModule } from './settings/index.js';
 import { systemModule } from './system/index.js';
@@ -21,6 +22,7 @@ export const appModules: AppModule[] = [
   presentationModule,
   authModule,
   cmsModule,
+  publicSiteModule,
   accessModule,
   auditModule,
   metadataModule,

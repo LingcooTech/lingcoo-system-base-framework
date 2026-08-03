@@ -36,10 +36,43 @@ export const cmsListSchema = z.object({
 });
 
 export const cmsParamsSchema = z.object({ contentId: z.uuid() });
+export const cmsRedirectParamsSchema = z.object({ redirectId: z.uuid() });
+const internalPath = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .refine((value) => value.startsWith('/') && !value.startsWith('//'), '必须是站内绝对路径');
+export const cmsRedirectInputSchema = z
+  .object({
+    sourcePath: internalPath.refine((value) => !value.includes('?') && !value.includes('#'), {
+      message: '来源路径不能包含查询参数或锚点',
+    }),
+    targetPath: internalPath,
+    statusCode: z.union([z.literal(301), z.literal(302)]).default(301),
+    enabled: z.boolean().default(true),
+  })
+  .refine((value) => value.sourcePath !== value.targetPath, '来源与目标路径不能相同');
+export const cmsScheduleSchema = z.object({
+  publishAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export const cmsScheduledJobSchema = z.object({
+  contentId: z.uuid(),
+  publishAt: z.iso.datetime({ offset: true }),
+  actorId: z.uuid(),
+});
 export const publicCmsParamsSchema = z.object({
   type: z.enum(['articles', 'pages']),
   slug: z.string().trim().min(1).max(160),
 });
+export const publicCmsListSchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(50).optional(),
+    limit: z.coerce.number().int().min(1).max(50).optional(),
+  })
+  .transform(({ limit, page, pageSize }) => ({ page, pageSize: pageSize ?? limit ?? 12 }));
 export const cmsStatusSchema = z.object({ status: z.enum(['draft', 'published', 'archived']) });
 
 export type CmsContentInput = z.infer<typeof cmsContentInputSchema>;
+export type CmsRedirectInput = z.infer<typeof cmsRedirectInputSchema>;

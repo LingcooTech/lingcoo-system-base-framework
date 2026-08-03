@@ -10,34 +10,15 @@ import {
 } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
 import { Alert } from '@lingcoo/frame-ui/alert';
-import { Breadcrumb } from '@lingcoo/frame-ui/breadcrumb';
-import { EmptyState } from '@lingcoo/frame-ui/empty-state';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
-import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
-import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
 import { useEffect, useState, type FormEvent } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
-import { Hero, PageHeader, Section } from './components/site/Layout';
+import { ArticleIndexPage, CmsContentPage } from './components/cms/CmsPages';
+import { Hero, Section } from './components/site/Layout';
+import { SeoHead } from './components/site/SeoHead';
 import { SiteShell, type PublicPresentation } from './components/site/SiteShell';
-
-interface CmsContent {
-  id: string;
-  type: 'article' | 'page';
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  body: string;
-  coverAssetId: string | null;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  publishedAt: string | null;
-  author: { displayName: string } | null;
-  terms: { id: string; name: string; color: string | null }[];
-  assets: Record<string, { publicUrl: string | null }>;
-}
+import { SystemPage } from './components/site/SystemStates';
 
 async function authRequest(path: string, body: Record<string, unknown>) {
   const response = await fetch(path, {
@@ -115,6 +96,7 @@ function PublicAuthFlow({
   const authLogoUrl = authLogoId ? presentation?.assets[authLogoId]?.publicUrl : null;
   return (
     <main className="public-auth-screen">
+      <SeoHead noIndex presentation={presentation} title={title} />
       <section className="public-auth-card">
         <a className="public-auth-brand" href="/">
           <span>{authLogoUrl ? <img alt="" src={authLogoUrl} /> : 'F'}</span>
@@ -194,153 +176,6 @@ function PublicAuthFlow({
   );
 }
 
-function CmsContentView({
-  endpoint,
-  presentation,
-  preview = false,
-}: {
-  endpoint: string;
-  presentation: PublicPresentation | null;
-  preview?: boolean;
-}) {
-  const [content, setContent] = useState<CmsContent | null>(null);
-  const [missing, setMissing] = useState(false);
-
-  useEffect(() => {
-    fetch(endpoint)
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('missing'))))
-      .then((result: { content: CmsContent }) => {
-        setContent(result.content);
-        document.title = result.content.seoTitle || result.content.title;
-        const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-        if (description && result.content.seoDescription)
-          description.content = result.content.seoDescription;
-      })
-      .catch(() => setMissing(true));
-  }, [endpoint]);
-
-  if (missing)
-    return (
-      <SiteShell presentation={presentation}>
-        <Section className="cms-public-state" containerSize="content">
-          <EmptyState
-            action={<a href="/">返回首页</a>}
-            description="内容可能尚未发布、已被移动，或者链接不完整。"
-            title="内容不存在或暂不可访问"
-            variant="error"
-          />
-        </Section>
-      </SiteShell>
-    );
-  if (!content)
-    return (
-      <SiteShell presentation={presentation}>
-        <Section className="cms-public-state" containerSize="content">
-          <div className="cms-public-loading" aria-label="正在加载内容">
-            <Skeleton style={{ height: 34, width: '58%' }} />
-            <SkeletonText lines={4} />
-            <Skeleton shape="block" style={{ minHeight: 260 }} />
-          </div>
-        </Section>
-      </SiteShell>
-    );
-  const coverUrl = content.coverAssetId ? content.assets[content.coverAssetId]?.publicUrl : null;
-  return (
-    <SiteShell presentation={presentation}>
-      <Section className="cms-public-page" containerSize="content">
-        <div className="cms-public-header">
-          <Breadcrumb
-            items={[
-              { href: '/', label: '首页' },
-              ...(content.type === 'article' ? [{ href: '/articles', label: '文章' }] : []),
-              { label: content.title },
-            ]}
-          />
-          {preview ? <span>草稿预览</span> : null}
-        </div>
-        <article>
-          <PageHeader
-            description={content.excerpt}
-            eyebrow={content.type === 'page' ? 'Page' : 'Article'}
-            meta={
-              content.type === 'article' ? (
-                <>
-                  <span>{content.author?.displayName || '系统编辑'}</span>
-                  {content.publishedAt ? (
-                    <time>{new Date(content.publishedAt).toLocaleDateString()}</time>
-                  ) : null}
-                </>
-              ) : null
-            }
-            title={content.title}
-          />
-          {coverUrl ? (
-            <ResponsiveImage
-              alt={content.title}
-              aspectRatio="16 / 9"
-              className="cms-public-cover"
-              src={coverUrl}
-              wrapperClassName="cms-public-cover-frame"
-            />
-          ) : null}
-          {content.terms.length ? (
-            <div className="cms-public-terms">
-              {content.terms.map((term) => (
-                <span key={term.id} style={term.color ? { borderColor: term.color } : undefined}>
-                  {term.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <div className="cms-markdown">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.body}</ReactMarkdown>
-          </div>
-        </article>
-      </Section>
-    </SiteShell>
-  );
-}
-
-function ArticleIndex({ presentation }: { presentation: PublicPresentation | null }) {
-  const [items, setItems] = useState<CmsContent[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    fetch('/api/public/cms/articles')
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
-      .then((result: { items: CmsContent[] }) => setItems(result.items ?? []))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
-  }, []);
-  return (
-    <SiteShell presentation={presentation}>
-      <Section className="cms-public-index" containerSize="content">
-        <PageHeader description="由轻量内容中心发布的公共文章。" eyebrow="Content" title="文章" />
-        <div className="cms-public-index__items">
-          {loading ? (
-            <div className="cms-public-index-loading">
-              <Skeleton shape="block" />
-              <Skeleton shape="block" />
-            </div>
-          ) : null}
-          {!loading && !items.length ? (
-            <EmptyState description="发布第一篇文章后，它会显示在这里。" title="暂时还没有文章" />
-          ) : null}
-          {!loading &&
-            items.map((item) => (
-              <a href={'/articles/' + item.slug} key={item.id}>
-                <small>
-                  {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}
-                </small>
-                <h2>{item.title}</h2>
-                <p>{item.excerpt}</p>
-              </a>
-            ))}
-        </div>
-      </Section>
-    </SiteShell>
-  );
-}
-
 const layers = [
   {
     icon: Braces,
@@ -373,9 +208,6 @@ function App() {
         document.documentElement.style.setProperty('--site-primary', result.primaryColor);
         document.documentElement.style.setProperty('--site-secondary', result.secondaryColor);
         document.documentElement.style.setProperty('--site-accent', result.accentColor);
-        document.title = result.seoTitle || result.displayName;
-        const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-        if (description && result.seoDescription) description.content = result.seoDescription;
         const faviconUrl = result.faviconAssetId
           ? result.assets[result.faviconAssetId]?.publicUrl
           : null;
@@ -406,28 +238,43 @@ function App() {
               : null;
     if (mode) return <PublicAuthFlow mode={mode} presentation={presentation} />;
   }
-  if (pathParts[0] === 'preview' && pathParts[1] === 'content' && pathParts[2]) {
+  if (
+    pathParts[0] === 'preview' &&
+    pathParts[1] === 'content' &&
+    pathParts[2] &&
+    pathParts.length === 3
+  ) {
     return (
-      <CmsContentView
+      <CmsContentPage
         endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'}
         presentation={presentation}
         preview
       />
     );
   }
-  if (pathParts[0] === 'articles' && !pathParts[1])
-    return <ArticleIndex presentation={presentation} />;
-  if ((pathParts[0] === 'articles' || pathParts[0] === 'pages') && pathParts[1]) {
+  if (pathParts[0] === 'articles' && !pathParts[1]) {
+    const requestedPage = Number(new URLSearchParams(window.location.search).get('page') || '1');
+    const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    return <ArticleIndexPage page={page} presentation={presentation} />;
+  }
+  if (
+    (pathParts[0] === 'articles' || pathParts[0] === 'pages') &&
+    pathParts[1] &&
+    pathParts.length === 2
+  ) {
     return (
-      <CmsContentView
+      <CmsContentPage
         endpoint={'/api/public/cms/' + pathParts[0] + '/' + encodeURIComponent(pathParts[1])}
         presentation={presentation}
       />
     );
   }
 
+  if (pathParts.length) return <SystemPage kind="404" presentation={presentation} />;
+
   return (
     <SiteShell headerOverlay headerTone="dark" presentation={presentation}>
+      <SeoHead canonicalPath="/" presentation={presentation} />
       <Hero
         actions={
           <>

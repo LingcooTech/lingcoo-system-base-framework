@@ -1,6 +1,8 @@
 import { Button } from '@lingcoo/frame-ui/button';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
+import { Skeleton } from '@lingcoo/frame-ui/skeleton';
+import { useToast } from '@lingcoo/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import {
@@ -19,6 +21,7 @@ import {
   type StorageAsset,
 } from '../api/client';
 import { PageFrame } from '../components/shared/PageFrame';
+import { useConfirm } from '../components/shared/ConfirmProvider';
 import { ResourceSection } from '../components/shared/ResourceSection';
 import { StatusPill } from '../components/shared/StatusPill';
 import { useAuth } from '../lib/auth';
@@ -63,6 +66,8 @@ async function fetchPageData() {
 
 export function AssetsPage() {
   const { hasPermission } = useAuth();
+  const confirm = useConfirm();
+  const { toast } = useToast();
   const [assets, setAssets] = useState<StorageAsset[]>([]);
   const [summary, setSummary] = useState<AssetSummary>({ status: {}, kind: {}, totalBytes: 0 });
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
@@ -73,6 +78,7 @@ export function AssetsPage() {
   const [busyId, setBusyId] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
   function applyPageData(data: Awaited<ReturnType<typeof fetchPageData>>) {
     setAssets(data.assetResult.items);
@@ -83,6 +89,7 @@ export function AssetsPage() {
     setConnections(qiniu);
     setConnectionId((current) => current || qiniu[0]?.id || '');
     setError('');
+    setLoading(false);
   }
 
   async function load() {
@@ -98,7 +105,8 @@ export function AssetsPage() {
       .then(applyPageData)
       .catch((cause: unknown) => {
         setError(cause instanceof Error ? cause.message : '媒体资产加载失败');
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   async function upload(event: FormEvent) {
@@ -118,6 +126,7 @@ export function AssetsPage() {
       await uploadAssetFile(intent, file);
       await completeAssetUpload(intent.asset.id);
       setMessage('文件已上传并通过云存储对象复核，现已进入资产库。');
+      toast({ title: '资产上传完成', tone: 'success' });
       setFile(null);
       await load();
     } catch (cause) {
@@ -130,7 +139,12 @@ export function AssetsPage() {
   async function operate(asset: StorageAsset, action: 'copy' | 'archive' | 'restore' | 'delete') {
     if (
       action === 'delete' &&
-      !window.confirm(`确定删除“${asset.displayName}”吗？云存储对象将由 Worker 异步删除。`)
+      !(await confirm({
+        title: '删除媒体资产',
+        description: `“${asset.displayName}”的云存储对象将由 Worker 异步删除。`,
+        confirmLabel: '删除',
+        tone: 'danger',
+      }))
     ) {
       return;
     }
@@ -153,6 +167,7 @@ export function AssetsPage() {
         setMessage('删除任务已进入后台队列。');
       }
       await load();
+      toast({ title: action === 'copy' ? '地址已复制' : '资产操作已完成', tone: 'success' });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '资产操作失败');
     } finally {
@@ -249,7 +264,13 @@ export function AssetsPage() {
         title="媒体资源库"
         description="数据库保存稳定资产身份、对象校验信息和引用数量；云存储只负责保存文件。"
       >
-        {assets.length === 0 ? (
+        {loading ? (
+          <div className="asset-grid" aria-label="正在加载媒体资产">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} shape="block" style={{ minHeight: 260 }} />
+            ))}
+          </div>
+        ) : assets.length === 0 ? (
           <div className="asset-empty">暂无媒体资产</div>
         ) : (
           <div className="asset-grid">
