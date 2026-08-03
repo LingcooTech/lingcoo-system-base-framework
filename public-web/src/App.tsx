@@ -3,7 +3,6 @@ import {
   Boxes,
   Braces,
   Database,
-  ExternalLink,
   Layers3,
   ShieldCheck,
   KeyRound,
@@ -21,23 +20,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-interface PublicPresentation {
-  displayName: string;
-  shortName: string | null;
-  slogan: string | null;
-  fullLogoAssetId: string | null;
-  squareLogoAssetId: string | null;
-  faviconAssetId: string | null;
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  headerNavigation: { label: string; href: string }[];
-  footerCopyright: string | null;
-  filingInfo: string | null;
-  assets: Record<string, { publicUrl: string | null }>;
-}
+import { Hero, PageHeader, Section } from './components/site/Layout';
+import { SiteShell, type PublicPresentation } from './components/site/SiteShell';
 
 interface CmsContent {
   id: string;
@@ -210,7 +194,15 @@ function PublicAuthFlow({
   );
 }
 
-function CmsContentView({ endpoint, preview = false }: { endpoint: string; preview?: boolean }) {
+function CmsContentView({
+  endpoint,
+  presentation,
+  preview = false,
+}: {
+  endpoint: string;
+  presentation: PublicPresentation | null;
+  preview?: boolean;
+}) {
   const [content, setContent] = useState<CmsContent | null>(null);
   const [missing, setMissing] = useState(false);
 
@@ -229,77 +221,87 @@ function CmsContentView({ endpoint, preview = false }: { endpoint: string; previ
 
   if (missing)
     return (
-      <main className="cms-public-state">
-        <EmptyState
-          action={<a href="/">返回首页</a>}
-          description="内容可能尚未发布、已被移动，或者链接不完整。"
-          title="内容不存在或暂不可访问"
-          variant="error"
-        />
-      </main>
+      <SiteShell presentation={presentation}>
+        <Section className="cms-public-state" containerSize="content">
+          <EmptyState
+            action={<a href="/">返回首页</a>}
+            description="内容可能尚未发布、已被移动，或者链接不完整。"
+            title="内容不存在或暂不可访问"
+            variant="error"
+          />
+        </Section>
+      </SiteShell>
     );
   if (!content)
     return (
-      <main className="cms-public-state">
-        <div className="cms-public-loading" aria-label="正在加载内容">
-          <Skeleton style={{ height: 34, width: '58%' }} />
-          <SkeletonText lines={4} />
-          <Skeleton shape="block" style={{ minHeight: 260 }} />
-        </div>
-      </main>
+      <SiteShell presentation={presentation}>
+        <Section className="cms-public-state" containerSize="content">
+          <div className="cms-public-loading" aria-label="正在加载内容">
+            <Skeleton style={{ height: 34, width: '58%' }} />
+            <SkeletonText lines={4} />
+            <Skeleton shape="block" style={{ minHeight: 260 }} />
+          </div>
+        </Section>
+      </SiteShell>
     );
   const coverUrl = content.coverAssetId ? content.assets[content.coverAssetId]?.publicUrl : null;
   return (
-    <main className="cms-public-page">
-      <header className="cms-public-header">
-        <Breadcrumb
-          items={[
-            { href: '/', label: '首页' },
-            ...(content.type === 'article' ? [{ href: '/articles', label: '文章' }] : []),
-            { label: content.title },
-          ]}
-        />
-        {preview ? <span>草稿预览</span> : null}
-      </header>
-      <article>
-        <p className="cms-public-type">{content.type === 'page' ? 'Page' : 'Article'}</p>
-        <h1>{content.title}</h1>
-        {content.excerpt ? <p className="cms-public-excerpt">{content.excerpt}</p> : null}
-        {content.type === 'article' ? (
-          <div className="cms-public-meta">
-            <span>{content.author?.displayName || '系统编辑'}</span>
-            {content.publishedAt ? (
-              <time>{new Date(content.publishedAt).toLocaleDateString()}</time>
-            ) : null}
-          </div>
-        ) : null}
-        {coverUrl ? (
-          <ResponsiveImage
-            alt={content.title}
-            aspectRatio="16 / 9"
-            className="cms-public-cover"
-            src={coverUrl}
-            wrapperClassName="cms-public-cover-frame"
+    <SiteShell presentation={presentation}>
+      <Section className="cms-public-page" containerSize="content">
+        <div className="cms-public-header">
+          <Breadcrumb
+            items={[
+              { href: '/', label: '首页' },
+              ...(content.type === 'article' ? [{ href: '/articles', label: '文章' }] : []),
+              { label: content.title },
+            ]}
           />
-        ) : null}
-        {content.terms.length ? (
-          <div className="cms-public-terms">
-            {content.terms.map((term) => (
-              <span key={term.id} style={term.color ? { borderColor: term.color } : undefined}>
-                {term.name}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        <div className="cms-markdown">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.body}</ReactMarkdown>
+          {preview ? <span>草稿预览</span> : null}
         </div>
-      </article>
-    </main>
+        <article>
+          <PageHeader
+            description={content.excerpt}
+            eyebrow={content.type === 'page' ? 'Page' : 'Article'}
+            meta={
+              content.type === 'article' ? (
+                <>
+                  <span>{content.author?.displayName || '系统编辑'}</span>
+                  {content.publishedAt ? (
+                    <time>{new Date(content.publishedAt).toLocaleDateString()}</time>
+                  ) : null}
+                </>
+              ) : null
+            }
+            title={content.title}
+          />
+          {coverUrl ? (
+            <ResponsiveImage
+              alt={content.title}
+              aspectRatio="16 / 9"
+              className="cms-public-cover"
+              src={coverUrl}
+              wrapperClassName="cms-public-cover-frame"
+            />
+          ) : null}
+          {content.terms.length ? (
+            <div className="cms-public-terms">
+              {content.terms.map((term) => (
+                <span key={term.id} style={term.color ? { borderColor: term.color } : undefined}>
+                  {term.name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          <div className="cms-markdown">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.body}</ReactMarkdown>
+          </div>
+        </article>
+      </Section>
+    </SiteShell>
   );
 }
 
-function ArticleIndex() {
+function ArticleIndex({ presentation }: { presentation: PublicPresentation | null }) {
   const [items, setItems] = useState<CmsContent[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -310,34 +312,32 @@ function ArticleIndex() {
       .finally(() => setLoading(false));
   }, []);
   return (
-    <main className="cms-public-index">
-      <header>
-        <a href="/">← 返回首页</a>
-        <p>Content</p>
-        <h1>文章</h1>
-      </header>
-      <div>
-        {loading ? (
-          <div className="cms-public-index-loading">
-            <Skeleton shape="block" />
-            <Skeleton shape="block" />
-          </div>
-        ) : null}
-        {!loading && !items.length ? (
-          <EmptyState description="发布第一篇文章后，它会显示在这里。" title="暂时还没有文章" />
-        ) : null}
-        {!loading &&
-          items.map((item) => (
-            <a href={'/articles/' + item.slug} key={item.id}>
-              <small>
-                {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}
-              </small>
-              <h2>{item.title}</h2>
-              <p>{item.excerpt}</p>
-            </a>
-          ))}
-      </div>
-    </main>
+    <SiteShell presentation={presentation}>
+      <Section className="cms-public-index" containerSize="content">
+        <PageHeader description="由轻量内容中心发布的公共文章。" eyebrow="Content" title="文章" />
+        <div className="cms-public-index__items">
+          {loading ? (
+            <div className="cms-public-index-loading">
+              <Skeleton shape="block" />
+              <Skeleton shape="block" />
+            </div>
+          ) : null}
+          {!loading && !items.length ? (
+            <EmptyState description="发布第一篇文章后，它会显示在这里。" title="暂时还没有文章" />
+          ) : null}
+          {!loading &&
+            items.map((item) => (
+              <a href={'/articles/' + item.slug} key={item.id}>
+                <small>
+                  {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}
+                </small>
+                <h2>{item.title}</h2>
+                <p>{item.excerpt}</p>
+              </a>
+            ))}
+        </div>
+      </Section>
+    </SiteShell>
   );
 }
 
@@ -392,16 +392,6 @@ function App() {
       .catch(() => undefined);
   }, []);
 
-  const displayName = presentation?.displayName ?? 'Lingcoo Base';
-  const logoId = presentation?.fullLogoAssetId ?? presentation?.squareLogoAssetId;
-  const logoUrl = logoId ? presentation?.assets[logoId]?.publicUrl : null;
-  const navigation = presentation?.headerNavigation.length
-    ? presentation.headerNavigation
-    : [
-        { label: '基础架构', href: '#architecture' },
-        { label: '运行状态', href: '/health' },
-      ];
-
   const pathParts = window.location.pathname.split('/').filter(Boolean);
   if (pathParts[0] === 'auth') {
     const mode =
@@ -417,113 +407,102 @@ function App() {
     if (mode) return <PublicAuthFlow mode={mode} presentation={presentation} />;
   }
   if (pathParts[0] === 'preview' && pathParts[1] === 'content' && pathParts[2]) {
-    return <CmsContentView endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'} preview />;
+    return (
+      <CmsContentView
+        endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'}
+        presentation={presentation}
+        preview
+      />
+    );
   }
-  if (pathParts[0] === 'articles' && !pathParts[1]) return <ArticleIndex />;
+  if (pathParts[0] === 'articles' && !pathParts[1])
+    return <ArticleIndex presentation={presentation} />;
   if ((pathParts[0] === 'articles' || pathParts[0] === 'pages') && pathParts[1]) {
     return (
       <CmsContentView
         endpoint={'/api/public/cms/' + pathParts[0] + '/' + encodeURIComponent(pathParts[1])}
+        presentation={presentation}
       />
     );
   }
 
   return (
-    <main>
-      <header className="site-header">
-        <a className="brand" href="/" aria-label={`${displayName} 首页`}>
-          <span className="brand-mark">
-            {logoUrl ? <img alt="" src={logoUrl} /> : (presentation?.shortName?.slice(0, 1) ?? 'L')}
-          </span>
-          <span>
-            <strong>{displayName}</strong>
-            <small>System Framework</small>
-          </span>
-        </a>
-        <nav aria-label="主要导航">
-          {navigation.map((item) => (
-            <a href={item.href} key={`${item.label}-${item.href}`}>
-              {item.label}
-            </a>
-          ))}
-          <a className="admin-link" href="/admin/">
-            管理后台
-            <ExternalLink size={14} />
-          </a>
-        </nav>
-      </header>
-
-      <section className="hero">
-        <div className="hero-grid" />
-        <div className="hero-content">
-          <p className="eyebrow">
-            <span />
-            Domain-ready foundation
-          </p>
-          <h1>
-            一套专注于
-            <em>业务展开之前</em>
-            的系统基础框架
-          </h1>
-          <p className="hero-copy">
-            它不是生成器，也不预设任何行业。公共 Web、管理后台、服务端、数据库和部署能力已经就位，
-            新系统只需在稳定边界内增加自己的领域模型与业务模块。
-          </p>
-          <div className="hero-actions">
+    <SiteShell headerOverlay headerTone="dark" presentation={presentation}>
+      <Hero
+        actions={
+          <>
             <Button asChild size="lg" trailingIcon={<ArrowRight size={16} />}>
               <a href="/admin/">查看管理后台</a>
             </Button>
             <Button asChild size="lg" variant="secondary">
               <a href="#architecture">了解架构</a>
             </Button>
+          </>
+        }
+        aside={
+          <div className="architecture-card" aria-label="基础框架结构示意">
+            <div className="card-header">
+              <span>framework.layers</span>
+              <span className="live-indicator">ready</span>
+            </div>
+            <div className="layer-stack">
+              <div>
+                <span>01</span>
+                <strong>Public Web</strong>
+                <small>React · Vite</small>
+              </div>
+              <div>
+                <span>02</span>
+                <strong>Admin Console</strong>
+                <small>React · Modular UI</small>
+              </div>
+              <div>
+                <span>03</span>
+                <strong>Application API</strong>
+                <small>Fastify · TypeScript</small>
+              </div>
+              <div>
+                <span>04</span>
+                <strong>Data & Runtime</strong>
+                <small>PostgreSQL · Docker</small>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="architecture-card" aria-label="基础框架结构示意">
-          <div className="card-header">
-            <span>framework.layers</span>
-            <span className="live-indicator">ready</span>
-          </div>
-          <div className="layer-stack">
-            <div>
-              <span>01</span>
-              <strong>Public Web</strong>
-              <small>React · Vite</small>
-            </div>
-            <div>
-              <span>02</span>
-              <strong>Admin Console</strong>
-              <small>React · Modular UI</small>
-            </div>
-            <div>
-              <span>03</span>
-              <strong>Application API</strong>
-              <small>Fastify · TypeScript</small>
-            </div>
-            <div>
-              <span>04</span>
-              <strong>Data & Runtime</strong>
-              <small>PostgreSQL · Docker</small>
-            </div>
-          </div>
-        </div>
-      </section>
+        }
+        description={
+          <p>
+            它不是生成器，也不预设任何行业。公共 Web、管理后台、服务端、数据库和部署能力已经就位，
+            新系统只需在稳定边界内增加自己的领域模型与业务模块。
+          </p>
+        }
+        eyebrow="Domain-ready foundation"
+        title={
+          <>
+            一套专注于
+            <em>业务展开之前</em>
+            的系统基础框架
+          </>
+        }
+      />
 
-      <section className="principles">
-        <div>
-          <Layers3 size={20} />
-          <span>完整，而非庞杂</span>
+      <Section className="principles-section" spacing="sm">
+        <div className="principles">
+          <div>
+            <Layers3 size={20} />
+            <span>完整，而非庞杂</span>
+          </div>
+          <div>
+            <ShieldCheck size={20} />
+            <span>默认具备生产边界</span>
+          </div>
+          <div>
+            <Boxes size={20} />
+            <span>通过模块承载业务</span>
+          </div>
         </div>
-        <div>
-          <ShieldCheck size={20} />
-          <span>默认具备生产边界</span>
-        </div>
-        <div>
-          <Boxes size={20} />
-          <span>通过模块承载业务</span>
-        </div>
-      </section>
+      </Section>
 
-      <section className="architecture" id="architecture">
+      <Section className="architecture-section" id="architecture">
         <div className="section-heading">
           <p>Shared foundation</p>
           <h2>基础能力留在框架，领域能力进入模块</h2>
@@ -542,21 +521,8 @@ function App() {
             </article>
           ))}
         </div>
-      </section>
-
-      <footer>
-        <div>
-          <span className="brand-mark">L</span>
-          <strong>{displayName}</strong>
-        </div>
-        <p>
-          {presentation?.footerCopyright ||
-            presentation?.slogan ||
-            'Foundation first. Domain follows.'}
-          {presentation?.filingInfo ? ` · ${presentation.filingInfo}` : ''}
-        </p>
-      </footer>
-    </main>
+      </Section>
+    </SiteShell>
   );
 }
 

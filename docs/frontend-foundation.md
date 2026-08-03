@@ -18,7 +18,9 @@ Frame 从一开始就包含两个前端入口：`admin-ui` 是管理后台，`pu
 后台另外拥有 Shell、Sidebar、Topbar、PageFrame、ResourceSection、DataTable、StatusPill、
 AssetPicker 和全局搜索。这些组件带有管理场景语义，不应直接搬到公共 Web。
 
-公共 Web 当前拥有品牌化首页、CMS 页面/文章渲染和账号安全流程，但站点级组件仍应继续提炼。
+公共 Web 已拥有统一站点壳：SiteShell 组合 Header、Footer 和 MobileNavigation；Container、Section、
+Hero 与 PageHeader 负责无业务语义的页面结构。首页和 CMS 页面均使用同一套壳层，账号安全流程保留
+独立、聚焦的 Auth 布局。
 
 ## 共享 UI 使用边界
 
@@ -28,11 +30,18 @@ AssetPicker 和全局搜索。这些组件带有管理场景语义，不应直�
 - ResponsiveImage 统一 Picture Source、比例、加载策略和图片适配；业务层仍负责提供 Asset URL。
 - 交互组件由 Radix 管理键盘、焦点和 ARIA 行为，外层只保留 Frame 的设计变量与视觉风格。
 
-## 下一批 Public Web：站点壳
+## 公共站点壳
 
-- SiteShell、Header、Footer、MobileNavigation。
-- Container、Section、Hero、PageHeader 等站点布局原语。
-- SEO Head、面包屑和结构化数据入口。
+- Header 读取 Logo、站点名称和 `headerNavigation`；非首页的锚点导航自动回到首页锚点。
+- MobileNavigation 复用共享 Drawer，并和桌面导航使用同一份数据。
+- Footer 读取 `footerLinks`、联系方式、标语、版权和备案信息。
+- 首页与内容页只组合 Container、Section、Hero 和 PageHeader，不再自行复制站点导航结构。
+
+## 下一批 Public Web：页面元数据与系统页面
+
+- SEO Head、Canonical、Open Graph、面包屑结构化数据入口。
+- Sitemap、Robots 和公共路由清单。
+- 404 / 500 页面与全站加载、错误边界。
 - 从 CMS 页面中提取 ContentRenderer、ArticleCard、EmptyContent。
 - AuthShell、FormResult 和通用错误页。
 
