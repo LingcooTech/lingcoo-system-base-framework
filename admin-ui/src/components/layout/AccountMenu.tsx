@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@lingcoo/frame-ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@lingcoo/frame-ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@lingcoo/frame-ui/dropdown-menu';
-import { Bell, ChevronUp, LogOut, Settings2 } from 'lucide-react';
+import { Bell, ChevronUp, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 
 import type { AuthAccount } from '../../api/client';
 import { Link } from '../../lib/router';
@@ -50,6 +50,7 @@ export function AccountMenu({
           type="button"
         >
           <Avatar>
+            {account.avatarUrl ? <AvatarImage alt="" src={account.avatarUrl} /> : null}
             <AvatarFallback>{getInitials(account.displayName)}</AvatarFallback>
           </Avatar>
           {!collapsed ? (
@@ -69,6 +70,18 @@ export function AccountMenu({
           <span className="account-dropdown-email">{account.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/account" onNavigate={onNavigate}>
+            <UserRound aria-hidden size={16} />
+            个人中心
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account#security" onNavigate={onNavigate}>
+            <ShieldCheck aria-hidden size={16} />
+            账号安全
+          </Link>
+        </DropdownMenuItem>
         {canReadNotifications ? (
           <DropdownMenuItem asChild>
             <Link href="/notifications" onNavigate={onNavigate}>

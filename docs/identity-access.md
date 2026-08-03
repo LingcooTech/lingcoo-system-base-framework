@@ -7,6 +7,7 @@ Frame 只定义系统都会需要的身份内核：
 - `accounts`：稳定账号主体
 - `password_credentials`：密码登录凭据
 - `auth_sessions`：可撤销会话
+- `auth_security_challenges`：只保存摘要的一次性邀请、验证和密码重置凭证
 - `roles` / `permissions`：通用 RBAC
 - `account_roles` / `role_permissions`：多对多授权关系
 
@@ -67,6 +68,19 @@ AUTH_BOOTSTRAP_DISPLAY_NAME=系统所有者
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 - `POST /api/auth/change-password`
+- `POST /api/auth/password-reset/request`
+- `POST /api/auth/password-reset/complete`
+- `POST /api/auth/invitations/accept`
+- `POST /api/auth/email/verify`
+
+账号自服务：
+
+- `GET/PATCH /api/account/profile`
+- `POST /api/account/email-verification`
+- `GET /api/account/sessions`
+- `DELETE /api/account/sessions/:sessionId`
+- `POST /api/account/sessions/revoke-others`
+- `GET /api/account/security-events`
 
 身份与权限：
 

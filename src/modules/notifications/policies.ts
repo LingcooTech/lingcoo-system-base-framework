@@ -15,7 +15,7 @@ export function registerNotificationPolicies(
       title: '账号密码已修改',
       body: '你的账号密码刚刚发生了变更，其他登录会话已经失效。如果这不是你的操作，请立即联系系统管理员。',
       ctaLabel: '查看账号安全',
-      ctaUrl: '/admin/access',
+      ctaUrl: '/admin/account#security',
       sourceEventId: event.eventId,
       sourceEventName: event.topic,
       dedupeKey: `event:${event.eventId}`,

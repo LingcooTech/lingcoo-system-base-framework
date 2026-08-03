@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import { eq, inArray } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
@@ -14,6 +16,7 @@ import { httpError } from '../../lib/http-error.js';
 import { hashPassword } from '../../lib/password.js';
 import { normalizeRoleCode } from '../../lib/rbac.js';
 import { AuthRepository } from '../auth/repository.js';
+import { AccountSecurityService } from '../auth/security.js';
 
 function unique(values: string[]): string[] {
   return [...new Set(values)];
@@ -21,9 +24,15 @@ function unique(values: string[]): string[] {
 
 export class AccessService {
   private readonly repository: AuthRepository;
+  private readonly security: AccountSecurityService;
 
-  constructor(private readonly db: Database) {
+  constructor(
+    private readonly db: Database,
+    encryptionKey?: string,
+    nodeEnv: 'development' | 'test' | 'production' = 'development',
+  ) {
     this.repository = new AuthRepository(db);
+    this.security = new AccountSecurityService(db, encryptionKey, nodeEnv);
   }
 
   async listAccounts() {
@@ -35,6 +44,9 @@ export class AccessService {
           id: account.id,
           email: account.email,
           displayName: account.displayName,
+          avatarAssetId: account.avatarAssetId,
+          avatarUrl: null,
+          emailVerifiedAt: account.emailVerifiedAt,
           status: account.status,
           mustChangePassword: account.mustChangePassword,
           lastLoginAt: account.lastLoginAt,
@@ -54,7 +66,13 @@ export class AccessService {
   }
 
   async createAccount(
-    input: { email: string; displayName: string; password: string; roleCodes: string[] },
+    input: {
+      email: string;
+      displayName: string;
+      setupMethod: 'invitation' | 'temporary_password';
+      password?: string;
+      roleCodes: string[];
+    },
     actorId: string,
   ) {
     const email = input.email.trim().toLowerCase();
@@ -66,7 +84,10 @@ export class AccessService {
     if (assignedRoles.length !== roleCodes.length) {
       throw httpError(422, '包含不存在的角色', 'ValidationError');
     }
-    const passwordHash = await hashPassword(input.password);
+    if (input.setupMethod === 'invitation') await this.security.assertInvitationReady();
+    const passwordHash = await hashPassword(
+      input.setupMethod === 'invitation' ? randomBytes(48).toString('base64url') : input.password!,
+    );
     const accountId = await this.db.transaction(async (transaction) => {
       const [account] = await transaction
         .insert(accounts)
@@ -87,9 +108,24 @@ export class AccessService {
       resourceType: 'account',
       resourceId: accountId,
       actorId,
-      metadata: { roleCodes },
+      metadata: { roleCodes, setupMethod: input.setupMethod },
     });
+    if (input.setupMethod === 'invitation') await this.security.invite(accountId, actorId);
     return this.repository.findAccountById(accountId);
+  }
+
+  async resendInvitation(accountId: string, actorId: string) {
+    const account = await this.repository.findAccountById(accountId);
+    if (!account) throw httpError(404, '账号不存在', 'NotFoundError');
+    if (account.emailVerifiedAt)
+      throw httpError(409, '该账号邮箱已经验证，无需重新邀请', 'ConflictError');
+    await this.security.invite(accountId, actorId);
+    await recordAuditEvent(this.db, {
+      action: 'iam.account_invitation_resent',
+      resourceType: 'account',
+      resourceId: accountId,
+      actorId,
+    });
   }
 
   async updateAccount(

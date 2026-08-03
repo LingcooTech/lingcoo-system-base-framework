@@ -14,6 +14,9 @@ export interface AuthAccount {
   id: string;
   email: string;
   displayName: string;
+  avatarAssetId: string | null;
+  avatarUrl: string | null;
+  emailVerifiedAt: string | null;
   status: string;
   mustChangePassword: boolean;
   lastLoginAt: string | null;
@@ -22,6 +25,34 @@ export interface AuthAccount {
 }
 
 export interface AccessAccount extends Omit<AuthAccount, 'permissions'> {
+  createdAt: string;
+}
+
+export interface AccountProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarAssetId: string | null;
+  avatarUrl: string | null;
+  emailVerifiedAt: string | null;
+  createdAt: string;
+}
+
+export interface AccountSession {
+  id: string;
+  expiresAt: string;
+  revokedAt: string | null;
+  lastSeenAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  current: boolean;
+}
+
+export interface AccountSecurityEvent {
+  id: string;
+  action: string;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
 }
 
@@ -564,10 +595,56 @@ export async function fetchAccessPermissions(): Promise<AccessPermission[]> {
 export async function createAccessAccount(input: {
   email: string;
   displayName: string;
-  password: string;
+  setupMethod: 'invitation' | 'temporary_password';
+  password?: string;
   roleCodes: string[];
 }): Promise<void> {
   await apiRequest('/api/access/accounts', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function resendAccessAccountInvitation(accountId: string): Promise<void> {
+  await apiRequest(`/api/access/accounts/${accountId}/invitation`, { method: 'POST' });
+}
+
+export async function fetchAccountProfile(): Promise<AccountProfile> {
+  return (await apiRequest<{ profile: AccountProfile }>('/api/account/profile')).profile;
+}
+
+export async function updateAccountProfile(input: {
+  displayName: string;
+  avatarAssetId: string | null;
+}): Promise<AccountProfile> {
+  return (
+    await apiRequest<{ profile: AccountProfile }>('/api/account/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    })
+  ).profile;
+}
+
+export async function requestEmailVerification(): Promise<void> {
+  await apiRequest('/api/account/email-verification', { method: 'POST' });
+}
+
+export async function fetchAccountSessions(): Promise<AccountSession[]> {
+  return (await apiRequest<{ items: AccountSession[] }>('/api/account/sessions')).items;
+}
+
+export async function revokeAccountSession(sessionId: string): Promise<void> {
+  await apiRequest(`/api/account/sessions/${sessionId}`, { method: 'DELETE' });
+}
+
+export async function revokeOtherAccountSessions(): Promise<number> {
+  return (
+    await apiRequest<{ count: number }>('/api/account/sessions/revoke-others', {
+      method: 'POST',
+    })
+  ).count;
+}
+
+export async function fetchAccountSecurityEvents(): Promise<AccountSecurityEvent[]> {
+  return (await apiRequest<{ items: AccountSecurityEvent[] }>('/api/account/security-events'))
+    .items;
 }
 
 export async function updateAccessAccount(

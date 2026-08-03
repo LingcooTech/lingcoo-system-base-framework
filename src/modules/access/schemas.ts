@@ -10,15 +10,26 @@ const roleCode = z
     message: '角色代码格式无效',
   });
 
-export const createAccountSchema = z.object({
-  email: z
-    .email()
-    .max(254)
-    .transform((value) => value.trim().toLowerCase()),
-  displayName: z.string().trim().min(1).max(120),
-  password: z.string().min(12).max(128),
-  roleCodes: z.array(roleCode).min(1),
-});
+export const createAccountSchema = z
+  .object({
+    email: z
+      .email()
+      .max(254)
+      .transform((value) => value.trim().toLowerCase()),
+    displayName: z.string().trim().min(1).max(120),
+    setupMethod: z.enum(['invitation', 'temporary_password']).default('invitation'),
+    password: z.string().min(12).max(128).optional(),
+    roleCodes: z.array(roleCode).min(1),
+  })
+  .superRefine((value, context) => {
+    if (value.setupMethod === 'temporary_password' && !value.password) {
+      context.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: '请输入至少 12 位的临时密码',
+      });
+    }
+  });
 
 export const updateAccountSchema = z
   .object({

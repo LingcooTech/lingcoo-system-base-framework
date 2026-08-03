@@ -24,7 +24,19 @@ function actionLabel(action: string): string {
     'cms.content_draft': '撤回内容',
     'cms.content_archived': '归档内容',
     'auth.login_succeeded': '登录成功',
+    'auth.login': '账号登录',
+    'auth.logout': '退出登录',
+    'auth.profile_updated': '更新个人资料',
     'auth.password_changed': '修改密码',
+    'auth.password_reset_requested': '申请密码重置',
+    'auth.password_reset_completed': '完成密码重置',
+    'auth.email_verification_requested': '申请邮箱验证',
+    'auth.email_verified': '完成邮箱验证',
+    'auth.account_invitation_requested': '发送账号邀请',
+    'auth.invitation_accepted': '接受账号邀请',
+    'auth.session_revoked': '撤销登录会话',
+    'auth.other_sessions_revoked': '撤销其他登录会话',
+    'iam.account_invitation_resent': '重新发送账号邀请',
   };
   return labels[action] ?? action;
 }

@@ -427,6 +427,161 @@ a {
   padding-inline: 0;
 }
 
+.account-notice {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  color: #315f47;
+  font-size: 12px;
+  background: #edf5f0;
+  border: 1px solid #d9e9df;
+  border-radius: 11px;
+}
+
+.account-overview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fbf9, #f1f7f3);
+  border: 1px solid #dfe9e2;
+  border-radius: 16px;
+}
+
+.account-overview > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.account-overview h2,
+.account-overview p {
+  margin: 0;
+}
+
+.account-overview h2 {
+  color: #1f2c24;
+  font-size: 18px;
+}
+
+.account-overview p {
+  margin-top: 4px;
+  color: #77837b;
+  font-size: 12px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 16px;
+}
+
+.account-form,
+.account-password-form {
+  display: grid;
+  gap: 18px;
+}
+
+.account-form > .lc-button,
+.account-password-form > .lc-button {
+  justify-self: start;
+}
+
+.account-password-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+}
+
+.account-email-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  align-items: start;
+  color: #315f47;
+}
+
+.account-email-card > .lc-button {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.account-email-card strong {
+  color: #26342b;
+  font-size: 13px;
+}
+
+.account-email-card p {
+  margin: 5px 0 0;
+  color: #78847c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.account-section-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.account-section-toolbar p {
+  margin: 0;
+  color: #859087;
+  font-size: 12px;
+}
+
+.account-session-list,
+.account-event-list {
+  display: grid;
+}
+
+.account-session-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 68px;
+  border-top: 1px solid #edf0ed;
+}
+
+.account-session-list article > svg,
+.account-event-list article > svg {
+  color: #5d7e69;
+}
+
+.account-session-list strong,
+.account-session-list small {
+  display: block;
+}
+
+.account-session-list strong {
+  color: #344039;
+  font-size: 12px;
+}
+
+.account-session-list small {
+  margin-top: 4px;
+  color: #8a938d;
+  font-size: 10px;
+}
+
+.account-event-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  color: #3b4740;
+  font-size: 12px;
+  border-top: 1px solid #edf0ed;
+}
+
+.account-event-list time,
+.account-event-list > p {
+  color: #8a938d;
+  font-size: 10px;
+}
+
 .account-dropdown-name,
 .account-dropdown-email {
   display: block;
@@ -1931,6 +2086,16 @@ a {
   margin-top: 34px;
 }
 
+.auth-help-link {
+  color: #4f725d;
+  font-size: 12px;
+  text-align: center;
+}
+
+.auth-help-link:hover {
+  color: #315f47;
+}
+
 .auth-form .lc-input-frame,
 .password-panel .lc-input-frame {
   width: 100%;
@@ -2145,5 +2310,34 @@ a {
   .setting-row {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .account-grid,
+  .account-password-form {
+    grid-template-columns: 1fr;
+  }
+
+  .account-overview {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .account-session-list article {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-block: 12px;
+  }
+
+  .account-session-list article > .lc-button {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .account-event-list article {
+    grid-template-columns: auto 1fr;
+    padding-block: 8px;
+  }
+
+  .account-event-list time {
+    grid-column: 2;
   }
 }

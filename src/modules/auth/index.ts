@@ -1,7 +1,16 @@
 import type { FastifyReply } from 'fastify';
 
 import type { AppModule } from '../types.js';
-import { changePasswordSchema, loginSchema } from './schemas.js';
+import {
+  changePasswordSchema,
+  completeSecurityChallengeSchema,
+  loginSchema,
+  passwordResetRequestSchema,
+  sessionParamsSchema,
+  updateProfileSchema,
+  verifyEmailSchema,
+} from './schemas.js';
+import { AccountSecurityService } from './security.js';
 import { AuthService } from './service.js';
 
 function sessionMetadata(request: { ip: string; headers: { 'user-agent'?: string } }) {
@@ -15,6 +24,11 @@ export const authModule: AppModule = {
   name: 'auth',
   async register(app) {
     const service = new AuthService(app.db);
+    const security = new AccountSecurityService(
+      app.db,
+      app.appEnv.SETTINGS_ENCRYPTION_KEY,
+      app.appEnv.NODE_ENV,
+    );
     if (app.appEnv.AUTH_BOOTSTRAP_EMAIL && app.appEnv.AUTH_BOOTSTRAP_PASSWORD) {
       const created = await service.bootstrapOwner({
         email: app.appEnv.AUTH_BOOTSTRAP_EMAIL,
@@ -93,5 +107,81 @@ export const authModule: AppModule = {
         return reply.send({ ok: true });
       },
     );
+
+    app.post(
+      '/api/auth/password-reset/request',
+      { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } },
+      async (request, reply) => {
+        await security.requestPasswordReset(
+          passwordResetRequestSchema.parse(request.body).email,
+          request.ip,
+        );
+        return reply.code(202).send({ ok: true });
+      },
+    );
+    app.post(
+      '/api/auth/password-reset/complete',
+      { config: { rateLimit: { max: 8, timeWindow: '15 minutes' } } },
+      async (request) => {
+        const input = completeSecurityChallengeSchema.parse(request.body);
+        await security.resetPassword(input.token, input.newPassword);
+        return { ok: true };
+      },
+    );
+    app.post(
+      '/api/auth/invitations/accept',
+      { config: { rateLimit: { max: 8, timeWindow: '15 minutes' } } },
+      async (request) => {
+        const input = completeSecurityChallengeSchema.parse(request.body);
+        await security.acceptInvitation(input.token, input.newPassword);
+        return { ok: true };
+      },
+    );
+    app.post('/api/auth/email/verify', async (request) => {
+      await security.verifyEmail(verifyEmailSchema.parse(request.body).token);
+      return { ok: true };
+    });
+    app.post(
+      '/api/account/email-verification',
+      { preHandler: app.authenticate, config: { rateLimit: { max: 3, timeWindow: '1 hour' } } },
+      async (request, reply) => {
+        const queued = await security.requestEmailVerification(request.auth!.accountId, request.ip);
+        return reply.code(queued ? 202 : 200).send({ ok: true, alreadyVerified: !queued });
+      },
+    );
+    app.get('/api/account/profile', { preHandler: app.authenticate }, async (request) => ({
+      profile: await security.getProfile(request.auth!.accountId),
+    }));
+    app.patch('/api/account/profile', { preHandler: app.authenticate }, async (request) => ({
+      profile: await security.updateProfile(
+        request.auth!.accountId,
+        updateProfileSchema.parse(request.body),
+      ),
+    }));
+    app.get('/api/account/sessions', { preHandler: app.authenticate }, async (request) => ({
+      items: await security.listSessions(request.auth!.accountId, request.auth!.sessionId),
+    }));
+    app.delete(
+      '/api/account/sessions/:sessionId',
+      { preHandler: app.authenticate },
+      async (request) => {
+        await security.revokeSession(
+          request.auth!.accountId,
+          request.auth!.sessionId,
+          sessionParamsSchema.parse(request.params).sessionId,
+        );
+        return { ok: true };
+      },
+    );
+    app.post(
+      '/api/account/sessions/revoke-others',
+      { preHandler: app.authenticate },
+      async (request) => ({
+        count: await security.revokeOtherSessions(request.auth!.accountId, request.auth!.sessionId),
+      }),
+    );
+    app.get('/api/account/security-events', { preHandler: app.authenticate }, async (request) => ({
+      items: await security.securityEvents(request.auth!.accountId),
+    }));
   },
 };

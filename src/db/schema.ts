@@ -19,6 +19,9 @@ export const accounts = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull().unique(),
     displayName: text('display_name').notNull(),
+    // The SQL migration owns this FK because storage_assets also references accounts.
+    avatarAssetId: uuid('avatar_asset_id'),
+    emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     status: text('status').notNull().default('active'),
     mustChangePassword: boolean('must_change_password').notNull().default(false),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
@@ -101,6 +104,31 @@ export const authSessions = pgTable(
   (table) => [
     index('auth_sessions_account_idx').on(table.accountId),
     index('auth_sessions_expires_idx').on(table.expiresAt),
+  ],
+);
+
+export const authSecurityChallenges = pgTable(
+  'auth_security_challenges',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    purpose: text('purpose').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    requestedIp: text('requested_ip'),
+    createdBy: uuid('created_by').references(() => accounts.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('auth_security_challenges_account_purpose_idx').on(
+      table.accountId,
+      table.purpose,
+      table.createdAt,
+    ),
+    index('auth_security_challenges_expires_idx').on(table.expiresAt),
   ],
 );
 
@@ -475,6 +503,7 @@ export const notificationDeliveries = pgTable(
       () => integrationConnections.id,
       { onDelete: 'set null' },
     ),
+    encryptedContent: jsonb('encrypted_content'),
     jobId: uuid('job_id').references(() => jobRuns.id, { onDelete: 'set null' }),
     attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),

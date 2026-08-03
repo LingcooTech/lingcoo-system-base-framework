@@ -11,6 +11,7 @@
 - 共享 UI：npm workspace 管理 Design Tokens 与无业务含义的 React 组件
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
 - 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
+- 账号自服务：个人资料与头像、邮箱验证、邀请设密、密码找回、会话和安全记录
 - 外部集成：Provider 注册表、加密凭据、配置生命周期、连通性测试和调用审计
 - 异步执行：PostgreSQL 持久化任务、事务 Outbox、幂等键、并发锁、退避重试和独立 Worker
 - 通知中心：站内通知、系统公告、未读状态和通过 SMTP 异步执行的邮件投递
@@ -115,6 +116,8 @@ docker compose -f docker-compose.prod.yml up -d
 - [架构说明](docs/architecture.md)
 - [成熟系统共同能力矩阵](docs/capability-matrix.md)
 - [身份与访问控制](docs/identity-access.md)
+- [账号自服务与安全中心](docs/account-security.md)
+- [双 Web 前端与共享组件规划](docs/frontend-foundation.md)
 - [外部集成基础](docs/integration-foundation.md)
 - [SMTP Provider](docs/smtp-provider.md)
 - [七牛云、支付与 OpenRouter Provider](docs/shared-providers.md)

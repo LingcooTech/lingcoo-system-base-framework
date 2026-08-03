@@ -11,6 +11,7 @@ import {
   ScrollText,
   Settings2,
   ShieldCheck,
+  UserRound,
   Waypoints,
   type LucideIcon,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ export type SectionKey =
   | 'audit'
   | 'presentation'
   | 'cms'
+  | 'account'
   | 'settings';
 
 export interface SectionMeta {
@@ -216,6 +218,20 @@ export const sections: Record<SectionKey, SectionMeta> = {
     context: [
       { label: '内容类型', value: 'Page + Article', note: '不预设任何行业内容模型' },
       { label: '正文格式', value: 'Markdown', note: '版本化保存 · 安全公共渲染' },
+    ],
+  },
+  account: {
+    id: 'account',
+    group: '个人',
+    title: '个人账号与安全',
+    navLabel: '个人中心',
+    description: '维护个人资料、邮箱验证、密码和当前账号的登录会话。',
+    href: '/account',
+    icon: UserRound,
+    permission: 'admin.access',
+    context: [
+      { label: '账号身份', value: 'Stable account', note: '领域资料通过 Account ID 扩展' },
+      { label: '安全控制', value: 'Revocable', note: '会话 · 密码 · 一次性安全链接' },
     ],
   },
   settings: {

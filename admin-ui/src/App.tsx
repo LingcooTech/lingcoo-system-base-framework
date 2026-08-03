@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { getSectionByPath } from './lib/foundation';
 import { RouterProvider, useRouter } from './lib/router';
 import { AccessPage } from './pages/AccessPage';
+import { AccountPage } from './pages/AccountPage';
 import { AssetsPage } from './pages/AssetsPage';
 import { AuditPage } from './pages/AuditPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
@@ -66,6 +67,8 @@ function RoutedApp() {
 
   const page = pathname.startsWith('/access') ? (
     <AccessPage />
+  ) : pathname.startsWith('/account') ? (
+    <AccountPage />
   ) : pathname.startsWith('/audit') ? (
     <AuditPage />
   ) : pathname.startsWith('/cms') ? (

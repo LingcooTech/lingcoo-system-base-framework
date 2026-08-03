@@ -32,7 +32,7 @@ const integrations = new IntegrationService(
   createIntegrationProviderRegistry(env.NODE_ENV),
   env.SETTINGS_ENCRYPTION_KEY,
 );
-const delivery = new NotificationDeliveryService(db, integrations);
+const delivery = new NotificationDeliveryService(db, integrations, env.SETTINGS_ENCRYPTION_KEY);
 const notifications = new NotificationService(db);
 const assets = new AssetService(db, new QiniuService(integrations));
 const observability = new ObservabilityService(db, new MetricsRegistry());

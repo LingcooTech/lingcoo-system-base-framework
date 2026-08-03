@@ -12,7 +12,11 @@ import { AccessService } from './service.js';
 export const accessModule: AppModule = {
   name: 'access',
   register(app) {
-    const service = new AccessService(app.db);
+    const service = new AccessService(
+      app.db,
+      app.appEnv.SETTINGS_ENCRYPTION_KEY,
+      app.appEnv.NODE_ENV,
+    );
 
     app.get(
       '/api/access/accounts',
@@ -43,6 +47,16 @@ export const accessModule: AppModule = {
           request.auth!.accountId,
         );
         return { account };
+      },
+    );
+
+    app.post(
+      '/api/access/accounts/:accountId/invitation',
+      { preHandler: app.requirePermission('iam.accounts.write') },
+      async (request, reply) => {
+        const { accountId } = accountParamsSchema.parse(request.params);
+        await service.resendInvitation(accountId, request.auth!.accountId);
+        return reply.code(202).send({ ok: true });
       },
     );
 

@@ -11,6 +11,7 @@ import {
   fetchAccessAccounts,
   fetchAccessPermissions,
   fetchAccessRoles,
+  resendAccessAccountInvitation,
   updateAccessAccount,
   updateAccessRole,
   type AccessAccount,
@@ -36,6 +37,7 @@ export function AccessPage() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [setupMethod, setSetupMethod] = useState<'invitation' | 'temporary_password'>('invitation');
   const [statusValue, setStatusValue] = useState<'active' | 'suspended'>('active');
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [roleCode, setRoleCode] = useState('');
@@ -75,6 +77,7 @@ export function AccessPage() {
     setDisplayName(account?.displayName ?? '');
     setEmail(account?.email ?? '');
     setPassword('');
+    setSetupMethod('invitation');
     setStatusValue(account?.status === 'suspended' ? 'suspended' : 'active');
     setSelectedRoles(
       account?.roles.map((role) => role.code) ??
@@ -109,13 +112,30 @@ export function AccessPage() {
           status: statusValue,
           roleCodes: selectedRoles,
         });
-      else await createAccessAccount({ email, displayName, password, roleCodes: selectedRoles });
+      else
+        await createAccessAccount({
+          email,
+          displayName,
+          setupMethod,
+          ...(setupMethod === 'temporary_password' ? { password } : {}),
+          roleCodes: selectedRoles,
+        });
       setAccountDialog(false);
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '账号保存失败');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function resendInvitation(accountId: string) {
+    setError('');
+    try {
+      await resendAccessAccountInvitation(accountId);
+      setError('邀请邮件已重新进入异步投递队列。');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '邀请邮件发送失败');
     }
   }
 
@@ -177,9 +197,16 @@ export function AccessPage() {
       align: 'right',
       cell: (account) =>
         hasPermission('iam.accounts.write') ? (
-          <Button onClick={() => openAccount(account)} size="sm" variant="ghost">
-            编辑
-          </Button>
+          <div className="table-actions">
+            {!account.emailVerifiedAt ? (
+              <Button onClick={() => void resendInvitation(account.id)} size="sm" variant="ghost">
+                重发邀请
+              </Button>
+            ) : null}
+            <Button onClick={() => openAccount(account)} size="sm" variant="ghost">
+              编辑
+            </Button>
+          </div>
         ) : null,
     },
   ];
@@ -287,7 +314,7 @@ export function AccessPage() {
               description={
                 editingAccount
                   ? '调整显示名称、状态和角色分配。'
-                  : '创建后用户首次登录必须修改初始密码。'
+                  : '推荐通过安全邮件邀请用户自行设置密码，也可使用临时密码。'
               }
             />
           }
@@ -332,18 +359,37 @@ export function AccessPage() {
                     />
                   )}
                 </FormField>
-                <FormField description="至少 12 位；仅用于首次登录。" label="初始密码" required>
+                <FormField label="账号启用方式" required>
                   {({ controlId }) => (
-                    <Input
+                    <select
+                      className="integration-select"
                       id={controlId}
-                      minLength={12}
-                      onChange={(event) => setPassword(event.target.value)}
-                      required
-                      type="password"
-                      value={password}
-                    />
+                      onChange={(event) => setSetupMethod(event.target.value as typeof setupMethod)}
+                      value={setupMethod}
+                    >
+                      <option value="invitation">邮件邀请用户自行设置密码</option>
+                      <option value="temporary_password">管理员分配临时密码</option>
+                    </select>
                   )}
                 </FormField>
+                {setupMethod === 'temporary_password' ? (
+                  <FormField
+                    description="至少 12 位；首次登录后强制修改。"
+                    label="初始密码"
+                    required
+                  >
+                    {({ controlId }) => (
+                      <Input
+                        id={controlId}
+                        minLength={12}
+                        onChange={(event) => setPassword(event.target.value)}
+                        required
+                        type="password"
+                        value={password}
+                      />
+                    )}
+                  </FormField>
+                ) : null}
               </>
             ) : (
               <FormField label="状态" required>

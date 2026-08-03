@@ -29,7 +29,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
   const activeSection = getSectionByPath(pathname);
-  const visibleSections = sectionList.filter((section) => hasPermission(section.permission));
+  const visibleSections = sectionList.filter(
+    (section) => section.id !== 'account' && hasPermission(section.permission),
+  );
   const canSearch = hasPermission('search.use');
   const canReadNotifications = hasPermission('notifications.read');
   const canReadSettings = hasPermission('system.settings.read');

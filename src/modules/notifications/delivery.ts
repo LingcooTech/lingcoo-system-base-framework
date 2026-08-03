@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import type { Database } from '../../db/client.js';
 import { notificationDeliveries, notifications } from '../../db/schema.js';
+import { decryptSetting } from '../../lib/settings-crypto.js';
 import type { IntegrationService } from '../integrations/service.js';
 import { SmtpService } from '../integrations/providers/smtp-service.js';
 
@@ -14,6 +15,7 @@ export class NotificationDeliveryService {
   constructor(
     private readonly db: Database,
     integrations: IntegrationService,
+    private readonly encryptionKey?: string,
   ) {
     this.smtp = new SmtpService(integrations);
   }
@@ -39,13 +41,21 @@ export class NotificationDeliveryService {
       })
       .where(eq(notificationDeliveries.id, deliveryId));
     try {
+      const content = row.delivery.encryptedContent
+        ? decryptSetting<{ subject: string; text: string; html?: string }>(
+            row.delivery.encryptedContent,
+            this.encryptionKey ?? '',
+          )
+        : null;
       const result = await this.smtp.send(
         row.delivery.integrationConnectionId,
         {
           to: row.delivery.destination,
-          subject: row.notification.title,
-          text: row.notification.body,
-          html: `<div style="font-family:Arial,sans-serif;line-height:1.7;white-space:pre-wrap;">${escapeHtml(row.notification.body)}</div>`,
+          subject: content?.subject ?? row.notification.title,
+          text: content?.text ?? row.notification.body,
+          html:
+            content?.html ??
+            `<div style="font-family:Arial,sans-serif;line-height:1.7;white-space:pre-wrap;">${escapeHtml(row.notification.body)}</div>`,
         },
         { operation: 'notification.email.deliver' },
       );

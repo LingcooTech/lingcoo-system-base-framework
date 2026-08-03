@@ -6,9 +6,13 @@ import {
   ExternalLink,
   Layers3,
   ShieldCheck,
+  KeyRound,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
-import { useEffect, useState } from 'react';
+import { FormField } from '@lingcoo/frame-ui/form-field';
+import { Input } from '@lingcoo/frame-ui/input';
+import { useEffect, useState, type FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -44,6 +48,155 @@ interface CmsContent {
   author: { displayName: string } | null;
   terms: { id: string; name: string; color: string | null }[];
   assets: Record<string, { publicUrl: string | null }>;
+}
+
+async function authRequest(path: string, body: Record<string, unknown>) {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(payload?.message ?? '安全操作失败，请稍后重试');
+  }
+}
+
+function PublicAuthFlow({ mode }: { mode: 'forgot' | 'reset' | 'invitation' | 'verify' }) {
+  const token = new URLSearchParams(window.location.search).get('token') ?? '';
+  const invalidVerification = mode === 'verify' && !token;
+  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [busy, setBusy] = useState(mode === 'verify' && Boolean(token));
+  const [message, setMessage] = useState(invalidVerification ? '验证链接缺少安全凭证。' : '');
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (mode !== 'verify' || !token) return;
+    authRequest('/api/auth/email/verify', { token })
+      .then(() => {
+        setCompleted(true);
+        setMessage('邮箱验证已完成。');
+      })
+      .catch((error) => setMessage(error instanceof Error ? error.message : '邮箱验证失败'))
+      .finally(() => setBusy(false));
+  }, [mode, token]);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage('');
+    try {
+      if (mode === 'forgot') {
+        await authRequest('/api/auth/password-reset/request', { email });
+        setMessage('如果该邮箱对应可用账号，重置邮件将很快送达。');
+      } else {
+        await authRequest(
+          mode === 'invitation'
+            ? '/api/auth/invitations/accept'
+            : '/api/auth/password-reset/complete',
+          { token, newPassword, confirmPassword },
+        );
+        setCompleted(true);
+        setMessage(mode === 'invitation' ? '账号已启用，可以登录管理后台。' : '密码已重置。');
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '安全操作失败');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const title =
+    mode === 'forgot'
+      ? '找回账号密码'
+      : mode === 'invitation'
+        ? '接受账号邀请'
+        : mode === 'verify'
+          ? '验证账号邮箱'
+          : '设置新的密码';
+  return (
+    <main className="public-auth-screen">
+      <section className="public-auth-card">
+        <a className="public-auth-brand" href="/">
+          <span>F</span>
+          Lingcoo Frame
+        </a>
+        <div className="public-auth-icon">
+          {mode === 'forgot' ? <Mail size={20} /> : <KeyRound size={20} />}
+        </div>
+        <p className="cms-public-type">Account security</p>
+        <h1>{title}</h1>
+        <p className="public-auth-copy">
+          {mode === 'forgot'
+            ? '输入账号邮箱。为保护账号隐私，无论邮箱是否存在都会返回相同结果。'
+            : mode === 'verify'
+              ? '正在校验一次性邮箱验证链接。'
+              : '安全链接只能使用一次；新密码至少需要 12 个字符。'}
+        </p>
+        {mode !== 'verify' && !completed ? (
+          <form onSubmit={submit}>
+            {mode === 'forgot' ? (
+              <FormField label="账号邮箱" required>
+                {({ controlId }) => (
+                  <Input
+                    autoComplete="email"
+                    id={controlId}
+                    onChange={(event) => setEmail(event.target.value)}
+                    prefix={<Mail size={15} />}
+                    required
+                    type="email"
+                    value={email}
+                  />
+                )}
+              </FormField>
+            ) : (
+              <>
+                <FormField label="新密码" required>
+                  {({ controlId }) => (
+                    <Input
+                      autoComplete="new-password"
+                      id={controlId}
+                      minLength={12}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      required
+                      type="password"
+                      value={newPassword}
+                    />
+                  )}
+                </FormField>
+                <FormField label="确认新密码" required>
+                  {({ controlId }) => (
+                    <Input
+                      autoComplete="new-password"
+                      id={controlId}
+                      minLength={12}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      required
+                      type="password"
+                      value={confirmPassword}
+                    />
+                  )}
+                </FormField>
+              </>
+            )}
+            <Button block loading={busy} size="lg" type="submit">
+              {mode === 'forgot' ? '发送重置邮件' : '确认并继续'}
+            </Button>
+          </form>
+        ) : null}
+        {message ? (
+          <p className={completed ? 'public-auth-message success' : 'public-auth-message'}>
+            {message}
+          </p>
+        ) : null}
+        <a className="public-auth-login" href="/admin/">
+          返回管理后台登录
+        </a>
+      </section>
+    </main>
+  );
 }
 
 function CmsContentView({ endpoint, preview = false }: { endpoint: string; preview?: boolean }) {
@@ -203,6 +356,19 @@ function App() {
       ];
 
   const pathParts = window.location.pathname.split('/').filter(Boolean);
+  if (pathParts[0] === 'auth') {
+    const mode =
+      pathParts[1] === 'forgot-password'
+        ? 'forgot'
+        : pathParts[1] === 'reset-password'
+          ? 'reset'
+          : pathParts[1] === 'accept-invitation'
+            ? 'invitation'
+            : pathParts[1] === 'verify-email'
+              ? 'verify'
+              : null;
+    if (mode) return <PublicAuthFlow mode={mode} />;
+  }
   if (pathParts[0] === 'preview' && pathParts[1] === 'content' && pathParts[2]) {
     return <CmsContentView endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'} preview />;
   }

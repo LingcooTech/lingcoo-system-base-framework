@@ -1,7 +1,13 @@
 import { eq, sql } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
-import { accountRoles, accounts, passwordCredentials, roles } from '../../db/schema.js';
+import {
+  accountRoles,
+  accounts,
+  passwordCredentials,
+  roles,
+  storageAssets,
+} from '../../db/schema.js';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import { hashPassword, verifyPassword } from '../../lib/password.js';
@@ -126,10 +132,20 @@ export class AuthService {
     const account = await this.repository.findAccountById(accountId);
     if (!account) throw httpError(401, '账号不存在', 'UnauthorizedError');
     const access = await this.repository.getAccess(accountId);
+    const avatarUrl = account.avatarAssetId
+      ? await this.db
+          .select({ publicUrl: storageAssets.publicUrl })
+          .from(storageAssets)
+          .where(eq(storageAssets.id, account.avatarAssetId))
+          .then((rows) => rows[0]?.publicUrl ?? null)
+      : null;
     return {
       id: account.id,
       email: account.email,
       displayName: account.displayName,
+      avatarAssetId: account.avatarAssetId,
+      avatarUrl,
+      emailVerifiedAt: account.emailVerifiedAt,
       status: account.status,
       mustChangePassword: account.mustChangePassword,
       lastLoginAt: account.lastLoginAt,

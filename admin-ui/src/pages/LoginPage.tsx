@@ -79,6 +79,9 @@ export function LoginPage() {
           <Button block loading={busy} size="lg" type="submit">
             登录
           </Button>
+          <a className="auth-help-link" href="/auth/forgot-password">
+            忘记密码？通过邮箱安全重置
+          </a>
         </form>
       </section>
       <aside className="auth-aside">

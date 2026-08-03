@@ -10,6 +10,7 @@ import {
 } from '../../db/schema.js';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
+import type { EncryptedSetting } from '../../lib/settings-crypto.js';
 
 type NotificationLevel = 'info' | 'success' | 'warning' | 'error';
 
@@ -25,7 +26,7 @@ export interface CreateNotificationInput {
   sourceEventName?: string;
   dedupeKey: string;
   metadata?: Record<string, unknown>;
-  email?: { connectionId?: string };
+  email?: { connectionId?: string; encryptedContent?: EncryptedSetting };
 }
 
 export class NotificationService {
@@ -88,6 +89,7 @@ export class NotificationService {
               channel: 'email',
               destination: account.email,
               integrationConnectionId: connectionId,
+              encryptedContent: input.email.encryptedContent,
             })
             .returning({ id: notificationDeliveries.id });
           const [job] = await transaction
