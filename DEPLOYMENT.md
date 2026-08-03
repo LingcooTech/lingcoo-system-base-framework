@@ -5,6 +5,8 @@
 `git push → CI → GitHub Actions Docker build → Aliyun ACR + GHCR → server pull → migrate → start → health check`
 
 The production server never builds the application image from source.
+ACR authentication is retried with bounded backoff on both the GitHub runner and production host so a transient
+registry TLS timeout does not immediately abort the deployment.
 
 ## Target
 

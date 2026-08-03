@@ -50,11 +50,26 @@ jobs:
           driver: docker
 
       - name: Login to Aliyun ACR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.ACR_REGISTRY }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        shell: bash
+        env:
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        run: |
+          max_attempts=5
+          for attempt in $(seq 1 "${max_attempts}"); do
+            if printf '%s' "${ACR_PASSWORD}" | docker login "${ACR_REGISTRY}" \
+              --username "${ACR_USERNAME}" --password-stdin; then
+              exit 0
+            fi
+            if [ "${attempt}" -eq "${max_attempts}" ]; then
+              echo "ACR login failed after ${attempt} attempts"
+              exit 1
+            fi
+            wait_s=$((attempt * 15))
+            echo "ACR login failed (${attempt}/${max_attempts}); retrying in ${wait_s}s"
+            sleep "${wait_s}"
+          done
 
       - name: Build and push runtime image to ACR
         uses: docker/build-push-action@v6
@@ -91,11 +106,26 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Login to Aliyun ACR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.ACR_REGISTRY }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        shell: bash
+        env:
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        run: |
+          max_attempts=5
+          for attempt in $(seq 1 "${max_attempts}"); do
+            if printf '%s' "${ACR_PASSWORD}" | docker login "${ACR_REGISTRY}" \
+              --username "${ACR_USERNAME}" --password-stdin; then
+              exit 0
+            fi
+            if [ "${attempt}" -eq "${max_attempts}" ]; then
+              echo "ACR login failed after ${attempt} attempts"
+              exit 1
+            fi
+            wait_s=$((attempt * 15))
+            echo "ACR login failed (${attempt}/${max_attempts}); retrying in ${wait_s}s"
+            sleep "${wait_s}"
+          done
 
       - name: Mirror ACR image to GHCR
         run: |

@@ -20,14 +20,32 @@ cleanup_docker_space() {
   docker builder prune -af >/dev/null 2>&1 || true
 }
 
+login_acr() {
+  login_attempt=1
+  login_max_attempts=5
+  while [ "${login_attempt}" -le "${login_max_attempts}" ]; do
+    if printf '%s' "${ACR_PASSWORD}" |
+      docker login "${ACR_REGISTRY}" --username "${ACR_USERNAME}" --password-stdin; then
+      return 0
+    fi
+    if [ "${login_attempt}" -eq "${login_max_attempts}" ]; then
+      echo "ACR login failed after ${login_attempt} attempts"
+      return 1
+    fi
+    login_wait_s=$((login_attempt * 15))
+    echo "ACR login failed (${login_attempt}/${login_max_attempts}); retrying in ${login_wait_s}s"
+    sleep "${login_wait_s}"
+    login_attempt=$((login_attempt + 1))
+  done
+}
+
 cd "${DEPLOY_PATH}"
 
 git fetch --prune origin
 git checkout main
 git reset --hard origin/main
 
-printf '%s' "${ACR_PASSWORD}" |
-  docker login "${ACR_REGISTRY}" --username "${ACR_USERNAME}" --password-stdin
+login_acr
 
 export APP_VERSION
 export LINGCOO_BASE_RUNTIME_IMAGE
