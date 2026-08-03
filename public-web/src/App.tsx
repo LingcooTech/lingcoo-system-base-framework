@@ -10,8 +10,13 @@ import {
   Mail,
 } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
+import { Alert } from '@lingcoo/frame-ui/alert';
+import { Breadcrumb } from '@lingcoo/frame-ui/breadcrumb';
+import { EmptyState } from '@lingcoo/frame-ui/empty-state';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
+import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
+import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
 import { useEffect, useState, type FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -62,7 +67,13 @@ async function authRequest(path: string, body: Record<string, unknown>) {
   }
 }
 
-function PublicAuthFlow({ mode }: { mode: 'forgot' | 'reset' | 'invitation' | 'verify' }) {
+function PublicAuthFlow({
+  mode,
+  presentation,
+}: {
+  mode: 'forgot' | 'reset' | 'invitation' | 'verify';
+  presentation: PublicPresentation | null;
+}) {
   const token = new URLSearchParams(window.location.search).get('token') ?? '';
   const invalidVerification = mode === 'verify' && !token;
   const [email, setEmail] = useState('');
@@ -116,12 +127,14 @@ function PublicAuthFlow({ mode }: { mode: 'forgot' | 'reset' | 'invitation' | 'v
         : mode === 'verify'
           ? '验证账号邮箱'
           : '设置新的密码';
+  const authLogoId = presentation?.squareLogoAssetId ?? presentation?.fullLogoAssetId;
+  const authLogoUrl = authLogoId ? presentation?.assets[authLogoId]?.publicUrl : null;
   return (
     <main className="public-auth-screen">
       <section className="public-auth-card">
         <a className="public-auth-brand" href="/">
-          <span>F</span>
-          Lingcoo Frame
+          <span>{authLogoUrl ? <img alt="" src={authLogoUrl} /> : 'F'}</span>
+          {presentation?.displayName ?? 'Lingcoo Frame'}
         </a>
         <div className="public-auth-icon">
           {mode === 'forgot' ? <Mail size={20} /> : <KeyRound size={20} />}
@@ -187,9 +200,7 @@ function PublicAuthFlow({ mode }: { mode: 'forgot' | 'reset' | 'invitation' | 'v
           </form>
         ) : null}
         {message ? (
-          <p className={completed ? 'public-auth-message success' : 'public-auth-message'}>
-            {message}
-          </p>
+          <Alert tone={completed || mode === 'forgot' ? 'success' : 'danger'}>{message}</Alert>
         ) : null}
         <a className="public-auth-login" href="/admin/">
           返回管理后台登录
@@ -219,21 +230,35 @@ function CmsContentView({ endpoint, preview = false }: { endpoint: string; previ
   if (missing)
     return (
       <main className="cms-public-state">
-        <h1>内容不存在或暂不可访问</h1>
-        <a href="/">返回首页</a>
+        <EmptyState
+          action={<a href="/">返回首页</a>}
+          description="内容可能尚未发布、已被移动，或者链接不完整。"
+          title="内容不存在或暂不可访问"
+          variant="error"
+        />
       </main>
     );
   if (!content)
     return (
       <main className="cms-public-state">
-        <p>正在加载内容…</p>
+        <div className="cms-public-loading" aria-label="正在加载内容">
+          <Skeleton style={{ height: 34, width: '58%' }} />
+          <SkeletonText lines={4} />
+          <Skeleton shape="block" style={{ minHeight: 260 }} />
+        </div>
       </main>
     );
   const coverUrl = content.coverAssetId ? content.assets[content.coverAssetId]?.publicUrl : null;
   return (
     <main className="cms-public-page">
       <header className="cms-public-header">
-        <a href="/">← 返回首页</a>
+        <Breadcrumb
+          items={[
+            { href: '/', label: '首页' },
+            ...(content.type === 'article' ? [{ href: '/articles', label: '文章' }] : []),
+            { label: content.title },
+          ]}
+        />
         {preview ? <span>草稿预览</span> : null}
       </header>
       <article>
@@ -248,7 +273,15 @@ function CmsContentView({ endpoint, preview = false }: { endpoint: string; previ
             ) : null}
           </div>
         ) : null}
-        {coverUrl ? <img className="cms-public-cover" alt="" src={coverUrl} /> : null}
+        {coverUrl ? (
+          <ResponsiveImage
+            alt={content.title}
+            aspectRatio="16 / 9"
+            className="cms-public-cover"
+            src={coverUrl}
+            wrapperClassName="cms-public-cover-frame"
+          />
+        ) : null}
         {content.terms.length ? (
           <div className="cms-public-terms">
             {content.terms.map((term) => (
@@ -268,11 +301,13 @@ function CmsContentView({ endpoint, preview = false }: { endpoint: string; previ
 
 function ArticleIndex() {
   const [items, setItems] = useState<CmsContent[]>([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetch('/api/public/cms/articles')
-      .then((response) => response.json())
-      .then((result: { items: CmsContent[] }) => setItems(result.items))
-      .catch(() => setItems([]));
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
+      .then((result: { items: CmsContent[] }) => setItems(result.items ?? []))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
   }, []);
   return (
     <main className="cms-public-index">
@@ -282,13 +317,25 @@ function ArticleIndex() {
         <h1>文章</h1>
       </header>
       <div>
-        {items.map((item) => (
-          <a href={'/articles/' + item.slug} key={item.id}>
-            <small>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}</small>
-            <h2>{item.title}</h2>
-            <p>{item.excerpt}</p>
-          </a>
-        ))}
+        {loading ? (
+          <div className="cms-public-index-loading">
+            <Skeleton shape="block" />
+            <Skeleton shape="block" />
+          </div>
+        ) : null}
+        {!loading && !items.length ? (
+          <EmptyState description="发布第一篇文章后，它会显示在这里。" title="暂时还没有文章" />
+        ) : null}
+        {!loading &&
+          items.map((item) => (
+            <a href={'/articles/' + item.slug} key={item.id}>
+              <small>
+                {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ''}
+              </small>
+              <h2>{item.title}</h2>
+              <p>{item.excerpt}</p>
+            </a>
+          ))}
       </div>
     </main>
   );
@@ -367,7 +414,7 @@ function App() {
             : pathParts[1] === 'verify-email'
               ? 'verify'
               : null;
-    if (mode) return <PublicAuthFlow mode={mode} />;
+    if (mode) return <PublicAuthFlow mode={mode} presentation={presentation} />;
   }
   if (pathParts[0] === 'preview' && pathParts[1] === 'content' && pathParts[2]) {
     return <CmsContentView endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'} preview />;

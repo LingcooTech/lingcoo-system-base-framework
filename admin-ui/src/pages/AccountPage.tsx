@@ -1,7 +1,10 @@
+import { Alert } from '@lingcoo/frame-ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@lingcoo/frame-ui/avatar';
 import { Button } from '@lingcoo/frame-ui/button';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
+import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
+import { useToast } from '@lingcoo/frame-ui/toast';
 import { CheckCircle2, KeyRound, Laptop, MailCheck, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 
@@ -69,6 +72,7 @@ function deviceLabel(userAgent: string | null) {
 
 export function AccountPage() {
   const { account, changePassword, refresh } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [sessions, setSessions] = useState<AccountSession[]>([]);
   const [events, setEvents] = useState<AccountSecurityEvent[]>([]);
@@ -78,7 +82,7 @@ export function AccountPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
 
   async function load() {
@@ -106,20 +110,23 @@ export function AccountPage() {
   useEffect(() => {
     void Promise.resolve()
       .then(load)
-      .catch(() => setMessage('账号安全数据加载失败。'));
+      .catch(() => setLoadError('账号安全数据加载失败，请刷新后重试。'));
   }, []);
 
   async function saveProfile(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setMessage('');
     try {
       const saved = await updateAccountProfile({ displayName, avatarAssetId });
       setProfile(saved);
       await refresh();
-      setMessage('个人资料已保存。');
+      toast({ title: '个人资料已保存', tone: 'success' });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '个人资料保存失败');
+      toast({
+        title: '个人资料保存失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
     } finally {
       setBusy(false);
     }
@@ -128,16 +135,19 @@ export function AccountPage() {
   async function submitPassword(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setMessage('');
     try {
       await changePassword({ currentPassword, newPassword, confirmPassword });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setMessage('密码已修改，其他登录会话已失效。');
+      toast({ title: '密码已修改', description: '其他登录会话已失效。', tone: 'success' });
       await load();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '密码修改失败');
+      toast({
+        title: '密码修改失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
     } finally {
       setBusy(false);
     }
@@ -145,32 +155,62 @@ export function AccountPage() {
 
   async function sendVerification() {
     setBusy(true);
-    setMessage('');
     try {
       await requestEmailVerification();
-      setMessage('验证邮件已进入异步投递队列。');
+      toast({ title: '验证邮件已进入投递队列', tone: 'success' });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '验证邮件发送失败');
+      toast({
+        title: '验证邮件发送失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
     } finally {
       setBusy(false);
     }
   }
 
   async function revoke(sessionId: string) {
-    await revokeAccountSession(sessionId);
-    setMessage('登录会话已撤销。');
-    await load();
+    try {
+      await revokeAccountSession(sessionId);
+      toast({ title: '登录会话已撤销', tone: 'success' });
+      await load();
+    } catch (error) {
+      toast({
+        title: '会话撤销失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
   }
 
   async function revokeOthers() {
-    const count = await revokeOtherAccountSessions();
-    setMessage(`已撤销 ${count} 个其他登录会话。`);
-    await load();
+    try {
+      const count = await revokeOtherAccountSessions();
+      toast({ title: `已撤销 ${count} 个其他登录会话`, tone: 'success' });
+      await load();
+    } catch (error) {
+      toast({
+        title: '会话撤销失败',
+        description: error instanceof Error ? error.message : undefined,
+        tone: 'danger',
+      });
+    }
+  }
+
+  if (!profile && !loadError) {
+    return (
+      <PageFrame section={sections.account}>
+        <div className="account-loading" aria-label="正在加载账号中心">
+          <Skeleton shape="block" />
+          <SkeletonText lines={4} />
+        </div>
+      </PageFrame>
+    );
   }
 
   return (
     <PageFrame section={sections.account}>
-      {message ? <p className="account-notice">{message}</p> : null}
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       <div className="account-overview">
         <Avatar size="lg">
           {profile?.avatarUrl ? <AvatarImage alt="" src={profile.avatarUrl} /> : null}

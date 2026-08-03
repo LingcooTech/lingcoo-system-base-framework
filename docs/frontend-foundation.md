@@ -5,24 +5,30 @@ Frame 从一开始就包含两个前端入口：`admin-ui` 是管理后台，`pu
 
 ## 当前共享基础
 
-`frame-ui` 已提供 Button、Input、Textarea、FormField、Badge、Card、Avatar、Dialog、Dropdown、
-Tooltip、Spinner 和 EmptyState。后台和公共 Web 都已经直接使用这些组件。账号找回、邀请和邮箱
-验证页面进一步验证了公共 Web 的表单复用边界。
+`frame-ui` 已提供以下无业务语义的组件：
+
+- 操作与反馈：Button、Alert、Toast、Spinner、Skeleton、EmptyState。
+- 表单：Input、Textarea、FormField、Select、Checkbox、RadioGroup、Switch。
+- 容器与浮层：Card、Dialog、Drawer、Popover、Dropdown、Tooltip、Tabs。
+- 身份与内容：Avatar、Badge、ResponsiveImage、Breadcrumb、Pagination。
+
+后台和公共 Web 都直接使用同一个包。后台账号中心已经接入全局 Toast 与 Skeleton；公共 Web 的
+账号流程接入 Alert，CMS 页面接入 Breadcrumb、ResponsiveImage、Skeleton 和 EmptyState。
 
 后台另外拥有 Shell、Sidebar、Topbar、PageFrame、ResourceSection、DataTable、StatusPill、
 AssetPicker 和全局搜索。这些组件带有管理场景语义，不应直接搬到公共 Web。
 
 公共 Web 当前拥有品牌化首页、CMS 页面/文章渲染和账号安全流程，但站点级组件仍应继续提炼。
 
-## 下一批共享 UI
+## 共享 UI 使用边界
 
-- Alert / Toast / Skeleton：统一异步反馈和加载状态。
-- Tabs / Select / Checkbox / Radio / Switch：补齐通用表单交互。
-- Pagination / Breadcrumb：列表和内容导航。
-- Drawer / Popover：移动导航和轻量浮层。
-- ResponsiveImage：统一 Asset URL、尺寸和加载策略。
+- ToastProvider 在应用根节点安装，业务页面通过 `useToast` 提交短暂操作反馈；需要持续呈现或
+  影响页面理解的消息使用 Alert。
+- Drawer 负责侧边或移动端面板，Dialog 负责需要用户聚焦确认的任务，Popover 只承载轻量内容。
+- ResponsiveImage 统一 Picture Source、比例、加载策略和图片适配；业务层仍负责提供 Asset URL。
+- 交互组件由 Radix 管理键盘、焦点和 ARIA 行为，外层只保留 Frame 的设计变量与视觉风格。
 
-## 下一批 Public Web
+## 下一批 Public Web：站点壳
 
 - SiteShell、Header、Footer、MobileNavigation。
 - Container、Section、Hero、PageHeader 等站点布局原语。
