@@ -1,5 +1,6 @@
 import { Tooltip } from '@lingcoo/frame-ui/tooltip';
 import { ChevronLeft, ChevronRight, Layers3, X } from 'lucide-react';
+import { useState, type MouseEvent } from 'react';
 
 import type { AuthAccount } from '../../api/client';
 import type { SectionMeta } from '../../lib/foundation';
@@ -43,10 +44,26 @@ export function Sidebar({
   onToggleCollapsed(): void;
 }) {
   const groups = groupSections(sections);
+  const [headerRevealSuppressed, setHeaderRevealSuppressed] = useState(false);
+
+  function toggleCollapsed(event: MouseEvent<HTMLButtonElement>) {
+    if (!collapsed && event.detail > 0) {
+      setHeaderRevealSuppressed(true);
+      event.currentTarget.blur();
+    }
+    onToggleCollapsed();
+  }
 
   return (
     <aside className={collapsed ? 'sidebar sidebar-collapsed' : 'sidebar'}>
-      <div className="sidebar-header">
+      <div
+        className={
+          headerRevealSuppressed
+            ? 'sidebar-header sidebar-header-reveal-suppressed'
+            : 'sidebar-header'
+        }
+        onPointerLeave={() => setHeaderRevealSuppressed(false)}
+      >
         <div className="brand">
           <span className="brand-mark" aria-hidden>
             {brandLogoUrl ? <img alt="" src={brandLogoUrl} /> : <Layers3 size={18} />}
@@ -72,7 +89,7 @@ export function Sidebar({
             <button
               aria-label={collapsed ? '展开导航' : '收起导航'}
               className="sidebar-header-button"
-              onClick={onToggleCollapsed}
+              onClick={toggleCollapsed}
               type="button"
             >
               {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

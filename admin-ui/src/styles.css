@@ -412,6 +412,16 @@ a {
   transform: scale(0.94);
 }
 
+.sidebar-collapsed .sidebar-header.sidebar-header-reveal-suppressed .sidebar-header-button {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.sidebar-collapsed .sidebar-header.sidebar-header-reveal-suppressed .brand-mark {
+  opacity: 1;
+  transform: none;
+}
+
 .sidebar-collapsed .nav-item {
   justify-content: center;
   padding-inline: 0;
