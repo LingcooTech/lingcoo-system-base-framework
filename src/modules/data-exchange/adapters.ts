@@ -6,7 +6,7 @@ import {
   metadataDictionaryItems,
   taxonomies,
   taxonomyTerms,
-} from '../../db/schema.js';
+} from '@lingcoo/frame-database/schema';
 import { metadataCodeSchema } from '../metadata/schemas.js';
 import type { DatasetAdapter } from './registry.js';
 

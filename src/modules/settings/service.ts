@@ -1,7 +1,7 @@
 import { desc, eq, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { accounts, systemSettings, systemSettingVersions } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { accounts, systemSettings, systemSettingVersions } from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import { findSettingDefinition, settingDefinitions } from './registry.js';

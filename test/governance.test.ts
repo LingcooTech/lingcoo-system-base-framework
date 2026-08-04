@@ -4,7 +4,7 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/app.js';
-import { accountRoles, accounts, passwordCredentials, roles } from '../src/db/schema.js';
+import { accountRoles, accounts, passwordCredentials, roles } from '@lingcoo/frame-database/schema';
 import { loadEnv } from '../src/lib/env.js';
 import { hashPassword } from '../src/lib/password.js';
 import { findSettingDefinition, settingDefinitions } from '../src/modules/settings/registry.js';

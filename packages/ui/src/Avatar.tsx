@@ -1,7 +1,7 @@
 import * as RadixAvatar from '@radix-ui/react-avatar';
 import { forwardRef, type ComponentPropsWithoutRef } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export const Avatar = forwardRef<
   HTMLSpanElement,

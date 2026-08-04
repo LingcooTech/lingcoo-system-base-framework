@@ -1,7 +1,7 @@
 import * as RadixCheckbox from '@radix-ui/react-checkbox';
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export interface CheckboxProps extends Omit<
   ComponentPropsWithoutRef<typeof RadixCheckbox.Root>,

@@ -1,0 +1,20 @@
+{
+  "name": "@lingcoo/frame-consumer-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify": "tsc --noEmit && node verify-runtime.mjs"
+  },
+  "dependencies": {
+    "@lingcoo/frame": "0.2.0",
+    "@lingcoo/frame-database": "0.2.0",
+    "@lingcoo/frame-design-tokens": "0.2.0",
+    "@lingcoo/frame-ui": "0.2.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "5.9.3"
+  }
+}

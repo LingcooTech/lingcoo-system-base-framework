@@ -1,7 +1,7 @@
 import * as RadixSwitch from '@radix-ui/react-switch';
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export interface SwitchProps extends Omit<
   ComponentPropsWithoutRef<typeof RadixSwitch.Root>,

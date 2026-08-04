@@ -12,7 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ZodError } from 'zod';
 
-import { createDatabase } from './db/client.js';
+import { createDatabase } from '@lingcoo/frame-database';
 import type { AppEnv } from './lib/env.js';
 import { hasAnyPermission, type PermissionCode } from './lib/rbac.js';
 import { runWithRequestContext, setRequestActor } from './lib/request-context.js';

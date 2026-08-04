@@ -1,6 +1,6 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padded?: boolean;

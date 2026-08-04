@@ -2,13 +2,13 @@ import { randomUUID } from 'node:crypto';
 
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
+import type { Database } from '@lingcoo/frame-database';
 import {
   integrationConnections,
   jobRuns,
   storageAssetReferences,
   storageAssets,
-} from '../../db/schema.js';
+} from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 

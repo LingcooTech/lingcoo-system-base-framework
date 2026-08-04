@@ -1,47 +1,129 @@
 {
   "name": "@lingcoo/frame-ui",
-  "private": true,
-  "version": "0.1.0",
+  "private": false,
+  "version": "0.2.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "exports": {
-    ".": "./src/index.ts",
-    "./alert": "./src/Alert.tsx",
-    "./avatar": "./src/Avatar.tsx",
-    "./badge": "./src/Badge.tsx",
-    "./breadcrumb": "./src/Breadcrumb.tsx",
-    "./button": "./src/Button.tsx",
-    "./card": "./src/Card.tsx",
-    "./checkbox": "./src/Checkbox.tsx",
-    "./dialog": "./src/Dialog.tsx",
-    "./drawer": "./src/Drawer.tsx",
-    "./dropdown-menu": "./src/DropdownMenu.tsx",
-    "./empty-state": "./src/EmptyState.tsx",
-    "./form-field": "./src/FormField.tsx",
-    "./input": "./src/Input.tsx",
-    "./pagination": "./src/Pagination.tsx",
-    "./popover": "./src/Popover.tsx",
-    "./radio-group": "./src/RadioGroup.tsx",
-    "./responsive-image": "./src/ResponsiveImage.tsx",
-    "./select": "./src/Select.tsx",
-    "./skeleton": "./src/Skeleton.tsx",
-    "./spinner": "./src/Spinner.tsx",
-    "./switch": "./src/Switch.tsx",
-    "./tabs": "./src/Tabs.tsx",
-    "./textarea": "./src/Textarea.tsx",
-    "./toast": "./src/Toast.tsx",
-    "./tooltip": "./src/Tooltip.tsx",
-    "./styles.css": "./src/styles.css"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./alert": {
+      "types": "./dist/Alert.d.ts",
+      "import": "./dist/Alert.js"
+    },
+    "./avatar": {
+      "types": "./dist/Avatar.d.ts",
+      "import": "./dist/Avatar.js"
+    },
+    "./badge": {
+      "types": "./dist/Badge.d.ts",
+      "import": "./dist/Badge.js"
+    },
+    "./breadcrumb": {
+      "types": "./dist/Breadcrumb.d.ts",
+      "import": "./dist/Breadcrumb.js"
+    },
+    "./button": {
+      "types": "./dist/Button.d.ts",
+      "import": "./dist/Button.js"
+    },
+    "./card": {
+      "types": "./dist/Card.d.ts",
+      "import": "./dist/Card.js"
+    },
+    "./checkbox": {
+      "types": "./dist/Checkbox.d.ts",
+      "import": "./dist/Checkbox.js"
+    },
+    "./dialog": {
+      "types": "./dist/Dialog.d.ts",
+      "import": "./dist/Dialog.js"
+    },
+    "./drawer": {
+      "types": "./dist/Drawer.d.ts",
+      "import": "./dist/Drawer.js"
+    },
+    "./dropdown-menu": {
+      "types": "./dist/DropdownMenu.d.ts",
+      "import": "./dist/DropdownMenu.js"
+    },
+    "./empty-state": {
+      "types": "./dist/EmptyState.d.ts",
+      "import": "./dist/EmptyState.js"
+    },
+    "./form-field": {
+      "types": "./dist/FormField.d.ts",
+      "import": "./dist/FormField.js"
+    },
+    "./input": {
+      "types": "./dist/Input.d.ts",
+      "import": "./dist/Input.js"
+    },
+    "./pagination": {
+      "types": "./dist/Pagination.d.ts",
+      "import": "./dist/Pagination.js"
+    },
+    "./popover": {
+      "types": "./dist/Popover.d.ts",
+      "import": "./dist/Popover.js"
+    },
+    "./radio-group": {
+      "types": "./dist/RadioGroup.d.ts",
+      "import": "./dist/RadioGroup.js"
+    },
+    "./responsive-image": {
+      "types": "./dist/ResponsiveImage.d.ts",
+      "import": "./dist/ResponsiveImage.js"
+    },
+    "./select": {
+      "types": "./dist/Select.d.ts",
+      "import": "./dist/Select.js"
+    },
+    "./skeleton": {
+      "types": "./dist/Skeleton.d.ts",
+      "import": "./dist/Skeleton.js"
+    },
+    "./spinner": {
+      "types": "./dist/Spinner.d.ts",
+      "import": "./dist/Spinner.js"
+    },
+    "./switch": {
+      "types": "./dist/Switch.d.ts",
+      "import": "./dist/Switch.js"
+    },
+    "./tabs": {
+      "types": "./dist/Tabs.d.ts",
+      "import": "./dist/Tabs.js"
+    },
+    "./textarea": {
+      "types": "./dist/Textarea.d.ts",
+      "import": "./dist/Textarea.js"
+    },
+    "./toast": {
+      "types": "./dist/Toast.d.ts",
+      "import": "./dist/Toast.js"
+    },
+    "./tooltip": {
+      "types": "./dist/Tooltip.d.ts",
+      "import": "./dist/Tooltip.js"
+    },
+    "./styles.css": "./dist/styles.css"
   },
   "sideEffects": [
-    "./src/styles.css"
+    "./dist/styles.css"
   ],
   "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.build.json && node scripts/copy-styles.mjs",
     "test": "node --import tsx --test test/**/*.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-design-tokens": "^0.1.0",
+    "@lingcoo/frame-design-tokens": "^0.2.0",
     "@radix-ui/react-avatar": "^1.2.6",
     "@radix-ui/react-checkbox": "^1.3.11",
     "@radix-ui/react-dialog": "^1.1.15",

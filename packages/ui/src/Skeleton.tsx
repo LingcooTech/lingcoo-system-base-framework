@@ -1,6 +1,6 @@
 import { forwardRef, type HTMLAttributes } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   shape?: 'line' | 'circle' | 'block';

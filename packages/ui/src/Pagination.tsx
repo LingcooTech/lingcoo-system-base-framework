@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 type PageItem = number | 'ellipsis';
 

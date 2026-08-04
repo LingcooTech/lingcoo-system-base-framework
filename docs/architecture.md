@@ -1,7 +1,8 @@
 # 基础框架架构
 
-> 当前 `0.1` 仍是完整参考应用；目标分发模型是版本化 Frame 包、构建期扩展和独立 Consumer。
-> 平台化边界与阶段门槛见 [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
+> 当前 `0.2` 已提供可安装的 Backend、Database、UI 和 Design Tokens 包，同时保留完整参考应用；
+> 下一步是构建期扩展内核。平台化边界与阶段门槛见
+> [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
 
 ## 1. 定位
 
@@ -36,13 +37,15 @@ Browser
 admin-ui/              管理后台应用
 public-web/            公共用户侧应用
 packages/
+  database/            Database、基础 Schema、迁移执行器与不可变 SQL
   design-tokens/       双 Web 入口共享的语义设计变量
   ui/                  无业务含义的 React 基础组件
 src/
+  index.ts             @lingcoo/frame 公共入口
   app.ts               HTTP 宿主与通用中间件
   server.ts            进程入口
   worker.ts            后台任务与 Outbox 独立进程入口
-  db/                  数据库连接和共享基础表
+  runtime/worker.ts    无导入副作用的 Worker 运行时
   lib/                 无领域含义的运行工具
   modules/
     system/            健康、就绪和运行时信息
@@ -54,7 +57,7 @@ src/
     notifications/     站内通知、公告策略与邮件投递
     observability/      请求指标、服务心跳与异常聚合
     index.ts            模块组合根
-drizzle/               有序 SQL 迁移
+fixtures/consumer/     只通过 npm tarball 使用 Frame 的最小 Consumer
 deploy/                入口代理配置
 docs/                  架构约束与扩展指南
 ```
@@ -96,7 +99,9 @@ Fastify 宿主统一提供：
 
 ### 数据库
 
-PostgreSQL 是默认事务数据库。Drizzle Schema 提供类型化的数据定义；部署执行器以文件名顺序运行 SQL，并记录文件校验和，避免已发布迁移被静默修改。
+PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供 Drizzle Schema、连接工厂和迁移执行器；
+执行器以文件名顺序运行包内 SQL，并记录文件校验和，避免已发布迁移被静默修改。历史迁移保持原名，
+命名空间 Migration V2 和 Legacy Alias adoption 在阶段 2 实现。
 
 基础层当前包含：
 

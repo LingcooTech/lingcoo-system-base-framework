@@ -1,4 +1,4 @@
-import type { Database } from '../db/client.js';
+import type { Database } from '@lingcoo/frame-database';
 import type { AppEnv } from '../lib/env.js';
 import type { PermissionCode } from '../lib/rbac.js';
 import type { SearchProviderRegistry } from '../modules/search/registry.js';

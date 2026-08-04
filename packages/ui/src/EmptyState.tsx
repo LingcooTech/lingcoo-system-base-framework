@@ -1,7 +1,7 @@
 import { type HTMLAttributes, type ReactNode } from 'react';
 
-import { Spinner } from './Spinner';
-import { cx } from './lib/cx';
+import { Spinner } from './Spinner.js';
+import { cx } from './lib/cx.js';
 
 export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   variant?: 'empty' | 'loading' | 'error';

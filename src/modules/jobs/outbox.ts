@@ -1,7 +1,7 @@
 import { count, desc, eq, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { outboxEvents } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { outboxEvents } from '@lingcoo/frame-database/schema';
 import { computeBackoffMs } from './service.js';
 
 type OutboxRow = typeof outboxEvents.$inferSelect;

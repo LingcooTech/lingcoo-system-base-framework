@@ -1,7 +1,7 @@
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu';
 import { forwardRef, type ComponentPropsWithoutRef } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export const DropdownMenu = RadixDropdownMenu.Root;
 export const DropdownMenuTrigger = RadixDropdownMenu.Trigger;

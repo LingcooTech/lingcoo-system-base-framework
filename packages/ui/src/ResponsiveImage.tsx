@@ -1,6 +1,6 @@
 import { forwardRef, type CSSProperties, type ImgHTMLAttributes } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export interface ResponsiveImageSource {
   srcSet: string;

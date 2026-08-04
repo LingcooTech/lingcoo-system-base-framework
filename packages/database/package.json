@@ -1,0 +1,49 @@
+{
+  "name": "@lingcoo/frame-database",
+  "version": "0.2.0",
+  "private": false,
+  "type": "module",
+  "description": "Database client, schema and migration runtime for Lingcoo Frame.",
+  "files": [
+    "dist",
+    "drizzle"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js"
+    },
+    "./migrations": {
+      "types": "./dist/migrations.d.ts",
+      "import": "./dist/migrations.js"
+    }
+  },
+  "bin": {
+    "lingcoo-frame-migrate": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "@types/pg": "^8.15.5",
+    "eslint": "^10.8.0",
+    "globals": "^16.0.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.65.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

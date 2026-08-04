@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY admin-ui/package.json ./admin-ui/
 COPY public-web/package.json ./public-web/
+COPY packages/database/package.json ./packages/database/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/ui/package.json ./packages/ui/
 RUN npm ci
@@ -28,8 +29,9 @@ RUN addgroup -S lingcoo && adduser -S lingcoo -G lingcoo
 COPY --from=build --chown=lingcoo:lingcoo /app/package.json /app/package-lock.json ./
 COPY --from=build --chown=lingcoo:lingcoo /app/node_modules ./node_modules
 COPY --from=build --chown=lingcoo:lingcoo /app/dist ./dist
-COPY --from=build --chown=lingcoo:lingcoo /app/drizzle ./drizzle
-COPY --from=build --chown=lingcoo:lingcoo /app/scripts ./scripts
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/package.json ./packages/database/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/dist ./packages/database/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/drizzle ./packages/database/drizzle
 COPY --from=build --chown=lingcoo:lingcoo /app/admin-ui/dist ./admin-ui/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/public-web/dist ./public-web/dist
 

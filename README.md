@@ -2,11 +2,13 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.1` 是用于验证完整运行边界的参考实现。Frame 正在演进为版本化软件包与显式扩展协议；新的
-业务系统最终通过依赖 Frame 包和安装领域扩展完成组合，而不是复制本仓库后长期维护底层源码副本。
+当前 `0.2` 已完成第一轮包化：后端宿主、Database、共享 UI 和 Design Tokens 都能以真实 npm
+tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务系统将通过依赖 Frame 包和安装领域
+扩展完成组合，而不是复制本仓库后长期维护底层源码副本。扩展内核将在阶段 2 提供。
 
 平台化路线见 [Frame 平台化改造路线](docs/platform-roadmap.md)，实际阶段记录见
-[Frame 平台化开发进度](docs/platform-progress.md)，长期决策见 [ADR](docs/adr/README.md)。
+[Frame 平台化开发进度](docs/platform-progress.md)，当前公开包契约见
+[0.2 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
 
 ## 当前包含什么
 
@@ -101,21 +103,23 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## 常用命令
 
-| 命令                   | 作用                          |
-| ---------------------- | ----------------------------- |
-| `npm run setup`        | 安装 API、双 Web 和共享包依赖 |
-| `npm run check`        | 类型检查、测试和 Lint         |
-| `npm run build:all`    | 构建公共 Web、管理后台和 API  |
-| `npm run dev:worker`   | 启动后台任务与 Outbox Worker  |
-| `npm run db:generate`  | 根据 Drizzle Schema 生成迁移  |
-| `npm run db:migrate`   | 按顺序执行未应用的 SQL 迁移   |
-| `npm run format:check` | 检查代码格式                  |
+| 命令                      | 作用                          |
+| ------------------------- | ----------------------------- |
+| `npm run setup`           | 安装 API、双 Web 和共享包依赖 |
+| `npm run check`           | 类型检查、测试和 Lint         |
+| `npm run build:all`       | 构建共享包、双 Web 和 API     |
+| `npm run packages:verify` | 构建并安装真实 tarball 验收   |
+| `npm run dev:worker`      | 启动后台任务与 Outbox Worker  |
+| `npm run db:generate`     | 根据 Drizzle Schema 生成迁移  |
+| `npm run db:migrate`      | 按顺序执行未应用的 SQL 迁移   |
+| `npm run format:check`    | 检查代码格式                  |
 
 ## 如何增加业务
 
-在 `0.2` 扩展 SDK 完成前，本仓库中的模块开发仍用于 Frame 自身和参考验证，不建议再通过复制整个
-仓库创建新的长期业务系统。扩展 SDK 完成后，每个业务域通过独立 Extension Package 提供服务端、
-Worker、后台、公共 Web、Schema 和迁移入口，并由应用组合根显式安装。
+阶段 1 已允许应用直接调用 `buildApp`、`createFrameWorker`、Database 和迁移 API，但基础模块仍由
+Frame 固定组合。阶段 2 的扩展内核完成前，本仓库中的模块开发仍用于 Frame 自身和参考验证，不建议
+再通过复制整个仓库创建新的长期业务系统。扩展内核完成后，每个业务域通过独立 Extension Package
+提供服务端、Worker、后台、公共 Web、Schema 和迁移入口，并由应用组合根显式安装。
 
 具体约束见：
 

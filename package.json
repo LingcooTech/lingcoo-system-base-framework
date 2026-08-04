@@ -1,39 +1,67 @@
 {
-  "name": "lingcoo-system-base-framework",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@lingcoo/frame",
+  "version": "0.2.0",
+  "private": false,
   "type": "module",
   "description": "Lingcoo 可运行、可部署、可扩展的业务系统基础框架。",
+  "files": [
+    "dist",
+    "admin-ui/dist",
+    "public-web/dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./app": {
+      "types": "./dist/app.d.ts",
+      "import": "./dist/app.js"
+    },
+    "./env": {
+      "types": "./dist/lib/env.d.ts",
+      "import": "./dist/lib/env.js"
+    },
+    "./worker": {
+      "types": "./dist/runtime/worker.d.ts",
+      "import": "./dist/runtime/worker.js"
+    }
+  },
   "workspaces": [
     "admin-ui",
     "public-web",
     "packages/*"
   ],
   "scripts": {
-    "setup": "npm install",
+    "setup": "npm install && npm run build:packages",
     "dev": "tsx watch src/server.ts",
     "dev:api": "npm run dev",
     "dev:worker": "tsx watch src/worker.ts",
     "dev:admin": "npm run dev --workspace @lingcoo-base/admin-ui",
     "dev:public": "npm run dev --workspace @lingcoo/base-public-web",
-    "build": "tsc -p tsconfig.json",
+    "build:packages": "npm run build --workspace @lingcoo/frame-design-tokens && npm run build --workspace @lingcoo/frame-ui && npm run build --workspace @lingcoo/frame-database",
+    "build:server": "node scripts/clean-server-build.mjs && tsc -p tsconfig.json",
+    "build": "npm run build:packages && npm run build:server",
     "build:admin": "npm run build --workspace @lingcoo-base/admin-ui",
     "build:public": "npm run build --workspace @lingcoo/base-public-web",
-    "build:all": "npm run build:admin && npm run build:public && npm run build",
+    "build:all": "npm run build:packages && npm run build:admin && npm run build:public && npm run build:server",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
-    "test": "node --import tsx --test --test-concurrency=1 test/**/*.test.ts && npm run test --workspaces --if-present",
-    "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:packages && node --import tsx --test --test-concurrency=1 test/**/*.test.ts && npm run test --workspaces --if-present",
+    "typecheck": "npm run build:packages && tsc --noEmit && npm run typecheck --workspaces --if-present",
     "lint": "eslint . && npm run lint --workspaces --if-present",
     "check": "npm run typecheck && npm test && npm run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "packages:verify": "npm run build:all && node scripts/verify-packages.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node scripts/run-migrations.mjs",
+    "db:migrate": "node --import tsx packages/database/src/cli.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@lingcoo/frame-database": "^0.2.0",
     "@fastify/cookie": "^10.0.1",
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",

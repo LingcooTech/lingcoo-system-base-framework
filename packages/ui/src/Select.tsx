@@ -1,7 +1,7 @@
 import * as RadixSelect from '@radix-ui/react-select';
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export const Select = RadixSelect.Root;
 export const SelectGroup = RadixSelect.Group;

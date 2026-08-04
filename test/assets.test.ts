@@ -4,7 +4,12 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/app.js';
-import { accounts, integrationConnections, jobRuns, storageAssets } from '../src/db/schema.js';
+import {
+  accounts,
+  integrationConnections,
+  jobRuns,
+  storageAssets,
+} from '@lingcoo/frame-database/schema';
 import { loadEnv } from '../src/lib/env.js';
 import {
   AssetService,

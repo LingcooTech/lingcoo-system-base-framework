@@ -1,7 +1,7 @@
 import { and, count, desc, eq, gte, ilike, lte, or, sql, type SQL } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { accounts, auditLogs } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { accounts, auditLogs } from '@lingcoo/frame-database/schema';
 import { httpError } from '../../lib/http-error.js';
 
 export interface AuditFilters {

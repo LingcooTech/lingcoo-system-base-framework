@@ -1,11 +1,20 @@
 {
   "name": "@lingcoo/frame-design-tokens",
-  "private": true,
-  "version": "0.1.0",
+  "private": false,
+  "version": "0.2.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "exports": {
-    "./base.css": "./src/base.css",
-    "./admin.css": "./src/admin.css",
-    "./public.css": "./src/public.css"
+    "./base.css": "./dist/base.css",
+    "./admin.css": "./dist/admin.css",
+    "./public.css": "./dist/public.css"
+  },
+  "sideEffects": [
+    "./dist/*.css"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs"
   }
 }

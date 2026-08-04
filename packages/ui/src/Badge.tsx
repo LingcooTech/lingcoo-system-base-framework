@@ -1,6 +1,6 @@
 import { type HTMLAttributes } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 

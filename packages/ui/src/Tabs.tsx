@@ -1,7 +1,7 @@
 import * as RadixTabs from '@radix-ui/react-tabs';
 import { forwardRef, type ComponentPropsWithoutRef } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export const Tabs = RadixTabs.Root;
 

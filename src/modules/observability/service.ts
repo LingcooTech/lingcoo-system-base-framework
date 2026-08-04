@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { count, desc, eq, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { accounts, serviceHeartbeats, systemIncidents } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { accounts, serviceHeartbeats, systemIncidents } from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import type { MetricsRegistry } from './metrics.js';

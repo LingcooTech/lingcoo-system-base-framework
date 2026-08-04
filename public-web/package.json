@@ -11,8 +11,8 @@
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
-    "@lingcoo/frame-design-tokens": "^0.1.0",
-    "@lingcoo/frame-ui": "^0.1.0",
+    "@lingcoo/frame-design-tokens": "^0.2.0",
+    "@lingcoo/frame-ui": "^0.2.0",
     "@tailwindcss/vite": "^4.1.18",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",

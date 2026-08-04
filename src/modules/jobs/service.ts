@@ -1,7 +1,7 @@
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { jobRuns } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { jobRuns } from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 

@@ -1,13 +1,13 @@
 import { eq, sql } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
+import type { Database } from '@lingcoo/frame-database';
 import {
   accountRoles,
   accounts,
   passwordCredentials,
   roles,
   storageAssets,
-} from '../../db/schema.js';
+} from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import { hashPassword, verifyPassword } from '../../lib/password.js';

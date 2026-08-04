@@ -45,5 +45,5 @@ jobs:
       - run: npm ci
       - run: npm run db:migrate
       - run: npm run check
-      - run: npm run build:all
+      - run: npm run packages:verify
       - run: npm audit --omit=dev --audit-level=high

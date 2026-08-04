@@ -1,7 +1,7 @@
 import * as RadixRadioGroup from '@radix-ui/react-radio-group';
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
-import { cx } from './lib/cx';
+import { cx } from './lib/cx.js';
 
 export const RadioGroup = forwardRef<
   HTMLDivElement,

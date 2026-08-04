@@ -1,6 +1,6 @@
 import { and, count, desc, eq, ilike, inArray, ne, or } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
+import type { Database } from '@lingcoo/frame-database';
 import {
   accounts,
   cmsContentEntries,
@@ -13,7 +13,7 @@ import {
   storageAssets,
   taxonomies,
   taxonomyTerms,
-} from '../../db/schema.js';
+} from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import type { CmsContentInput, CmsRedirectInput } from './schemas.js';

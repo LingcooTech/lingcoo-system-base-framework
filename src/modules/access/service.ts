@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import { eq, inArray } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
+import type { Database } from '@lingcoo/frame-database';
 import {
   accountRoles,
   accounts,
@@ -10,7 +10,7 @@ import {
   permissions,
   rolePermissions,
   roles,
-} from '../../db/schema.js';
+} from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import { hashPassword } from '../../lib/password.js';

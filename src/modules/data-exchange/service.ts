@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 
-import type { Database } from '../../db/client.js';
-import { accounts, dataExchangeRuns } from '../../db/schema.js';
+import type { Database } from '@lingcoo/frame-database';
+import { accounts, dataExchangeRuns } from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
 import type { DatasetRegistry } from './registry.js';
