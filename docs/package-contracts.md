@@ -75,6 +75,7 @@ peer dependency，Consumer 负责提供兼容的 React 19 版本。
 
 ## 发布产物验收
 
-`npm run packages:verify` 会构建四个包，执行 `npm pack`，核对关键文件，然后在系统临时目录安装
-tarball。Consumer Fixture 会编译 React 引用、导入全部运行时入口、发现 12 个迁移、注入 API
+`npm run packages:verify` 会构建四个包，执行 `npm pack`，核对关键文件，然后在系统临时目录隔离安装
+tarball。Frame 包始终来自本次生成的本地 `.tgz`；第三方依赖优先使用 npm 缓存，缓存缺失时从配置的
+Registry 获取。Consumer Fixture 会编译 React 引用、导入全部运行时入口、发现 12 个迁移、注入 API
 健康请求并验证 Worker 可创建和释放。CI 提供 PostgreSQL 时还会实际执行打包后的迁移。

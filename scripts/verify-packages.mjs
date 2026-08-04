@@ -77,10 +77,14 @@ try {
   fixtureManifest.dependencies['@lingcoo/frame-ui'] = pathToFileURL(ui.archive).href;
   await writeFile(fixtureManifestPath, `${JSON.stringify(fixtureManifest, null, 2)}\n`);
 
-  execFileSync('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund'], {
-    cwd: consumerDirectory,
-    stdio: 'inherit',
-  });
+  execFileSync(
+    'npm',
+    ['install', '--prefer-offline', '--ignore-scripts', '--no-audit', '--no-fund'],
+    {
+      cwd: consumerDirectory,
+      stdio: 'inherit',
+    },
+  );
   execFileSync('npm', ['run', 'verify'], {
     cwd: consumerDirectory,
     env: process.env,

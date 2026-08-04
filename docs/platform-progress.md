@@ -90,7 +90,7 @@
 - Worker：`createFrameWorker()` 不在 import 时读取环境、监听端口或挂载 Signal；现有 `src/worker.ts`
   变为薄 CLI。
 - 构建：每次编译先清理旧 `dist`，避免删除或移动后的内部文件混入发布 tarball。
-- Consumer Fixture：临时目录离线安装四个 `.tgz`，验证包内容、公共导入、React 类型构建、API
+- Consumer Fixture：临时目录隔离安装四个 `.tgz`，验证包内容、公共导入、React 类型构建、API
   注入、Database/Worker 生命周期和迁移发现；CI 有 PostgreSQL 时执行包内迁移。
 - Docker：运行镜像保留 Database workspace 目标，部署改用编译后的迁移 CLI，不依赖生产 `tsx`。
 - 文档：新增 `package-contracts.md`，记录当前公开 API、生命周期、消费方式和阶段边界。
@@ -101,7 +101,7 @@
   按设计跳过；Public Web 4 项与 Frame UI 4 项通过。
 - PostgreSQL 17 实际回归：`0000` 至 `0011` 从空库迁移成功，后端 50/50、Public Web 4/4、Frame UI
   4/4 全部通过，无跳过项。
-- `npm run packages:verify`：四个 tarball 内容检查、隔离离线安装、Consumer UI 编译与运行时验收通过；
+- `npm run packages:verify`：四个 tarball 内容检查、隔离安装、Consumer UI 编译与运行时验收通过；
   Consumer 连接 PostgreSQL 后使用包内 SQL 完成 12 项 checksum 校验。
 - `npm run build:all`：Design Tokens、UI、Database、Admin UI、Public Web 和 Server 构建通过。
 - 生产 Docker 镜像构建通过；一次性容器可解析 Frame/Database 公共入口并发现全部 12 个迁移。
