@@ -9,7 +9,7 @@
 | ----------------- | ----------- | -------------------------------------------------- |
 | 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结       |
 | 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成 |
-| 2. 扩展内核       | Not started | -                                                  |
+| 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成   |
 | 3. 前端扩展       | Not started | -                                                  |
 | 4. 第一方扩展     | Not started | -                                                  |
 | 5. Consumer 试点  | Not started | -                                                  |
@@ -123,3 +123,81 @@
 - 增加一个最小示例扩展，覆盖权限、API、任务、事件和迁移，并验证重复 ID、缺失依赖、循环依赖、
   路由/权限/Job 冲突等失败路径。
 - 阶段 2 不拆 Admin/Web 前端中心路由；前端扩展注册表仍属于阶段 3。
+
+## 阶段 2：扩展内核
+
+### 范围
+
+- 发布 `@lingcoo/frame-extension-sdk@0.3.0`，提供 Manifest、`defineExtension()` 与 `defineSystem()`。
+- 将 Frame Core、Fastify Server、Worker、设置和迁移接入统一 Defined System。
+- 实现 Migration V2 的命名空间、来源依赖、Legacy Alias adoption 和 checksum 保护。
+- 建立一个覆盖权限、设置、API、Job、Outbox 事件和 SQL 迁移的完整示例扩展。
+- 对依赖图、资源冲突、运行面声明和历史数据库升级建立自动化验收。
+
+### 完成记录
+
+- Completed: 2026-08-04
+- Starting commit: `8160dff`
+
+已交付：
+
+- Extension SDK：根入口保持浏览器安全；`./server`、`./worker`、`./migrations` 分离 Fastify、Worker
+  与 Node.js 数据库依赖。Manifest 包含版本/API/Frame 兼容范围、必需与可选依赖、权限、非敏感设置、
+  Server 路由、Worker Job/Topic 和迁移声明。
+- System Registry：`defineSystem()` 使用 SemVer 校验并进行输入稳定的拓扑排序；拒绝无效版本、扩展
+  重复、依赖缺失/不兼容/循环，以及权限、设置、路由、Job、Migration Source、Migration ID 和
+  Legacy Alias 冲突。Outbox Topic 保留多订阅者 fan-out 语义。
+- Core Adapter：现有 16 个 AppModule、31 项基础权限、5 项设置、4 个 Job、1 个事件订阅和 12 条
+  迁移已经由 `frameCoreExtension` 统一描述和注册。`buildApp(env)` 与 `createFrameWorker(env)` 默认行为
+  保持兼容，也可以接收 Consumer 的 Defined System。
+- 设置隔离：新增每个 System 独立的 `SettingsRegistry`，服务不再依赖可被扩展修改的进程级全局数组；
+  旧只读导出保留兼容。
+- Worker Registry：每个 Worker 实例按 System 注册 Handler/Subscriber；受限上下文拒绝未声明贡献，
+  并验证每个声明都有实现。状态快照公开已安装扩展、Job Kind 和 Topic。
+- Migration V2：canonical 名称为 `source/id.sql`，来源按依赖排序、来源内按 Manifest 顺序；执行器使用
+  SHA-256 与 PostgreSQL advisory lock。canonical/alias checksum 不匹配、重复 alias、来源缺失/循环
+  会立即失败，未知历史记录保持不变。
+- 历史兼容：`0000` 至 `0011` SQL 字节未修改，Frame Migration Source 为每项声明旧文件名 alias。
+  实际 Stage 1 数据库中的 9 条旧记录已在不重放 SQL 的情况下 adopted，后续 3 条迁移正常执行。
+- 完整示例扩展：独立 `contracts/server/worker/migrations` 入口，包含 `example.read`、
+  `example.greeting`、`GET /api/example`、`example.echo`、`example.created` 和
+  `example/0001_initial.sql`，由测试与 tarball Consumer 实际使用。
+- 分发：Frame 与 Database 升至 `0.3.0`；Extension SDK 纳入 workspace、Docker 构建和运行镜像；
+  新增 `./extensions` 与 `./migrations` 公共入口，以及系统迁移 API。
+- 文档：更新 Package Contracts 与架构说明，新增扩展开发、系统组合、迁移和跨扩展规则文档。
+
+验证结果：
+
+- `npm run check`：无数据库回归通过；后端 60 项中 49 通过、11 项 PostgreSQL 测试按设计跳过；
+  Public Web 4/4、Frame UI 4/4 通过，全部 workspace 类型检查和 Lint 通过。
+- PostgreSQL 17 空库：12 条 Frame canonical 迁移全部成功；后端 60/60、Public Web 4/4、Frame UI
+  4/4 全部通过，无跳过项。Migration V2 adoption 与 checksum mismatch 集成测试均通过。
+- PostgreSQL 17 旧库：Stage 1 的 `0000` 至 `0008` 9 条历史记录全部 adopted，SQL 未重放；`0009`
+  至 `0011` 以 canonical ID 正常执行。
+- `npm run packages:verify`：6 个真实 tarball 构建和隔离安装通过；Consumer TypeScript、示例 API、
+  Worker 注册和含示例扩展的 13 条系统迁移通过。
+- 生产 Docker 镜像构建通过；非 root 运行容器可导入 Frame、Database 与 Extension SDK，识别 12 条
+  核心迁移和 4 个核心 Job。
+- `npm audit --omit=dev --audit-level=high`：0 项已知生产依赖漏洞。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+未解决事项：
+
+- Admin UI 与 Public Web 仍是参考应用固定路由，Manifest 尚未包含前端贡献；这是阶段 3 的明确范围。
+- Core 的现有模块仍由一个粗粒度 `frameCoreExtension` 承载；CMS、资产、通知与品牌等可选第一方扩展
+  的物理拆分属于阶段 4，现阶段不提前制造循环微包。
+- Server 会验证声明路由存在并拦截与已安装路由冲突；0.3 的受信任扩展模型不尝试沙箱化 Fastify，
+  因此不能阻止恶意扩展通过原生实例注册额外路由。
+- 本阶段继续使用内部 tarball 验收，尚未建立 Changesets、私有 Registry 发布和公共 Beta 通道。
+
+阶段 3 输入：
+
+- 建立 `@lingcoo/frame-admin` 与 `@lingcoo/frame-web` 的可消费 Shell，不再把参考应用源码作为 Consumer
+  的前端实现。
+- 扩展 Manifest 增加 Admin 路由、导航、Dashboard Widget、全局搜索，以及 Public Web 路由、SEO、
+  Sitemap 和 Landing Block 声明，并保持 contracts 入口浏览器安全。
+- 分别实现 Admin/Web Registry、依赖顺序与冲突检查，使扩展增加页面不再修改中心路由和菜单分支。
+- Landing Block 使用类型、Zod Schema、渲染器、编辑器、资源声明和配置迁移的受控注册表，不允许
+  数据库存储任意可执行代码。
+- 扩展示例增加 Admin 页面、Public Web 页面和一个 Landing Block，并继续通过真实 tarball Consumer
+  验证浏览器依赖边界、路由冲突与生产构建。

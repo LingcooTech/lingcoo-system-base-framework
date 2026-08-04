@@ -2,7 +2,7 @@ import type { NotificationService } from './service.js';
 import type { OutboxSubscriberRegistry } from '../jobs/registry.js';
 
 export function registerNotificationPolicies(
-  registry: OutboxSubscriberRegistry,
+  registry: Pick<OutboxSubscriberRegistry, 'subscribe'>,
   notifications: NotificationService,
 ): void {
   registry.subscribe('auth.password_changed', async (event) => {

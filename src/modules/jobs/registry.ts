@@ -1,10 +1,11 @@
-export interface JobHandlerContext {
-  jobId: string;
-  payload: Record<string, unknown>;
-  signal: AbortSignal;
-}
+import type {
+  JobHandler,
+  JobHandlerContext,
+  OutboxEventContext,
+  OutboxSubscriber,
+} from '@lingcoo/frame-extension-sdk/worker';
 
-export type JobHandler = (context: JobHandlerContext) => Promise<Record<string, unknown>>;
+export type { JobHandler, JobHandlerContext, OutboxEventContext, OutboxSubscriber };
 
 export class JobHandlerRegistry {
   private readonly handlers = new Map<string, JobHandler>();
@@ -25,16 +26,6 @@ export class JobHandlerRegistry {
   }
 }
 
-export interface OutboxEventContext {
-  eventId: string;
-  topic: string;
-  payload: Record<string, unknown>;
-  aggregateType: string | null;
-  aggregateId: string | null;
-}
-
-export type OutboxSubscriber = (context: OutboxEventContext) => Promise<void>;
-
 export class OutboxSubscriberRegistry {
   private readonly subscribers = new Map<string, OutboxSubscriber[]>();
 
@@ -50,5 +41,9 @@ export class OutboxSubscriberRegistry {
       ...(this.subscribers.get('*') ?? []),
     ];
     for (const subscriber of subscribers) await subscriber(context);
+  }
+
+  listTopics(): string[] {
+    return [...this.subscribers.keys()].sort();
   }
 }

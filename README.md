@@ -2,13 +2,13 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.2` 已完成第一轮包化：后端宿主、Database、共享 UI 和 Design Tokens 都能以真实 npm
-tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务系统将通过依赖 Frame 包和安装领域
-扩展完成组合，而不是复制本仓库后长期维护底层源码副本。扩展内核将在阶段 2 提供。
+当前 `0.3` 已完成扩展内核：后端宿主、Database、Extension SDK、共享 UI 和 Design Tokens 都能以
+真实 npm tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务系统通过 `defineSystem()`
+显式安装构建期领域扩展，而不是复制本仓库后长期维护底层源码副本。
 
 平台化路线见 [Frame 平台化改造路线](docs/platform-roadmap.md)，实际阶段记录见
 [Frame 平台化开发进度](docs/platform-progress.md)，当前公开包契约见
-[0.2 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
+[0.3 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
 
 ## 当前包含什么
 
@@ -30,6 +30,8 @@ tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业
 - 运行可观测性：Request ID、脱敏结构化日志、服务心跳、5xx 聚合和 Prometheus 指标
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
+- 扩展内核：Manifest、`defineSystem()`、依赖排序、冲突拒绝和分运行面注册
+- 迁移协议：命名空间 Migration Source、Legacy Alias adoption、checksum 和并发锁
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
 `data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`cms`、`public-site` 和 `observability` 基础模块，
@@ -116,14 +118,15 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## 如何增加业务
 
-阶段 1 已允许应用直接调用 `buildApp`、`createFrameWorker`、Database 和迁移 API，但基础模块仍由
-Frame 固定组合。阶段 2 的扩展内核完成前，本仓库中的模块开发仍用于 Frame 自身和参考验证，不建议
-再通过复制整个仓库创建新的长期业务系统。扩展内核完成后，每个业务域通过独立 Extension Package
-提供服务端、Worker、后台、公共 Web、Schema 和迁移入口，并由应用组合根显式安装。
+业务应用直接依赖 Frame 包，在组合根中把 `frameCoreExtension` 与自己的领域扩展交给
+`defineSystem()`，再将同一个 System 传给 API、Worker 和迁移运行时。领域扩展现在可以贡献权限、
+非敏感设置、Server 路由、Job Handler、Outbox Subscriber 和命名空间迁移。Admin/Public Web
+扩展入口属于阶段 3，现阶段仍由参考应用固定组合。
 
 具体约束见：
 
 - [架构说明](docs/architecture.md)
+- [扩展开发与系统组合](docs/extension-development.md)
 - [成熟系统共同能力矩阵](docs/capability-matrix.md)
 - [身份与访问控制](docs/identity-access.md)
 - [账号自服务与安全中心](docs/account-security.md)

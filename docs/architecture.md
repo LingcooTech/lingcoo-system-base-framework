@@ -1,7 +1,7 @@
 # 基础框架架构
 
-> 当前 `0.2` 已提供可安装的 Backend、Database、UI 和 Design Tokens 包，同时保留完整参考应用；
-> 下一步是构建期扩展内核。平台化边界与阶段门槛见
+> 当前 `0.3` 已提供可安装的 Backend、Database、Extension SDK、UI 和 Design Tokens 包，同时保留
+> 完整参考应用；下一步是前端 Shell 与前端扩展注册表。平台化边界与阶段门槛见
 > [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
 
 ## 1. 定位
@@ -99,9 +99,10 @@ Fastify 宿主统一提供：
 
 ### 数据库
 
-PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供 Drizzle Schema、连接工厂和迁移执行器；
-执行器以文件名顺序运行包内 SQL，并记录文件校验和，避免已发布迁移被静默修改。历史迁移保持原名，
-命名空间 Migration V2 和 Legacy Alias adoption 在阶段 2 实现。
+PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供 Drizzle Schema、连接工厂和 Migration
+V2 执行器。迁移使用 `source/id.sql` canonical ID，来源按依赖拓扑排序，来源内严格保持 Manifest
+顺序，并以 SHA-256 防止已发布 SQL 被修改。历史迁移 SQL 保持不变，旧文件名账本通过 Legacy Alias
+adoption 原地升级且不重放 SQL；执行过程由 PostgreSQL advisory lock 串行化。
 
 基础层当前包含：
 

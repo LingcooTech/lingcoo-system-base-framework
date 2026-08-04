@@ -5,7 +5,7 @@ import { SettingsService } from './service.js';
 export const settingsModule: AppModule = {
   name: 'settings',
   register(app) {
-    const service = new SettingsService(app.db);
+    const service = new SettingsService(app.db, app.settingsRegistry);
     app.get(
       '/api/system/settings',
       { preHandler: app.requirePermission('system.settings.read') },

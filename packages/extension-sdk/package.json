@@ -1,29 +1,29 @@
 {
-  "name": "@lingcoo/frame-database",
+  "name": "@lingcoo/frame-extension-sdk",
   "version": "0.3.0",
   "private": false,
   "type": "module",
-  "description": "Database client, schema and migration runtime for Lingcoo Frame.",
+  "description": "Build-time extension and system composition contracts for Lingcoo Frame.",
   "files": [
-    "dist",
-    "drizzle"
+    "dist"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "import": "./dist/schema.js"
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
     },
     "./migrations": {
       "types": "./dist/migrations.d.ts",
       "import": "./dist/migrations.js"
     }
-  },
-  "bin": {
-    "lingcoo-frame-migrate": "./dist/cli.js"
   },
   "scripts": {
     "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
@@ -31,16 +31,27 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2",
-    "pg": "^8.16.3",
     "semver": "^7.7.2"
+  },
+  "peerDependencies": {
+    "@lingcoo/frame-database": "^0.3.0",
+    "fastify": "^5.6.0"
+  },
+  "peerDependenciesMeta": {
+    "@lingcoo/frame-database": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lingcoo/frame-database": "^0.3.0",
     "@types/node": "^24.5.2",
-    "@types/pg": "^8.15.5",
     "@types/semver": "^7.7.1",
     "eslint": "^10.8.0",
+    "fastify": "^5.6.1",
     "globals": "^16.0.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.65.0"

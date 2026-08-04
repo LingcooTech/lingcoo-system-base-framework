@@ -1,26 +1,12 @@
 import { z } from 'zod';
+import type { ServerSettingDefinition } from '@lingcoo/frame-extension-sdk/server';
 
-export interface SettingOption {
-  label: string;
-  value: string;
-}
-
-export interface SettingDefinition {
-  key: string;
-  group: 'general' | 'localization';
-  groupLabel: string;
-  label: string;
-  description: string;
-  type: 'text' | 'email' | 'url' | 'select';
-  defaultValue: string;
-  options?: SettingOption[];
-  schema: z.ZodType<string>;
-}
+export type SettingDefinition = ServerSettingDefinition;
 
 const optionalEmail = z.union([z.literal(''), z.email().max(254)]);
 const optionalUrl = z.union([z.literal(''), z.url().max(500)]);
 
-export const settingDefinitions: SettingDefinition[] = [
+export const baseSettingDefinitions: readonly SettingDefinition[] = [
   {
     key: 'general.system_name',
     group: 'general',
@@ -82,6 +68,32 @@ export const settingDefinitions: SettingDefinition[] = [
   },
 ];
 
+export class SettingsRegistry {
+  private readonly definitions = new Map<string, SettingDefinition>();
+
+  constructor(definitions: readonly SettingDefinition[] = []) {
+    for (const definition of definitions) this.register(definition);
+  }
+
+  register(definition: SettingDefinition): void {
+    if (this.definitions.has(definition.key)) {
+      throw new Error(`Setting already registered: ${definition.key}`);
+    }
+    this.definitions.set(definition.key, definition);
+  }
+
+  find(key: string): SettingDefinition | undefined {
+    return this.definitions.get(key);
+  }
+
+  list(): readonly SettingDefinition[] {
+    return Object.freeze([...this.definitions.values()]);
+  }
+}
+
+export const defaultSettingsRegistry = new SettingsRegistry(baseSettingDefinitions);
+export const settingDefinitions = baseSettingDefinitions;
+
 export function findSettingDefinition(key: string): SettingDefinition | undefined {
-  return settingDefinitions.find((definition) => definition.key === key);
+  return defaultSettingsRegistry.find(key);
 }

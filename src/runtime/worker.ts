@@ -2,30 +2,26 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 
 import { createDatabase } from '@lingcoo/frame-database';
+import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
 
+import { defaultFrameSystem } from '../extensions/core.js';
 import { recordAuditEvent } from '../lib/audit.js';
 import type { AppEnv } from '../lib/env.js';
 import { serializeSafeError, writeServiceLog } from '../lib/structured-log.js';
-import { assetDeleteJobPayloadSchema } from '../modules/assets/schemas.js';
-import { AssetService } from '../modules/assets/service.js';
-import { cmsScheduledJobSchema } from '../modules/cms/schemas.js';
-import { CmsService } from '../modules/cms/service.js';
-import { createIntegrationProviderRegistry } from '../modules/integrations/registry.js';
-import { QiniuService } from '../modules/integrations/providers/qiniu-service.js';
-import { IntegrationService } from '../modules/integrations/service.js';
 import { OutboxService } from '../modules/jobs/outbox.js';
 import { JobHandlerRegistry, OutboxSubscriberRegistry } from '../modules/jobs/registry.js';
 import { JobService } from '../modules/jobs/service.js';
-import { NotificationDeliveryService } from '../modules/notifications/delivery.js';
-import { registerNotificationPolicies } from '../modules/notifications/policies.js';
-import { NotificationService } from '../modules/notifications/service.js';
 import { MetricsRegistry } from '../modules/observability/metrics.js';
 import { ObservabilityService } from '../modules/observability/service.js';
+import { assertFrameSystemCompatibility, registerSystemWorkerExtensions } from './extensions.js';
 
 export interface FrameWorkerStatus {
   id: string;
   state: 'idle' | 'running' | 'stopping' | 'stopped';
   lastLoopAt: Date;
+  extensions: string[];
+  jobKinds: string[];
+  eventTopics: string[];
 }
 
 export interface FrameWorker {
@@ -36,7 +32,16 @@ export interface FrameWorker {
   getStatus(): FrameWorkerStatus;
 }
 
-export function createFrameWorker(env: AppEnv): FrameWorker {
+export interface CreateFrameWorkerOptions {
+  system?: DefinedSystem;
+}
+
+export function createFrameWorker(
+  env: AppEnv,
+  options: CreateFrameWorkerOptions = {},
+): FrameWorker {
+  const system = options.system ?? defaultFrameSystem;
+  assertFrameSystemCompatibility(system);
   const workerId = `worker_${randomUUID()}`;
   const workerStartedAt = new Date();
   const { db, pool } = createDatabase(env.DATABASE_URL);
@@ -44,15 +49,6 @@ export function createFrameWorker(env: AppEnv): FrameWorker {
   const outbox = new OutboxService(db);
   const jobHandlers = new JobHandlerRegistry();
   const subscribers = new OutboxSubscriberRegistry();
-  const integrations = new IntegrationService(
-    db,
-    createIntegrationProviderRegistry(env.NODE_ENV),
-    env.SETTINGS_ENCRYPTION_KEY,
-  );
-  const delivery = new NotificationDeliveryService(db, integrations, env.SETTINGS_ENCRYPTION_KEY);
-  const notifications = new NotificationService(db);
-  const assets = new AssetService(db, new QiniuService(integrations));
-  const cms = new CmsService(db);
   const observability = new ObservabilityService(db, new MetricsRegistry());
   const redactionSecrets = [
     env.AUTH_JWT_SECRET,
@@ -60,20 +56,18 @@ export function createFrameWorker(env: AppEnv): FrameWorker {
     env.AUTH_BOOTSTRAP_PASSWORD,
     env.METRICS_BEARER_TOKEN,
   ];
-  jobHandlers.register('notification.email.deliver', ({ payload }) =>
-    delivery.deliverEmail(payload),
-  );
-  jobHandlers.register('storage.asset.delete', ({ payload }) =>
-    assets.executeDelete(assetDeleteJobPayloadSchema.parse(payload).assetId),
-  );
-  jobHandlers.register('storage.asset.expire-upload', ({ payload }) =>
-    assets.expireUpload(assetDeleteJobPayloadSchema.parse(payload).assetId),
-  );
-  jobHandlers.register('cms.content.publish-scheduled', ({ payload }) => {
-    const input = cmsScheduledJobSchema.parse(payload);
-    return cms.publishScheduled(input.contentId, input.publishAt, input.actorId);
-  });
-  registerNotificationPolicies(subscribers, notifications);
+  try {
+    registerSystemWorkerExtensions({
+      system,
+      env,
+      database: db,
+      jobHandlers,
+      subscribers,
+    });
+  } catch (error) {
+    void pool.end();
+    throw error;
+  }
 
   let stopping = false;
   let running = false;
@@ -316,6 +310,9 @@ export function createFrameWorker(env: AppEnv): FrameWorker {
       id: workerId,
       state: disposed ? 'stopped' : stopping ? 'stopping' : running ? 'running' : 'idle',
       lastLoopAt,
+      extensions: system.extensions.map((extension) => extension.manifest.id),
+      jobKinds: jobHandlers.listKinds(),
+      eventTopics: subscribers.listTopics(),
     }),
   };
 }

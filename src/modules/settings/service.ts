@@ -4,15 +4,18 @@ import type { Database } from '@lingcoo/frame-database';
 import { accounts, systemSettings, systemSettingVersions } from '@lingcoo/frame-database/schema';
 import { recordAuditEvent } from '../../lib/audit.js';
 import { httpError } from '../../lib/http-error.js';
-import { findSettingDefinition, settingDefinitions } from './registry.js';
+import { defaultSettingsRegistry, type SettingsRegistry } from './registry.js';
 
 export class SettingsService {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly registry: SettingsRegistry = defaultSettingsRegistry,
+  ) {}
 
   async list() {
     const rows = await this.db.select().from(systemSettings);
     const values = new Map(rows.map((row) => [row.key, row]));
-    return settingDefinitions.map((definition) => {
+    return this.registry.list().map((definition) => {
       const stored = values.get(definition.key);
       return {
         key: definition.key,
@@ -32,7 +35,7 @@ export class SettingsService {
   }
 
   async update(key: string, value: unknown, reason: string | undefined, actorId: string) {
-    const definition = findSettingDefinition(key);
+    const definition = this.registry.find(key);
     if (!definition) throw httpError(404, '设置项不存在或不允许修改', 'NotFoundError');
     const parsedValue = definition.schema.parse(value);
 
@@ -83,7 +86,7 @@ export class SettingsService {
   }
 
   async history(key: string) {
-    if (!findSettingDefinition(key)) {
+    if (!this.registry.find(key)) {
       throw httpError(404, '设置项不存在', 'NotFoundError');
     }
     return this.db

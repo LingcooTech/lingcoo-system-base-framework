@@ -34,14 +34,18 @@ await mkdir(archiveDirectory, { recursive: true });
 try {
   const frame = packPackage(repositoryRoot);
   const database = packPackage(path.join(repositoryRoot, 'packages/database'));
+  const extensionSdk = packPackage(path.join(repositoryRoot, 'packages/extension-sdk'));
   const designTokens = packPackage(path.join(repositoryRoot, 'packages/design-tokens'));
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
+  const exampleExtension = packPackage(path.join(repositoryRoot, 'fixtures/example-extension'));
 
   assertPackageFiles('@lingcoo/frame', frame.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/app.js',
     'dist/runtime/worker.js',
+    'dist/runtime/migrations.js',
+    'dist/extensions/core.js',
     'admin-ui/dist/index.html',
     'public-web/dist/index.html',
   ]);
@@ -52,6 +56,13 @@ try {
     'dist/schema.js',
     'drizzle/0000_base_system.sql',
     'drizzle/0011_cms_workflow.sql',
+  ]);
+  assertPackageFiles('@lingcoo/frame-extension-sdk', extensionSdk.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
   ]);
   assertPackageFiles('@lingcoo/frame-design-tokens', designTokens.files, [
     'dist/base.css',
@@ -65,16 +76,30 @@ try {
     'dist/Button.d.ts',
     'dist/styles.css',
   ]);
+  assertPackageFiles('@lingcoo/frame-example-extension', exampleExtension.files, [
+    'dist/index.js',
+    'dist/contracts.js',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
+    'migrations/0001_initial.sql',
+  ]);
 
   await cp(path.join(repositoryRoot, 'fixtures/consumer'), consumerDirectory, { recursive: true });
   const fixtureManifestPath = path.join(consumerDirectory, 'package.json');
   const fixtureManifest = JSON.parse(await readFile(fixtureManifestPath, 'utf8'));
   fixtureManifest.dependencies['@lingcoo/frame'] = pathToFileURL(frame.archive).href;
   fixtureManifest.dependencies['@lingcoo/frame-database'] = pathToFileURL(database.archive).href;
+  fixtureManifest.dependencies['@lingcoo/frame-extension-sdk'] = pathToFileURL(
+    extensionSdk.archive,
+  ).href;
   fixtureManifest.dependencies['@lingcoo/frame-design-tokens'] = pathToFileURL(
     designTokens.archive,
   ).href;
   fixtureManifest.dependencies['@lingcoo/frame-ui'] = pathToFileURL(ui.archive).href;
+  fixtureManifest.dependencies['@lingcoo/frame-example-extension'] = pathToFileURL(
+    exampleExtension.archive,
+  ).href;
   await writeFile(fixtureManifestPath, `${JSON.stringify(fixtureManifest, null, 2)}\n`);
 
   execFileSync(

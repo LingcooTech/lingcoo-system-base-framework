@@ -13,11 +13,12 @@ import { fileURLToPath } from 'node:url';
 import { ZodError } from 'zod';
 
 import { createDatabase } from '@lingcoo/frame-database';
+import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
+import { defaultFrameSystem } from './extensions/core.js';
 import type { AppEnv } from './lib/env.js';
 import { hasAnyPermission, type PermissionCode } from './lib/rbac.js';
 import { runWithRequestContext, setRequestActor } from './lib/request-context.js';
 import { serializeSafeError } from './lib/structured-log.js';
-import { appModules } from './modules/index.js';
 import { AuthRepository } from './modules/auth/repository.js';
 import { CmsService } from './modules/cms/service.js';
 import { baseDatasetAdapters } from './modules/data-exchange/adapters.js';
@@ -27,6 +28,11 @@ import { MetricsRegistry } from './modules/observability/metrics.js';
 import { ObservabilityService } from './modules/observability/service.js';
 import { baseSearchProviders } from './modules/search/providers.js';
 import { SearchProviderRegistry } from './modules/search/registry.js';
+import {
+  assertFrameSystemCompatibility,
+  createSystemSettingsRegistry,
+  registerSystemServerExtensions,
+} from './runtime/extensions.js';
 
 const sourceDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,7 +55,13 @@ function resolveJwtSecret(env: AppEnv): string {
   return 'lingcoo-frame-development-jwt-secret-change-me';
 }
 
-export async function buildApp(env: AppEnv) {
+export interface BuildAppOptions {
+  system?: DefinedSystem;
+}
+
+export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
+  const system = options.system ?? defaultFrameSystem;
+  assertFrameSystemCompatibility(system);
   const app = Fastify({
     logger: {
       level: env.LOG_LEVEL,
@@ -78,6 +90,7 @@ export async function buildApp(env: AppEnv) {
 
   app.decorate('appEnv', env);
   app.decorate('db', db);
+  app.decorate('settingsRegistry', createSystemSettingsRegistry(system));
   const searchRegistry = new SearchProviderRegistry();
   for (const provider of baseSearchProviders) searchRegistry.register(provider);
   app.decorate('searchRegistry', searchRegistry);
@@ -165,8 +178,11 @@ export async function buildApp(env: AppEnv) {
     };
   });
 
-  for (const appModule of appModules) {
-    await app.register(appModule.register);
+  try {
+    await registerSystemServerExtensions(app, system);
+  } catch (error) {
+    await app.close();
+    throw error;
   }
 
   const adminDist = runtimePath('admin-ui', 'dist');
