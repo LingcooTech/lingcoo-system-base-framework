@@ -82,24 +82,19 @@ export const PageHeader = forwardRef<
     actions?: ReactNode;
     align?: 'left' | 'center';
   }
->(
-  (
-    { actions, align = 'left', className, description, eyebrow, meta, title, ...rest },
-    ref,
-  ) => (
-    <header
-      ref={ref}
-      className={cx('public-page-header', `public-page-header--${align}`, className)}
-      {...rest}
-    >
-      <div className="public-page-header__content">
-        {eyebrow ? <p className="public-page-header__eyebrow">{eyebrow}</p> : null}
-        <h1>{title}</h1>
-        {description ? <div className="public-page-header__description">{description}</div> : null}
-        {meta ? <div className="public-page-header__meta">{meta}</div> : null}
-      </div>
-      {actions ? <div className="public-page-header__actions">{actions}</div> : null}
-    </header>
-  ),
-);
+>(({ actions, align = 'left', className, description, eyebrow, meta, title, ...rest }, ref) => (
+  <header
+    ref={ref}
+    className={cx('public-page-header', `public-page-header--${align}`, className)}
+    {...rest}
+  >
+    <div className="public-page-header__content">
+      {eyebrow ? <p className="public-page-header__eyebrow">{eyebrow}</p> : null}
+      <h1>{title}</h1>
+      {description ? <div className="public-page-header__description">{description}</div> : null}
+      {meta ? <div className="public-page-header__meta">{meta}</div> : null}
+    </div>
+    {actions ? <div className="public-page-header__actions">{actions}</div> : null}
+  </header>
+));
 PageHeader.displayName = 'PageHeader';

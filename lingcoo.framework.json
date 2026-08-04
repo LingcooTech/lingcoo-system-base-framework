@@ -13,10 +13,19 @@
     "system",
     "auth",
     "access",
+    "settings",
+    "audit",
+    "metadata",
+    "search",
+    "data-exchange",
     "integrations",
     "jobs",
     "notifications",
-    "assets"
+    "assets",
+    "presentation",
+    "cms",
+    "public-site",
+    "observability"
   ],
   "domainModules": []
 }

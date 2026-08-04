@@ -36,14 +36,12 @@ export const metadataModule: AppModule = {
       '/api/metadata/dictionaries',
       { preHandler: app.requirePermission('metadata.write') },
       async (request, reply) =>
-        reply
-          .code(201)
-          .send({
-            dictionary: await service.createDictionary(
-              createDictionarySchema.parse(request.body),
-              request.auth!.accountId,
-            ),
-          }),
+        reply.code(201).send({
+          dictionary: await service.createDictionary(
+            createDictionarySchema.parse(request.body),
+            request.auth!.accountId,
+          ),
+        }),
     );
     app.patch(
       '/api/metadata/dictionaries/:code',
@@ -72,15 +70,13 @@ export const metadataModule: AppModule = {
       { preHandler: app.requirePermission('metadata.write') },
       async (request, reply) => {
         const { code } = codeParamsSchema.parse(request.params);
-        return reply
-          .code(201)
-          .send({
-            item: await service.createDictionaryItem(
-              code,
-              createDictionaryItemSchema.parse(request.body),
-              request.auth!.accountId,
-            ),
-          });
+        return reply.code(201).send({
+          item: await service.createDictionaryItem(
+            code,
+            createDictionaryItemSchema.parse(request.body),
+            request.auth!.accountId,
+          ),
+        });
       },
     );
     app.patch(
@@ -108,14 +104,12 @@ export const metadataModule: AppModule = {
       '/api/metadata/taxonomies',
       { preHandler: app.requirePermission('metadata.write') },
       async (request, reply) =>
-        reply
-          .code(201)
-          .send({
-            taxonomy: await service.createTaxonomy(
-              createTaxonomySchema.parse(request.body),
-              request.auth!.accountId,
-            ),
-          }),
+        reply.code(201).send({
+          taxonomy: await service.createTaxonomy(
+            createTaxonomySchema.parse(request.body),
+            request.auth!.accountId,
+          ),
+        }),
     );
     app.patch(
       '/api/metadata/taxonomies/:code',
@@ -144,15 +138,13 @@ export const metadataModule: AppModule = {
       { preHandler: app.requirePermission('metadata.write') },
       async (request, reply) => {
         const { code } = codeParamsSchema.parse(request.params);
-        return reply
-          .code(201)
-          .send({
-            term: await service.createTerm(
-              code,
-              createTermSchema.parse(request.body),
-              request.auth!.accountId,
-            ),
-          });
+        return reply.code(201).send({
+          term: await service.createTerm(
+            code,
+            createTermSchema.parse(request.body),
+            request.auth!.accountId,
+          ),
+        });
       },
     );
     app.patch(
@@ -183,14 +175,12 @@ export const metadataModule: AppModule = {
       '/api/metadata/assignments',
       { preHandler: app.requirePermission('metadata.assign') },
       async (request, reply) =>
-        reply
-          .code(201)
-          .send({
-            assignment: await service.assign(
-              createAssignmentSchema.parse(request.body),
-              request.auth!.accountId,
-            ),
-          }),
+        reply.code(201).send({
+          assignment: await service.assign(
+            createAssignmentSchema.parse(request.body),
+            request.auth!.accountId,
+          ),
+        }),
     );
     app.delete(
       '/api/metadata/assignments/:assignmentId',
