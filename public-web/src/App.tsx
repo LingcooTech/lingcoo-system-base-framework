@@ -12,6 +12,15 @@ import { Button } from '@lingcoo/frame-ui/button';
 import { Alert } from '@lingcoo/frame-ui/alert';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
+import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+import {
+  createWebRegistry,
+  defineWebExtension,
+  WebRouteSlot,
+  WebShell,
+  type WebRouteContext,
+} from '@lingcoo/frame-web';
+import { frameWebManifest } from '@lingcoo/frame-web/manifest';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { ArticleIndexPage, CmsContentPage } from './components/cms/CmsPages';
@@ -197,81 +206,12 @@ const layers = [
   },
 ];
 
-function App() {
-  const [presentation, setPresentation] = useState<PublicPresentation | null>(null);
+interface PublicWebContext {
+  presentation: PublicPresentation | null;
+}
 
-  useEffect(() => {
-    fetch('/api/public/presentation')
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
-      .then(({ presentation: result }: { presentation: PublicPresentation }) => {
-        setPresentation(result);
-        document.documentElement.style.setProperty('--site-primary', result.primaryColor);
-        document.documentElement.style.setProperty('--site-secondary', result.secondaryColor);
-        document.documentElement.style.setProperty('--site-accent', result.accentColor);
-        const faviconUrl = result.faviconAssetId
-          ? result.assets[result.faviconAssetId]?.publicUrl
-          : null;
-        if (faviconUrl) {
-          let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-          if (!favicon) {
-            favicon = document.createElement('link');
-            favicon.rel = 'icon';
-            document.head.append(favicon);
-          }
-          favicon.href = faviconUrl;
-        }
-      })
-      .catch(() => undefined);
-  }, []);
-
-  const pathParts = window.location.pathname.split('/').filter(Boolean);
-  if (pathParts[0] === 'auth') {
-    const mode =
-      pathParts[1] === 'forgot-password'
-        ? 'forgot'
-        : pathParts[1] === 'reset-password'
-          ? 'reset'
-          : pathParts[1] === 'accept-invitation'
-            ? 'invitation'
-            : pathParts[1] === 'verify-email'
-              ? 'verify'
-              : null;
-    if (mode) return <PublicAuthFlow mode={mode} presentation={presentation} />;
-  }
-  if (
-    pathParts[0] === 'preview' &&
-    pathParts[1] === 'content' &&
-    pathParts[2] &&
-    pathParts.length === 3
-  ) {
-    return (
-      <CmsContentPage
-        endpoint={'/api/cms/entries/' + pathParts[2] + '/preview'}
-        presentation={presentation}
-        preview
-      />
-    );
-  }
-  if (pathParts[0] === 'articles' && !pathParts[1]) {
-    const requestedPage = Number(new URLSearchParams(window.location.search).get('page') || '1');
-    const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-    return <ArticleIndexPage page={page} presentation={presentation} />;
-  }
-  if (
-    (pathParts[0] === 'articles' || pathParts[0] === 'pages') &&
-    pathParts[1] &&
-    pathParts.length === 2
-  ) {
-    return (
-      <CmsContentPage
-        endpoint={'/api/public/cms/' + pathParts[0] + '/' + encodeURIComponent(pathParts[1])}
-        presentation={presentation}
-      />
-    );
-  }
-
-  if (pathParts.length) return <SystemPage kind="404" presentation={presentation} />;
-
+function HomeRoute({ context }: WebRouteContext<PublicWebContext>) {
+  const { presentation } = context;
   return (
     <SiteShell headerOverlay headerTone="dark" presentation={presentation}>
       <SeoHead canonicalPath="/" presentation={presentation} />
@@ -370,6 +310,156 @@ function App() {
         </div>
       </Section>
     </SiteShell>
+  );
+}
+
+function AuthRoute({ context, params }: WebRouteContext<PublicWebContext>) {
+  const mode =
+    params.mode === 'forgot-password'
+      ? 'forgot'
+      : params.mode === 'reset-password'
+        ? 'reset'
+        : params.mode === 'accept-invitation'
+          ? 'invitation'
+          : params.mode === 'verify-email'
+            ? 'verify'
+            : null;
+  return mode ? (
+    <PublicAuthFlow mode={mode} presentation={context.presentation} />
+  ) : (
+    <SystemPage kind="404" presentation={context.presentation} />
+  );
+}
+
+function PreviewContentRoute({ context, params }: WebRouteContext<PublicWebContext>) {
+  return (
+    <CmsContentPage
+      endpoint={`/api/cms/entries/${encodeURIComponent(params.id!)}/preview`}
+      presentation={context.presentation}
+      preview
+    />
+  );
+}
+
+function ArticleIndexRoute({ context, searchParams }: WebRouteContext<PublicWebContext>) {
+  const requestedPage = Number(searchParams.get('page') || '1');
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  return <ArticleIndexPage page={page} presentation={context.presentation} />;
+}
+
+function ArticleRoute({ context, params }: WebRouteContext<PublicWebContext>) {
+  return (
+    <CmsContentPage
+      endpoint={`/api/public/cms/articles/${encodeURIComponent(params.slug!)}`}
+      presentation={context.presentation}
+    />
+  );
+}
+
+function PageRoute({ context, params }: WebRouteContext<PublicWebContext>) {
+  return (
+    <CmsContentPage
+      endpoint={`/api/public/cms/pages/${encodeURIComponent(params.slug!)}`}
+      presentation={context.presentation}
+    />
+  );
+}
+
+const frameWebSurface = defineWebExtension<PublicWebContext>({
+  routes: [
+    { id: 'frame.auth', component: AuthRoute },
+    { id: 'frame.preview-content', component: PreviewContentRoute },
+    { id: 'frame.articles', component: ArticleIndexRoute },
+    { id: 'frame.article', component: ArticleRoute },
+    { id: 'frame.page', component: PageRoute },
+    { id: 'frame.home', component: HomeRoute },
+  ],
+  seo: [
+    {
+      id: 'frame.home',
+      resolve() {
+        return { canonicalPath: '/' };
+      },
+    },
+    {
+      id: 'frame.articles',
+      resolve({ searchParams }) {
+        const page = Number(searchParams.get('page') || '1');
+        return {
+          title: '文章',
+          canonicalPath: page > 1 ? `/articles?page=${page}` : '/articles',
+        };
+      },
+    },
+  ],
+  sitemap: [
+    {
+      id: 'frame.public-content',
+      collect() {
+        return [
+          { path: '/', changeFrequency: 'weekly', priority: 1 },
+          { path: '/articles', changeFrequency: 'daily', priority: 0.8 },
+        ];
+      },
+    },
+  ],
+});
+
+const frameWebDefinition = defineExtension({
+  manifest: {
+    id: 'frame',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    web: frameWebManifest,
+  },
+  web: frameWebSurface,
+});
+
+const publicWebSystem = defineSystem({
+  id: 'frame-reference-web',
+  version: FRAME_VERSION,
+  extensions: [frameWebDefinition],
+});
+
+const webRegistry = createWebRegistry<PublicWebContext>(publicWebSystem);
+
+function App() {
+  const [presentation, setPresentation] = useState<PublicPresentation | null>(null);
+
+  useEffect(() => {
+    fetch('/api/public/presentation')
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
+      .then(({ presentation: result }: { presentation: PublicPresentation }) => {
+        setPresentation(result);
+        document.documentElement.style.setProperty('--site-primary', result.primaryColor);
+        document.documentElement.style.setProperty('--site-secondary', result.secondaryColor);
+        document.documentElement.style.setProperty('--site-accent', result.accentColor);
+        const faviconUrl = result.faviconAssetId
+          ? result.assets[result.faviconAssetId]?.publicUrl
+          : null;
+        if (faviconUrl) {
+          let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+          if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.head.append(favicon);
+          }
+          favicon.href = faviconUrl;
+        }
+      })
+      .catch(() => undefined);
+  }, []);
+
+  return (
+    <WebShell registry={webRegistry}>
+      <WebRouteSlot<PublicWebContext>
+        context={{ presentation }}
+        notFound={<SystemPage kind="404" presentation={presentation} />}
+        pathname={window.location.pathname}
+        searchParams={new URLSearchParams(window.location.search)}
+      />
+    </WebShell>
   );
 }
 

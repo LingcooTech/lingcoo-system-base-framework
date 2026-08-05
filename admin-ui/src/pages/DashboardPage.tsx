@@ -1,4 +1,5 @@
 import { Activity, Blocks, Database, MonitorCog } from 'lucide-react';
+import { AdminDashboardWidgets } from '@lingcoo/frame-admin';
 import { useEffect, useState } from 'react';
 
 import { fetchRuntime, type RuntimeInfo } from '../api/client';
@@ -7,6 +8,8 @@ import { PageFrame } from '../components/shared/PageFrame';
 import { ResourceSection } from '../components/shared/ResourceSection';
 import { StatusPill, type StatusTone } from '../components/shared/StatusPill';
 import { sections } from '../lib/foundation';
+import { useAuth } from '../lib/auth';
+import type { AdminAppContext } from '../extensions';
 
 interface Surface {
   id: string;
@@ -56,6 +59,7 @@ const metrics = [
 ];
 
 export function DashboardPage() {
+  const { hasPermission } = useAuth();
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
 
@@ -111,6 +115,9 @@ export function DashboardPage() {
       <ResourceSection title="运行面" description="基础框架只提供系统宿主，不预置行业资源。">
         <DataTable columns={columns} getRowKey={(row) => row.id} rows={surfaces} />
       </ResourceSection>
+      <div className="extension-dashboard-widgets">
+        <AdminDashboardWidgets<AdminAppContext> context={{}} hasPermission={hasPermission} />
+      </div>
     </PageFrame>
   );
 }

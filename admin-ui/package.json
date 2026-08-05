@@ -11,7 +11,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@lingcoo/frame-admin": "^0.4.0",
     "@lingcoo/frame-design-tokens": "^0.2.0",
+    "@lingcoo/frame-extension-sdk": "^0.4.0",
     "@lingcoo/frame-ui": "^0.2.0",
     "@tailwindcss/vite": "^4.3.0",
     "@vitejs/plugin-react": "^5.0.0",

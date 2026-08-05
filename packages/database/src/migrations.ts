@@ -24,7 +24,7 @@ const frameMigrationFiles = [
 ] as const;
 
 export const frameMigrationsDirectory = path.join(packageDirectory, 'drizzle');
-export const FRAME_DATABASE_VERSION = '0.3.0';
+export const FRAME_DATABASE_VERSION = '0.4.0';
 
 export interface MigrationLogger {
   log(message: string): void;

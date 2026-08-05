@@ -2,13 +2,13 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.3` 已完成扩展内核：后端宿主、Database、Extension SDK、共享 UI 和 Design Tokens 都能以
-真实 npm tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务系统通过 `defineSystem()`
-显式安装构建期领域扩展，而不是复制本仓库后长期维护底层源码副本。
+当前 `0.4` 已完成前端扩展层：后端宿主、Database、Extension SDK、Admin/Web Shell、共享 UI 和
+Design Tokens 都能以真实 npm tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务系统
+通过 `defineSystem()` 显式安装构建期领域扩展，而不是复制本仓库后长期维护底层源码副本。
 
 平台化路线见 [Frame 平台化改造路线](docs/platform-roadmap.md)，实际阶段记录见
 [Frame 平台化开发进度](docs/platform-progress.md)，当前公开包契约见
-[0.3 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
+[0.4 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
 
 ## 当前包含什么
 
@@ -31,6 +31,7 @@
 - 部署链路：单一应用镜像、Docker Compose、Caddy、健康检查和非 root 运行
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 - 扩展内核：Manifest、`defineSystem()`、依赖排序、冲突拒绝和分运行面注册
+- 前端扩展：Admin/Web Shell、路由、导航、Widget、搜索、SEO、Sitemap 与 Landing Block 注册表
 - 迁移协议：命名空间 Migration Source、Legacy Alias adoption、checksum 和并发锁
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
@@ -120,8 +121,9 @@ docker compose -f docker-compose.prod.yml up -d
 
 业务应用直接依赖 Frame 包，在组合根中把 `frameCoreExtension` 与自己的领域扩展交给
 `defineSystem()`，再将同一个 System 传给 API、Worker 和迁移运行时。领域扩展现在可以贡献权限、
-非敏感设置、Server 路由、Job Handler、Outbox Subscriber 和命名空间迁移。Admin/Public Web
-扩展入口属于阶段 3，现阶段仍由参考应用固定组合。
+非敏感设置、Server 路由、Job Handler、Outbox Subscriber、命名空间迁移、Admin 页面与导航、
+Public Web 页面、SEO、Sitemap 和受控 Landing Block。各运行面使用独立入口，浏览器代码不导入
+Server、Worker 或数据库实现。
 
 具体约束见：
 

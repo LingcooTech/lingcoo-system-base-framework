@@ -10,7 +10,7 @@
 | 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结       |
 | 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成 |
 | 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成   |
-| 3. 前端扩展       | Not started | -                                                  |
+| 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成    |
 | 4. 第一方扩展     | Not started | -                                                  |
 | 5. Consumer 试点  | Not started | -                                                  |
 | 6. 文档与参考应用 | Not started | -                                                  |
@@ -201,3 +201,81 @@
   数据库存储任意可执行代码。
 - 扩展示例增加 Admin 页面、Public Web 页面和一个 Landing Block，并继续通过真实 tarball Consumer
   验证浏览器依赖边界、路由冲突与生产构建。
+
+## 阶段 3：前端扩展
+
+### 范围
+
+- 发布可消费的 `@lingcoo/frame-admin@0.4.0` 与 `@lingcoo/frame-web@0.4.0`。
+- 将 Admin/Web 声明纳入浏览器安全 Manifest 和 `defineSystem()` 冲突检查。
+- 让参考 Admin/Public Web 使用注册表选择页面，不再维护中心路由分支。
+- 建立受控 Landing Block Type、Schema、Renderer、Editor、Asset 和配置迁移协议。
+- 由完整示例扩展和真实 tarball Consumer 验证全部前端运行面。
+
+### 完成记录
+
+- Completed: 2026-08-05
+- Starting commit: `166c7c2`
+
+已交付：
+
+- Extension Manifest：增加 Admin Route、Navigation、Dashboard Widget、Search Provider、Landing Block
+  Editor，以及 Web Route、SEO、Sitemap 和 Landing Block 声明。`defineSystem()` 会拒绝无效路径、
+  引用缺失、参数同构路由冲突、重复贡献 ID、重复 Block Type 和无对应 Block 的 Editor。
+- 运行面投影：`projectExtensionManifest()` 让浏览器组合根只保留 Admin 或 Web 声明，避免把 Fastify、
+  Worker、数据库和迁移实现带入前端构建；Landing Block Editor 投影会保留必要的 Block 声明。
+- `@lingcoo/frame-admin`：提供 `AdminShell`、Registry Context、Route Slot、Dashboard Widget Slot，以及
+  Route、Navigation、Search 和 Landing Block Editor 注册表。声明与实现逐项核对，运行时拒绝漏注册、
+  重复注册和未声明实现；路由支持静态段、参数段和末尾通配符。
+- `@lingcoo/frame-web`：提供 `WebShell`、Route Slot、SEO Resolver、Sitemap Collector 和 Landing Block
+  Registry。注册顺序遵循 System 依赖拓扑，路由匹配优先选择更具体的模式。
+- Landing Block：数据库边界只接受 JSON 配置；每个 Type 必须提供 Zod Schema、公共 Renderer、后台
+  Editor、资产引用函数和显式配置迁移。Registry 拒绝未知类型、函数/类实例、非有限数字、未来版本、
+  缺失迁移链、Schema 失败和非法资产引用，不允许数据库保存任意可执行代码。
+- Frame Core：完整 Manifest 现在由 Backend、Admin 和 Web 声明共同组成；`./manifest` 是浏览器安全
+  公共入口。Admin/Web 内置声明分别由 Shell 包的 `./manifest` 提供，避免前端依赖服务端根包。
+- Reference Admin：`App.tsx` 的 15 路中心条件分支已删除；页面、侧栏、当前页元数据、Dashboard
+  Widget 和全局搜索从 Admin Registry 解析，现有鉴权、响应式壳和视觉行为保持不变。
+- Reference Web：首页、账号安全、预览、文章列表、文章详情和页面详情全部成为 Web Route
+  Contribution；未知路径统一由 Route Slot 进入 404，现有站点壳和品牌读取保持不变。
+- 示例扩展：新增独立 `./admin` 与 `./web` 入口，实际贡献一个后台页、导航、Widget、搜索源、公共页、
+  SEO、Sitemap 和 `example.hero` Landing Block。该 Block 含 V1 到 V2 配置迁移与 Asset ID 声明。
+- 分发：Frame、Database、Extension SDK、Admin 和 Web 统一升至 `0.4.0`；Docker dependencies/runtime
+  层包含两个新 workspace，React 继续由 Consumer 作为 peer dependency 提供。
+- Consumer Fixture：8 个真实 tarball 在临时目录隔离安装，公共 TypeScript 入口、API、Worker、13 条
+  系统迁移和全部前端贡献均从包导出执行，不导入仓库内部源码。
+
+验证结果：
+
+- `npm run check`：无数据库回归通过；后端 64 项中 53 通过、11 项 PostgreSQL 测试按设计跳过；
+  Public Web 4/4、Frame UI 4/4 通过，全部 workspace 类型检查和 Lint 通过。
+- PostgreSQL 17 空库：12 条 Frame canonical 迁移全部成功；后端 64/64、Public Web 4/4、Frame UI
+  4/4 全部通过，无跳过项。
+- `npm run packages:verify`：8 个 tarball 的内容、隔离安装、Consumer TypeScript 和运行时验收通过；
+  Consumer 验证示例 Admin/Web/SEO/Sitemap/Landing Block，并在 PostgreSQL 中组合 13 条系统迁移。
+- `npm run build:all`：Admin UI、Public Web、Server 和全部共享包生产构建通过。
+- 生产 Docker 镜像：构建通过；非 root 容器可加载 Admin/Web Manifest、提供双 Web 静态产物并通过
+  `/health` 与 `/ready` 探针。
+- `npm audit --omit=dev --audit-level=high`：0 项已知生产依赖漏洞。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+未解决事项：
+
+- Reference Admin 单入口压缩后约 524 kB，Vite 有分包提示但不影响构建；按页面懒加载和稳定 Chunk
+  策略留到真实 Consumer 试点前处理，避免本阶段同时改变加载行为。
+- Web Sitemap Collector 已提供组合 API；参考系统现有 `/sitemap.xml` 仍由 Server 侧 Public Site/CMS
+  数据源生成。需要数据库动态 URL 的领域扩展应在阶段 4 通过 Service Port 接入服务端发现源，不能让
+  Server 隐式执行浏览器入口。
+- 当前继续使用内部 tarball 验收，尚未建立 Changesets、私有 Registry 发布和公共 Beta 通道。
+- CMS、资产、通知和品牌仍属于粗粒度 `frameCoreExtension`；本阶段只完成前端贡献契约，没有提前拆包。
+
+阶段 4 输入：
+
+- 先绘制 CMS、资产、通知和品牌对 Auth、Settings、Audit、Jobs、Integration 与数据库的实际依赖图，
+  提炼最少的 Service Port 和共享 Contracts，再移动物理目录。
+- 以一个依赖最清晰的可选能力完成首个第一方扩展闭环，随后逐个拆分，不进行一次性目录搬迁。
+- 每个第一方扩展必须同时使用本阶段的 Server、Worker、Admin、Web 和 Migration 公开入口；启停扩展
+  不得要求修改 Frame 的中心路由、菜单或 Job 分支。
+- 为动态 Sitemap、资产选择和 Landing Block 持久化建立服务端 Port，但保持数据库只存 JSON 配置、
+  Asset ID 和版本，不引入运行时上传插件或任意代码执行。
+- 继续验证空库、Stage 1/2 历史库升级、扩展启用/停用、真实 tarball Consumer 和生产镜像。

@@ -1,24 +1,11 @@
+import { AdminRouteSlot, AdminShell } from '@lingcoo/frame-admin';
+
 import { Shell } from './components/layout/Shell';
 import { AuthProvider, useAuth } from './lib/auth';
-import { getSectionByPath } from './lib/foundation';
 import { RouterProvider, useRouter } from './lib/router';
-import { AccessPage } from './pages/AccessPage';
-import { AccountPage } from './pages/AccountPage';
-import { AssetsPage } from './pages/AssetsPage';
-import { AuditPage } from './pages/AuditPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
-import { CmsPage } from './pages/CmsPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { HelpPage } from './pages/HelpPage';
 import { LoginPage } from './pages/LoginPage';
-import { IntegrationsPage } from './pages/IntegrationsPage';
-import { MetadataPage } from './pages/MetadataPage';
-import { ModulesPage } from './pages/ModulesPage';
-import { NotificationsPage } from './pages/NotificationsPage';
-import { OperationsPage } from './pages/OperationsPage';
-import { PresentationPage } from './pages/PresentationPage';
-import { ObservabilityPage } from './pages/ObservabilityPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { adminRegistry, type AdminAppContext } from './extensions';
 
 function RoutedApp() {
   const { account, hasPermission, loading, logout } = useAuth();
@@ -50,8 +37,8 @@ function RoutedApp() {
       </main>
     );
   }
-  const activeSection = getSectionByPath(pathname);
-  if (!hasPermission(activeSection.permission)) {
+  const match = adminRegistry.matchRoute(pathname);
+  if (match && !hasPermission(match.route.permission)) {
     return (
       <main className="password-screen">
         <section className="password-panel">
@@ -66,46 +53,34 @@ function RoutedApp() {
     );
   }
 
-  const page = pathname.startsWith('/access') ? (
-    <AccessPage />
-  ) : pathname.startsWith('/account') ? (
-    <AccountPage />
-  ) : pathname.startsWith('/audit') ? (
-    <AuditPage />
-  ) : pathname.startsWith('/cms') ? (
-    <CmsPage />
-  ) : pathname.startsWith('/help') ? (
-    <HelpPage />
-  ) : pathname.startsWith('/assets') ? (
-    <AssetsPage />
-  ) : pathname.startsWith('/integrations') ? (
-    <IntegrationsPage />
-  ) : pathname.startsWith('/metadata') ? (
-    <MetadataPage />
-  ) : pathname.startsWith('/modules') ? (
-    <ModulesPage />
-  ) : pathname.startsWith('/operations') ? (
-    <OperationsPage />
-  ) : pathname.startsWith('/observability') ? (
-    <ObservabilityPage />
-  ) : pathname.startsWith('/notifications') ? (
-    <NotificationsPage />
-  ) : pathname.startsWith('/presentation') ? (
-    <PresentationPage />
-  ) : pathname.startsWith('/settings') ? (
-    <SettingsPage />
-  ) : (
-    <DashboardPage />
+  return (
+    <Shell>
+      <AdminRouteSlot<AdminAppContext>
+        context={{}}
+        hasPermission={hasPermission}
+        notFound={
+          <section className="password-panel">
+            <p className="eyebrow">Not found</p>
+            <h1>页面不存在</h1>
+            <a className="lc-button lc-button--secondary" href="/admin/">
+              返回系统概览
+            </a>
+          </section>
+        }
+        pathname={pathname}
+      />
+    </Shell>
   );
-  return <Shell>{page}</Shell>;
 }
 
 export function App() {
   return (
-    <AuthProvider>
-      <RouterProvider>
-        <RoutedApp />
-      </RouterProvider>
-    </AuthProvider>
+    <AdminShell registry={adminRegistry}>
+      <AuthProvider>
+        <RouterProvider>
+          <RoutedApp />
+        </RouterProvider>
+      </AuthProvider>
+    </AdminShell>
   );
 }

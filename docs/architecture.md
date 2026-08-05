@@ -1,7 +1,7 @@
 # 基础框架架构
 
-> 当前 `0.3` 已提供可安装的 Backend、Database、Extension SDK、UI 和 Design Tokens 包，同时保留
-> 完整参考应用；下一步是前端 Shell 与前端扩展注册表。平台化边界与阶段门槛见
+> 当前 `0.4` 已提供可安装的 Backend、Database、Extension SDK、Admin/Web Shell、UI 和 Design
+> Tokens 包，同时保留完整参考应用；下一步是通过 Service Port 拆分可选第一方扩展。平台化边界见
 > [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
 
 ## 1. 定位
@@ -37,9 +37,12 @@ Browser
 admin-ui/              管理后台应用
 public-web/            公共用户侧应用
 packages/
+  admin/               Admin Shell、路由、导航、Widget、搜索与编辑器注册表
   database/            Database、基础 Schema、迁移执行器与不可变 SQL
   design-tokens/       双 Web 入口共享的语义设计变量
+  extension-sdk/       浏览器安全 Manifest、System 组合与分运行面契约
   ui/                  无业务含义的 React 基础组件
+  web/                 Web Shell、路由、SEO、Sitemap 与 Landing Block 注册表
 src/
   index.ts             @lingcoo/frame 公共入口
   app.ts               HTTP 宿主与通用中间件
@@ -68,11 +71,14 @@ docs/                  架构约束与扩展指南
 
 ### 公共 Web
 
-公共 Web 是未来用户侧应用的宿主，不等同于营销官网。当前页面只说明框架状态，没有预设行业信息、导航模型或内容结构。
+公共 Web 是未来用户侧应用的宿主，不等同于营销官网。`@lingcoo/frame-web` 提供按依赖顺序组合的
+路由、SEO、Sitemap 和 Landing Block Registry；参考页面只说明框架状态，没有预设行业内容模型。
 
 ### 管理后台
 
-后台提供可复用的应用壳、响应式导航、页面容器、数据表格、资源分区和状态呈现。当前数据都用于表达框架运行状态，不伪造业务仪表盘。
+`@lingcoo/frame-admin` 提供可消费的 Shell Context，以及路由、导航、Dashboard Widget、全局搜索和
+Landing Block Editor Registry。参考后台的响应式导航直接读取该注册表；当前数据只表达框架状态，
+不伪造业务仪表盘。
 
 ### 共享 UI
 

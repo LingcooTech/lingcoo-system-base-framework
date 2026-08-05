@@ -14,8 +14,13 @@ import {
   UserRound,
   CircleHelp,
   Waypoints,
-  type LucideIcon,
 } from 'lucide-react';
+import type { ComponentType } from 'react';
+import type {
+  AdminRegistry,
+  RegisteredAdminNavigation,
+  RegisteredAdminRoute,
+} from '@lingcoo/frame-admin';
 
 export type SectionKey =
   | 'dashboard'
@@ -35,13 +40,13 @@ export type SectionKey =
   | 'help';
 
 export interface SectionMeta {
-  id: SectionKey;
+  id: string;
   group: string;
   title: string;
   navLabel: string;
   description: string;
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string; size?: number; 'aria-hidden'?: boolean }>;
   permission: string;
   context: [
     { label: string; value: string; note: string },
@@ -268,10 +273,51 @@ export const sections: Record<SectionKey, SectionMeta> = {
 
 export const sectionList = Object.values(sections);
 
-export function getSectionByPath(pathname: string): SectionMeta {
-  return (
-    sectionList
-      .filter((section) => section.href !== '/' && pathname.startsWith(section.href))
-      .sort((left, right) => right.href.length - left.href.length)[0] ?? sections.dashboard
-  );
+function coreSectionForRoute(routeId: string): SectionMeta | undefined {
+  const key = routeId.startsWith('frame.') ? routeId.slice('frame.'.length) : '';
+  return sections[key as SectionKey];
+}
+
+export function sectionFromNavigation(navigation: RegisteredAdminNavigation<unknown>): SectionMeta {
+  const core = coreSectionForRoute(navigation.route.id);
+  return {
+    id: navigation.id,
+    group: navigation.group,
+    title: navigation.route.title,
+    navLabel: navigation.label,
+    description: navigation.route.description ?? '',
+    href: navigation.href,
+    icon: navigation.icon ?? Waypoints,
+    permission: navigation.route.permission,
+    context: core?.context ?? [
+      { label: '扩展', value: navigation.extensionId, note: 'Build-time extension' },
+      { label: '路由', value: navigation.route.path, note: 'Registry managed' },
+    ],
+  };
+}
+
+function sectionFromRoute(route: RegisteredAdminRoute<unknown>): SectionMeta {
+  const core = coreSectionForRoute(route.id);
+  if (core) return core;
+  return {
+    id: route.id,
+    group: '扩展',
+    title: route.title,
+    navLabel: route.title,
+    description: route.description ?? '',
+    href: route.path.replace(/\/\*$/, ''),
+    icon: Waypoints,
+    permission: route.permission,
+    context: [
+      { label: '扩展', value: route.extensionId, note: 'Build-time extension' },
+      { label: '路由', value: route.path, note: 'Registry managed' },
+    ],
+  };
+}
+
+export function getSectionByPath(pathname: string, registry: AdminRegistry<unknown>): SectionMeta {
+  const match = registry.matchRoute(pathname);
+  if (!match) return sections.dashboard;
+  const navigation = registry.navigation.find((item) => item.route.id === match.route.id);
+  return navigation ? sectionFromNavigation(navigation) : sectionFromRoute(match.route);
 }

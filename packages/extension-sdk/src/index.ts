@@ -1,6 +1,6 @@
 import semver from 'semver';
 
-export const FRAME_VERSION = '0.3.0';
+export const FRAME_VERSION = '0.4.0';
 export const EXTENSION_API_VERSION = '1';
 
 const identifierPattern = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
@@ -31,6 +31,60 @@ export interface ExtensionMigrationSourceDeclaration {
   migrations: readonly ExtensionMigrationDeclaration[];
 }
 
+export interface ExtensionAdminRouteDeclaration {
+  id: string;
+  path: string;
+  title: string;
+  description?: string;
+  permission: string;
+}
+
+export interface ExtensionAdminNavigationDeclaration {
+  id: string;
+  routeId: string;
+  href: string;
+  label: string;
+  group: string;
+  order?: number;
+}
+
+export interface ExtensionAdminDashboardWidgetDeclaration {
+  id: string;
+  title: string;
+  permission?: string;
+  order?: number;
+}
+
+export interface ExtensionAdminSearchProviderDeclaration {
+  id: string;
+  label: string;
+  permission?: string;
+}
+
+export interface ExtensionAdminLandingBlockEditorDeclaration {
+  type: string;
+  label: string;
+}
+
+export interface ExtensionWebRouteDeclaration {
+  id: string;
+  path: string;
+}
+
+export interface ExtensionWebSeoDeclaration {
+  id: string;
+  routeId?: string;
+}
+
+export interface ExtensionWebSitemapDeclaration {
+  id: string;
+}
+
+export interface ExtensionWebLandingBlockDeclaration {
+  type: string;
+  schemaVersion: number;
+}
+
 export interface ExtensionManifest {
   id: string;
   version: string;
@@ -48,6 +102,19 @@ export interface ExtensionManifest {
     subscriptions?: readonly string[];
   };
   migrations?: ExtensionMigrationSourceDeclaration;
+  admin?: {
+    routes?: readonly ExtensionAdminRouteDeclaration[];
+    navigation?: readonly ExtensionAdminNavigationDeclaration[];
+    dashboardWidgets?: readonly ExtensionAdminDashboardWidgetDeclaration[];
+    searchProviders?: readonly ExtensionAdminSearchProviderDeclaration[];
+    landingBlockEditors?: readonly ExtensionAdminLandingBlockEditorDeclaration[];
+  };
+  web?: {
+    routes?: readonly ExtensionWebRouteDeclaration[];
+    seo?: readonly ExtensionWebSeoDeclaration[];
+    sitemap?: readonly ExtensionWebSitemapDeclaration[];
+    landingBlocks?: readonly ExtensionWebLandingBlockDeclaration[];
+  };
 }
 
 export interface ExtensionDefinition {
@@ -55,7 +122,11 @@ export interface ExtensionDefinition {
   server?: unknown;
   worker?: unknown;
   migrations?: unknown;
+  admin?: unknown;
+  web?: unknown;
 }
+
+export type ExtensionSurfaceName = 'server' | 'worker' | 'migrations' | 'admin' | 'web';
 
 export interface DefineSystemOptions {
   id: string;
@@ -98,6 +169,39 @@ function validateVersion(value: string, label: string): void {
 
 function validateRange(value: string, label: string): void {
   if (!semver.validRange(value)) fail(`Invalid ${label}: ${value}`);
+}
+
+function validateFrontendPath(value: string, label: string, allowPattern: boolean): void {
+  if (
+    !value.startsWith('/') ||
+    value.includes('?') ||
+    value.includes('#') ||
+    value.includes('\\')
+  ) {
+    fail(`Invalid ${label}: ${value}`);
+  }
+  const segments = value.split('/').slice(1);
+  for (const [index, segment] of segments.entries()) {
+    if (!segment) continue;
+    if (segment === '*') {
+      if (!allowPattern || index !== segments.length - 1) fail(`Invalid ${label}: ${value}`);
+      continue;
+    }
+    if (segment.startsWith(':')) {
+      if (!allowPattern || !identifierPattern.test(segment.slice(1))) {
+        fail(`Invalid ${label}: ${value}`);
+      }
+      continue;
+    }
+    if (segment.includes('*') || segment.includes(':')) fail(`Invalid ${label}: ${value}`);
+  }
+}
+
+function routeClaimKey(path: string): string {
+  return path
+    .split('/')
+    .map((segment) => (segment.startsWith(':') ? ':' : segment))
+    .join('/');
 }
 
 function claim(
@@ -186,6 +290,90 @@ function validateManifest(
       }
     }
   }
+
+  const adminRouteIds = new Set<string>();
+  for (const route of manifest.admin?.routes ?? []) {
+    validateContribution(route.id, `Admin route id in ${manifest.id}`);
+    validateFrontendPath(route.path, `Admin route path in ${manifest.id}`, true);
+    validateContribution(route.permission, `Admin route permission in ${manifest.id}`);
+    if (!route.title.trim()) fail(`Admin route ${route.id} in ${manifest.id} requires a title`);
+    if (adminRouteIds.has(route.id)) fail(`Duplicate Admin route id ${route.id} in ${manifest.id}`);
+    adminRouteIds.add(route.id);
+  }
+  for (const navigation of manifest.admin?.navigation ?? []) {
+    validateContribution(navigation.id, `Admin navigation id in ${manifest.id}`);
+    validateContribution(navigation.routeId, `Admin navigation route in ${manifest.id}`);
+    validateFrontendPath(navigation.href, `Admin navigation href in ${manifest.id}`, false);
+    if (!adminRouteIds.has(navigation.routeId)) {
+      fail(
+        `Admin navigation ${navigation.id} in ${manifest.id} references unknown route ${navigation.routeId}`,
+      );
+    }
+    if (!navigation.label.trim() || !navigation.group.trim()) {
+      fail(`Admin navigation ${navigation.id} in ${manifest.id} requires a label and group`);
+    }
+    if (navigation.order !== undefined && !Number.isFinite(navigation.order)) {
+      fail(`Invalid Admin navigation order in ${manifest.id}: ${navigation.id}`);
+    }
+  }
+  for (const widget of manifest.admin?.dashboardWidgets ?? []) {
+    validateContribution(widget.id, `Admin Dashboard Widget id in ${manifest.id}`);
+    if (!widget.title.trim()) fail(`Admin Dashboard Widget ${widget.id} requires a title`);
+    if (widget.permission) {
+      validateContribution(
+        widget.permission,
+        `Admin Dashboard Widget permission in ${manifest.id}`,
+      );
+    }
+    if (widget.order !== undefined && !Number.isFinite(widget.order)) {
+      fail(`Invalid Admin Dashboard Widget order in ${manifest.id}: ${widget.id}`);
+    }
+  }
+  for (const provider of manifest.admin?.searchProviders ?? []) {
+    validateContribution(provider.id, `Admin search provider id in ${manifest.id}`);
+    if (!provider.label.trim()) fail(`Admin search provider ${provider.id} requires a label`);
+    if (provider.permission) {
+      validateContribution(
+        provider.permission,
+        `Admin search provider permission in ${manifest.id}`,
+      );
+    }
+  }
+
+  const webRouteIds = new Set<string>();
+  for (const route of manifest.web?.routes ?? []) {
+    validateContribution(route.id, `Web route id in ${manifest.id}`);
+    validateFrontendPath(route.path, `Web route path in ${manifest.id}`, true);
+    if (webRouteIds.has(route.id)) fail(`Duplicate Web route id ${route.id} in ${manifest.id}`);
+    webRouteIds.add(route.id);
+  }
+  for (const seo of manifest.web?.seo ?? []) {
+    validateContribution(seo.id, `Web SEO id in ${manifest.id}`);
+    if (seo.routeId && !webRouteIds.has(seo.routeId)) {
+      fail(`Web SEO ${seo.id} in ${manifest.id} references unknown route ${seo.routeId}`);
+    }
+  }
+  for (const sitemap of manifest.web?.sitemap ?? []) {
+    validateContribution(sitemap.id, `Web Sitemap id in ${manifest.id}`);
+  }
+  const landingBlockTypes = new Set<string>();
+  for (const block of manifest.web?.landingBlocks ?? []) {
+    validateContribution(block.type, `Landing Block type in ${manifest.id}`);
+    if (!Number.isSafeInteger(block.schemaVersion) || block.schemaVersion < 1) {
+      fail(`Invalid Landing Block schema version in ${manifest.id}: ${block.type}`);
+    }
+    if (landingBlockTypes.has(block.type)) {
+      fail(`Duplicate Landing Block type ${block.type} in ${manifest.id}`);
+    }
+    landingBlockTypes.add(block.type);
+  }
+  for (const editor of manifest.admin?.landingBlockEditors ?? []) {
+    validateContribution(editor.type, `Landing Block editor type in ${manifest.id}`);
+    if (!editor.label.trim()) fail(`Landing Block editor ${editor.type} requires a label`);
+    if (!landingBlockTypes.has(editor.type)) {
+      fail(`Landing Block editor ${editor.type} in ${manifest.id} has no matching Web declaration`);
+    }
+  }
 }
 
 function sortExtensions(
@@ -244,6 +432,32 @@ export function defineExtension<T extends ExtensionDefinition>(extension: T): T 
   return extension;
 }
 
+export function projectExtensionManifest(
+  manifest: ExtensionManifest,
+  surfaces: readonly ExtensionSurfaceName[],
+): ExtensionManifest {
+  const selected = new Set(surfaces);
+  return {
+    id: manifest.id,
+    version: manifest.version,
+    apiVersion: manifest.apiVersion,
+    frame: manifest.frame,
+    dependencies: manifest.dependencies,
+    optionalDependencies: manifest.optionalDependencies,
+    permissions: manifest.permissions,
+    settings: manifest.settings,
+    server: selected.has('server') ? manifest.server : undefined,
+    worker: selected.has('worker') ? manifest.worker : undefined,
+    migrations: selected.has('migrations') ? manifest.migrations : undefined,
+    admin: selected.has('admin') ? manifest.admin : undefined,
+    web: selected.has('web')
+      ? manifest.web
+      : selected.has('admin') && (manifest.admin?.landingBlockEditors?.length ?? 0) > 0
+        ? { landingBlocks: manifest.web?.landingBlocks }
+        : undefined,
+  };
+}
+
 export function defineSystem(options: DefineSystemOptions): DefinedSystem {
   validateIdentifier(options.id, 'system id');
   validateVersion(options.version, `version for system ${options.id}`);
@@ -260,6 +474,17 @@ export function defineSystem(options: DefineSystemOptions): DefinedSystem {
   const migrationSources = new Map<string, string>();
   const migrations = new Map<string, string>();
   const legacyAliases = new Map<string, string>();
+  const adminRouteIds = new Map<string, string>();
+  const adminRoutes = new Map<string, string>();
+  const adminNavigation = new Map<string, string>();
+  const adminWidgets = new Map<string, string>();
+  const adminSearchProviders = new Map<string, string>();
+  const landingBlockEditors = new Map<string, string>();
+  const webRouteIds = new Map<string, string>();
+  const webRoutes = new Map<string, string>();
+  const webSeo = new Map<string, string>();
+  const webSitemap = new Map<string, string>();
+  const landingBlocks = new Map<string, string>();
 
   for (const extension of options.extensions) {
     validateManifest(extension.manifest, frameVersion, apiVersion);
@@ -289,6 +514,35 @@ export function defineSystem(options: DefineSystemOptions): DefinedSystem {
           claim(legacyAliases, alias, canonicalId, 'Legacy Alias');
         }
       }
+    }
+    for (const route of extension.manifest.admin?.routes ?? []) {
+      claim(adminRouteIds, route.id, id, 'Admin route id');
+      claim(adminRoutes, routeClaimKey(route.path), id, 'Admin route');
+    }
+    for (const navigation of extension.manifest.admin?.navigation ?? []) {
+      claim(adminNavigation, navigation.id, id, 'Admin navigation');
+    }
+    for (const widget of extension.manifest.admin?.dashboardWidgets ?? []) {
+      claim(adminWidgets, widget.id, id, 'Admin Dashboard Widget');
+    }
+    for (const provider of extension.manifest.admin?.searchProviders ?? []) {
+      claim(adminSearchProviders, provider.id, id, 'Admin search provider');
+    }
+    for (const editor of extension.manifest.admin?.landingBlockEditors ?? []) {
+      claim(landingBlockEditors, editor.type, id, 'Landing Block editor');
+    }
+    for (const route of extension.manifest.web?.routes ?? []) {
+      claim(webRouteIds, route.id, id, 'Web route id');
+      claim(webRoutes, routeClaimKey(route.path), id, 'Web route');
+    }
+    for (const seo of extension.manifest.web?.seo ?? []) {
+      claim(webSeo, seo.id, id, 'Web SEO contribution');
+    }
+    for (const sitemap of extension.manifest.web?.sitemap ?? []) {
+      claim(webSitemap, sitemap.id, id, 'Web Sitemap contribution');
+    }
+    for (const block of extension.manifest.web?.landingBlocks ?? []) {
+      claim(landingBlocks, block.type, id, 'Landing Block type');
     }
   }
 

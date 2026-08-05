@@ -35,6 +35,8 @@ try {
   const frame = packPackage(repositoryRoot);
   const database = packPackage(path.join(repositoryRoot, 'packages/database'));
   const extensionSdk = packPackage(path.join(repositoryRoot, 'packages/extension-sdk'));
+  const admin = packPackage(path.join(repositoryRoot, 'packages/admin'));
+  const web = packPackage(path.join(repositoryRoot, 'packages/web'));
   const designTokens = packPackage(path.join(repositoryRoot, 'packages/design-tokens'));
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
   const exampleExtension = packPackage(path.join(repositoryRoot, 'fixtures/example-extension'));
@@ -46,6 +48,7 @@ try {
     'dist/runtime/worker.js',
     'dist/runtime/migrations.js',
     'dist/extensions/core.js',
+    'dist/extensions/manifest.js',
     'admin-ui/dist/index.html',
     'public-web/dist/index.html',
   ]);
@@ -63,6 +66,18 @@ try {
     'dist/server.js',
     'dist/worker.js',
     'dist/migrations.js',
+  ]);
+  assertPackageFiles('@lingcoo/frame-admin', admin.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/manifest.js',
+    'dist/manifest.d.ts',
+  ]);
+  assertPackageFiles('@lingcoo/frame-web', web.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/manifest.js',
+    'dist/manifest.d.ts',
   ]);
   assertPackageFiles('@lingcoo/frame-design-tokens', designTokens.files, [
     'dist/base.css',
@@ -82,6 +97,8 @@ try {
     'dist/server.js',
     'dist/worker.js',
     'dist/migrations.js',
+    'dist/admin.js',
+    'dist/web.js',
     'migrations/0001_initial.sql',
   ]);
 
@@ -93,6 +110,8 @@ try {
   fixtureManifest.dependencies['@lingcoo/frame-extension-sdk'] = pathToFileURL(
     extensionSdk.archive,
   ).href;
+  fixtureManifest.dependencies['@lingcoo/frame-admin'] = pathToFileURL(admin.archive).href;
+  fixtureManifest.dependencies['@lingcoo/frame-web'] = pathToFileURL(web.archive).href;
   fixtureManifest.dependencies['@lingcoo/frame-design-tokens'] = pathToFileURL(
     designTokens.archive,
   ).href;

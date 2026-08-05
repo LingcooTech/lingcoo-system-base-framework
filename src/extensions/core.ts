@@ -5,7 +5,6 @@ import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
 import { frameMigrationSource, type Database } from '@lingcoo/frame-database';
 
 import type { AppEnv } from '../lib/env.js';
-import { basePermissions } from '../lib/rbac.js';
 import { assetDeleteJobPayloadSchema } from '../modules/assets/schemas.js';
 import { AssetService } from '../modules/assets/service.js';
 import { cmsScheduledJobSchema } from '../modules/cms/schemas.js';
@@ -18,15 +17,7 @@ import { NotificationDeliveryService } from '../modules/notifications/delivery.j
 import { registerNotificationPolicies } from '../modules/notifications/policies.js';
 import { NotificationService } from '../modules/notifications/service.js';
 import { baseSettingDefinitions } from '../modules/settings/registry.js';
-
-const frameWorkerJobs = [
-  'notification.email.deliver',
-  'storage.asset.delete',
-  'storage.asset.expire-upload',
-  'cms.content.publish-scheduled',
-] as const;
-
-const frameWorkerSubscriptions = ['auth.password_changed'] as const;
+import { frameCoreManifest } from './manifest.js';
 
 const frameCoreServer = defineServerExtension({
   settings: baseSettingDefinitions,
@@ -74,25 +65,7 @@ const frameCoreWorker = defineWorkerExtension<AppEnv, Database>({
 const frameCoreMigrations = defineMigrationExtension(frameMigrationSource);
 
 export const frameCoreExtension = defineExtension({
-  manifest: {
-    id: 'frame',
-    version: FRAME_VERSION,
-    apiVersion: '1',
-    frame: `^${FRAME_VERSION}`,
-    permissions: basePermissions,
-    settings: baseSettingDefinitions.map((definition) => definition.key),
-    worker: {
-      jobs: frameWorkerJobs,
-      subscriptions: frameWorkerSubscriptions,
-    },
-    migrations: {
-      sourceId: frameMigrationSource.id,
-      migrations: frameMigrationSource.migrations.map((migration) => ({
-        id: migration.id,
-        legacyAliases: migration.legacyAliases,
-      })),
-    },
-  },
+  manifest: frameCoreManifest,
   server: frameCoreServer,
   worker: frameCoreWorker,
   migrations: frameCoreMigrations,

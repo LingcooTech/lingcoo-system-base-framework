@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Reference extension used to verify every Frame 0.3 runtime surface.",
+  "description": "Reference extension used to verify every Frame 0.4 runtime surface.",
   "files": [
     "dist",
     "migrations"
@@ -28,6 +28,14 @@
     "./migrations": {
       "types": "./dist/migrations.d.ts",
       "import": "./dist/migrations.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js"
+    },
+    "./web": {
+      "types": "./dist/web.d.ts",
+      "import": "./dist/web.js"
     }
   },
   "scripts": {
@@ -36,16 +44,23 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-extension-sdk": "^0.3.0",
+    "@lingcoo/frame-admin": "^0.4.0",
+    "@lingcoo/frame-extension-sdk": "^0.4.0",
+    "@lingcoo/frame-web": "^0.4.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.5.2",
+    "@types/react": "^19.2.0",
     "eslint": "^10.8.0",
     "globals": "^16.0.0",
+    "react": "^19.2.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.65.0"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0 <20.0.0"
   },
   "engines": {
     "node": ">=22.0.0"

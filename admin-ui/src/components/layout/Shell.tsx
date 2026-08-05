@@ -1,9 +1,10 @@
 import { TooltipProvider } from '@lingcoo/frame-ui/tooltip';
+import { useAdminRegistry } from '@lingcoo/frame-admin';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { fetchPresentation, fetchUnreadNotificationCount } from '../../api/client';
 import { useAuth } from '../../lib/auth';
-import { getSectionByPath, sectionList } from '../../lib/foundation';
+import { getSectionByPath, sectionFromNavigation } from '../../lib/foundation';
 import { useRouter } from '../../lib/router';
 import { GlobalSearch } from './GlobalSearch';
 import { Sidebar } from './Sidebar';
@@ -28,10 +29,11 @@ export function Shell({ children }: { children: ReactNode }) {
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const { account, hasPermission, logout } = useAuth();
   const { pathname } = useRouter();
-  const activeSection = getSectionByPath(pathname);
-  const visibleSections = sectionList.filter(
-    (section) => section.id !== 'account' && hasPermission(section.permission),
-  );
+  const registry = useAdminRegistry();
+  const activeSection = getSectionByPath(pathname, registry);
+  const visibleSections = registry.navigation
+    .map(sectionFromNavigation)
+    .filter((section) => hasPermission(section.permission));
   const canSearch = hasPermission('search.use');
   const canReadNotifications = hasPermission('notifications.read');
   const canReadSettings = hasPermission('system.settings.read');

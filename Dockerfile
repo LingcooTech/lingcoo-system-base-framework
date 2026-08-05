@@ -10,7 +10,9 @@ COPY fixtures/example-extension/package.json ./fixtures/example-extension/
 COPY packages/database/package.json ./packages/database/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/extension-sdk/package.json ./packages/extension-sdk/
+COPY packages/admin/package.json ./packages/admin/
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/web/package.json ./packages/web/
 RUN npm ci
 
 FROM dependencies AS build
@@ -36,6 +38,10 @@ COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/dist ./packages
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/drizzle ./packages/database/drizzle
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/extension-sdk/package.json ./packages/extension-sdk/package.json
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/extension-sdk/dist ./packages/extension-sdk/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin/package.json ./packages/admin/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin/dist ./packages/admin/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/web/package.json ./packages/web/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/web/dist ./packages/web/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/admin-ui/dist ./admin-ui/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/public-web/dist ./public-web/dist
 

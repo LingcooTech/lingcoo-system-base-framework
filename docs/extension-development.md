@@ -2,7 +2,7 @@
 
 ## 当前能力
 
-Frame 0.3 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体进程和 PostgreSQL 数据库
+Frame 0.4 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
 中，不提供安全沙箱、生产 ZIP 上传、无重启卸载或运行时插件市场。
 
 一个领域扩展可以贡献：
@@ -11,8 +11,8 @@ Frame 0.3 只支持受信任、构建期安装的扩展。扩展与宿主运行�
 - Fastify Server 路由。
 - Worker Job Handler 与 Outbox Subscriber。
 - 带来源命名空间、依赖和 Legacy Alias 的前向 SQL 迁移。
-
-Admin 路由、导航、Dashboard Widget、Public Web 路由、SEO、Sitemap 和 Landing Block 属于阶段 3。
+- Admin 路由、导航、Dashboard Widget、全局搜索和 Landing Block Editor。
+- Public Web 路由、SEO、Sitemap 和受控 Landing Block。
 
 ## 推荐包结构
 
@@ -21,12 +21,14 @@ Admin 路由、导航、Dashboard Widget、Public Web 路由、SEO、Sitemap 和
 ├── contracts       # 浏览器安全 Manifest
 ├── server          # Fastify 与设置
 ├── worker          # Job 和领域事件订阅
+├── admin           # React 后台页面、Widget、搜索与编辑器
+├── web             # React 公共页面、SEO、Sitemap 与 Landing Block
 ├── migrations      # Node.js SQL 资源入口
 └── index           # 服务端组合入口
 ```
 
-浏览器代码只能导入 `contracts`，不能从 `server`、`worker` 或 `migrations` 间接带入数据库、密钥和
-Node.js 依赖。仓库内可运行示例位于 `fixtures/example-extension`，它不是第一方业务扩展。
+浏览器代码只能导入 `contracts`、`admin` 或 `web`，不能从 `server`、`worker` 或 `migrations` 间接
+带入数据库、密钥和 Node.js 依赖。仓库内可运行示例位于 `fixtures/example-extension`。
 
 ## Manifest
 
@@ -37,8 +39,8 @@ export const manifest = {
   id: 'example',
   version: '0.1.0',
   apiVersion: '1',
-  frame: '^0.3.0',
-  dependencies: [{ id: 'frame', version: '^0.3.0' }],
+  frame: '^0.4.0',
+  dependencies: [{ id: 'frame', version: '^0.4.0' }],
   permissions: ['example.read'],
   settings: ['example.greeting'],
   server: { routes: [{ method: 'GET', path: '/api/example' }] },
@@ -49,6 +51,24 @@ export const manifest = {
   migrations: {
     sourceId: 'example',
     migrations: [{ id: '0001_initial.sql' }],
+  },
+  admin: {
+    routes: [
+      { id: 'example.overview', path: '/example/*', title: '示例', permission: 'example.read' },
+    ],
+    navigation: [
+      {
+        id: 'example.overview',
+        routeId: 'example.overview',
+        href: '/example',
+        label: '示例',
+        group: '扩展',
+      },
+    ],
+  },
+  web: {
+    routes: [{ id: 'example.public', path: '/example' }],
+    landingBlocks: [{ type: 'example.hero', schemaVersion: 2 }],
   },
 } as const satisfies ExtensionManifest;
 ```
@@ -93,7 +113,7 @@ import {
 const source = defineMigrationSource({
   id: 'example',
   version: '0.1.0',
-  dependencies: [{ id: 'frame', version: '^0.3.0' }],
+  dependencies: [{ id: 'frame', version: '^0.4.0' }],
   migrations: [
     {
       id: '0001_initial.sql',
@@ -134,6 +154,20 @@ const worker = createFrameWorker(env, { system });
 
 API、Worker 和迁移必须使用同一个 Defined System。应用应提交 lockfile，升级 Frame 后依次执行空库
 迁移、受支持旧版本升级、完整测试、tarball Consumer 和生产镜像验证。
+
+## Admin 与 Web
+
+`defineAdminExtension()` 注册 Route Component、Navigation Icon、Dashboard Widget、Search Provider 和
+Landing Block Editor；`createAdminRegistry()` 按 System 依赖顺序逐项核对 Manifest。`defineWebExtension()`
+注册 Public Route、SEO Resolver、Sitemap Collector 与 Landing Block；`createWebRegistry()` 提供匹配、
+解析和收集 API。参考实现见 `fixtures/example-extension/src/admin.tsx` 与 `web.tsx`。
+
+浏览器组合根使用 `projectExtensionManifest(manifest, ['admin'])` 或 `['web']`，只保留当前运行面声明，
+再附加对应运行面实现。这样 Vite 构建不会引入 Fastify、PostgreSQL、迁移 SQL 或密钥处理代码。
+
+Landing Block 必须通过 `defineLandingBlock()` 提供稳定 Type、Zod Schema、Renderer、资产引用声明和从
+旧 Schema 版本到当前版本的显式迁移；Admin 入口注册相同 Type 的 Editor。数据库只保存有序 Block
+实例和 JSON 配置，不保存函数、组件或脚本。
 
 ## 跨扩展规则
 

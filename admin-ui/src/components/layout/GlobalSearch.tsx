@@ -1,9 +1,10 @@
 import { Dialog, DialogContent, DialogHeader } from '@lingcoo/frame-ui/dialog';
 import { Input } from '@lingcoo/frame-ui/input';
+import { useAdminRegistry, type AdminSearchGroup } from '@lingcoo/frame-admin';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { searchResources, type SearchGroup } from '../../api/client';
+import { useAuth } from '../../lib/auth';
 import { useRouter } from '../../lib/router';
 
 export function GlobalSearch({
@@ -14,8 +15,10 @@ export function GlobalSearch({
   onOpenChange(open: boolean): void;
 }) {
   const { navigate } = useRouter();
+  const { hasPermission } = useAuth();
+  const registry = useAdminRegistry();
   const [query, setQuery] = useState('');
-  const [groups, setGroups] = useState<SearchGroup[]>([]);
+  const [groups, setGroups] = useState<readonly AdminSearchGroup[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
 
   useEffect(() => {
@@ -23,10 +26,15 @@ export function GlobalSearch({
     let active = true;
     const timer = window.setTimeout(() => {
       setStatus('loading');
-      searchResources(query.trim())
+      const providers = registry.searchProviders.filter(
+        (provider) => !provider.permission || hasPermission(provider.permission),
+      );
+      Promise.all(
+        providers.map((provider) => provider.search({ context: {}, query: query.trim() })),
+      )
         .then((result) => {
           if (active) {
-            setGroups(result);
+            setGroups(result.flat());
             setStatus('ready');
           }
         })
@@ -38,7 +46,7 @@ export function GlobalSearch({
       active = false;
       window.clearTimeout(timer);
     };
-  }, [query]);
+  }, [hasPermission, query, registry]);
 
   function openResult(href: string) {
     navigate(href);
@@ -80,14 +88,10 @@ export function GlobalSearch({
         />
         <div className="global-search-results">
           {groups.map((group) => (
-            <section key={group.source}>
+            <section key={group.id}>
               <h3>{group.label}</h3>
               {group.items.map((item) => (
-                <button
-                  key={`${item.source}-${item.id}`}
-                  onClick={() => openResult(item.href)}
-                  type="button"
-                >
+                <button key={item.id} onClick={() => openResult(item.href)} type="button">
                   <span>
                     <strong>{item.title}</strong>
                     <small>{item.subtitle}</small>
