@@ -301,12 +301,9 @@ export async function runMigrations({
               [aliases],
             )
           : { rowCount: 0, rows: [] as { name: string; checksum: string }[] };
-        if ((legacy.rowCount ?? 0) > 1) {
-          throw new Error(`Migration ${migration.canonicalId} has multiple applied Legacy Aliases`);
-        }
-        if (legacy.rowCount === 1) {
-          const alias = legacy.rows[0];
-          if (alias.checksum !== migration.checksum) {
+        if ((legacy.rowCount ?? 0) > 0) {
+          for (const alias of legacy.rows) {
+            if (alias.checksum === migration.checksum) continue;
             throw new Error(
               `Legacy Alias ${alias.name} checksum does not match ${migration.canonicalId}`,
             );
@@ -323,7 +320,12 @@ export async function runMigrations({
             throw error;
           }
           result.adopted.push(migration.canonicalId);
-          logger.log(`Adopted: ${migration.canonicalId} from ${alias.name}`);
+          logger.log(
+            `Adopted: ${migration.canonicalId} from ${legacy.rows
+              .map((alias) => alias.name)
+              .sort()
+              .join(', ')}`,
+          );
           continue;
         }
 

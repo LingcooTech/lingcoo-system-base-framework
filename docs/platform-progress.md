@@ -312,7 +312,8 @@
 - 迁移归属：`0009_cms_lite.sql` 与 `0011_cms_workflow.sql` 从 Database Core 原字节移动到 CMS 包；
   Core 从 12 条迁移缩减为 10 条，默认 System 仍为 12 条。
 - 历史升级：Legacy Alias 现在安全支持 `source/id.sql` 形式。CMS 同时接管 Stage 1 文件名和 Stage 2/3
-  的 `frame/...` canonical 记录，checksum 匹配时仅新增 `frame-cms/...` adoption 记录。
+  的 `frame/...` canonical 记录；一条或多条历史记录的 checksum 全部匹配时仅新增
+  `frame-cms/...` adoption 记录，任一不匹配仍立即失败。
 - 部署迁移：`npm run db:migrate` 和生产部署改为调用 `dist/migrate.js` 的 System 迁移计划，不再错误地
   只运行 Database Core CLI。
 - 分发与镜像：CMS tarball、Docker dependencies/build/runtime 三层、根包依赖与 Consumer Fixture 已

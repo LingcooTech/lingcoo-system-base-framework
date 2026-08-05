@@ -103,19 +103,21 @@ test('Frame migrations expose canonical IDs and immutable historical aliases', (
 const databaseUrl = process.env.DATABASE_URL;
 
 test(
-  'Migration V2 adopts a matching legacy record without replaying SQL',
+  'Migration V2 adopts matching legacy records without replaying SQL',
   { skip: !databaseUrl },
   async () => {
     const suffix = randomUUID().replaceAll('-', '');
     const sourceId = `adoption-${suffix}`;
-    const alias = `legacy-${suffix}/0001_previous.sql`;
+    const aliases = [`legacy-${suffix}/0001_previous.sql`, `0001_${suffix}.sql`];
     const sql = `SELECT '${suffix}'`;
     const checksum = calculateMigrationChecksum(sql);
     const pool = new pg.Pool({ connectionString: databaseUrl });
-    await pool.query('INSERT INTO framework_migrations (name, checksum) VALUES ($1, $2)', [
-      alias,
-      checksum,
-    ]);
+    for (const alias of aliases) {
+      await pool.query('INSERT INTO framework_migrations (name, checksum) VALUES ($1, $2)', [
+        alias,
+        checksum,
+      ]);
+    }
     await pool.end();
 
     const result = await runMigrations({
@@ -124,7 +126,7 @@ test(
         {
           id: sourceId,
           version: '1.0.0',
-          migrations: [{ id: '0001_adopt.sql', sql, legacyAliases: [alias] }],
+          migrations: [{ id: '0001_adopt.sql', sql, legacyAliases: aliases }],
         },
       ],
       logger: { log() {} },
@@ -148,12 +150,19 @@ test(
   async () => {
     const suffix = randomUUID().replaceAll('-', '');
     const sourceId = `mismatch-${suffix}`;
-    const alias = `legacy_${suffix}.sql`;
+    const matchingAlias = `matching_${suffix}.sql`;
+    const mismatchedAlias = `mismatched_${suffix}.sql`;
+    const sql = 'SELECT 1';
     const pool = new pg.Pool({ connectionString: databaseUrl });
-    await pool.query('INSERT INTO framework_migrations (name, checksum) VALUES ($1, $2)', [
-      alias,
-      calculateMigrationChecksum('different SQL'),
-    ]);
+    await pool.query(
+      'INSERT INTO framework_migrations (name, checksum) VALUES ($1, $2), ($3, $4)',
+      [
+        matchingAlias,
+        calculateMigrationChecksum(sql),
+        mismatchedAlias,
+        calculateMigrationChecksum('different SQL'),
+      ],
+    );
     await pool.end();
 
     await assert.rejects(
@@ -164,7 +173,13 @@ test(
             {
               id: sourceId,
               version: '1.0.0',
-              migrations: [{ id: '0001_mismatch.sql', sql: 'SELECT 1', legacyAliases: [alias] }],
+              migrations: [
+                {
+                  id: '0001_mismatch.sql',
+                  sql,
+                  legacyAliases: [matchingAlias, mismatchedAlias],
+                },
+              ],
             },
           ],
           logger: { log() {} },

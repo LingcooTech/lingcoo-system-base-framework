@@ -72,8 +72,8 @@ await runSystemMigrations({
 
 迁移全局名称为 `source-id/migration-id.sql`。来源按依赖拓扑排序，来源内部严格采用声明顺序，不依赖
 文件系统排序。执行器验证 SQL SHA-256，使用 PostgreSQL advisory lock 串行化，并支持 Legacy Alias：
-旧记录 checksum 匹配时只写入 canonical adoption 记录，不执行 SQL；不匹配、重复 alias 或已应用
-canonical checksum 变化都会立即失败。未知历史记录保持不变。
+一条或多条旧记录的 checksum 全部匹配时只写入 canonical adoption 记录，不执行 SQL；任一旧记录
+不匹配、不同迁移重复声明 alias 或已应用 canonical checksum 变化都会立即失败。未知历史记录保持不变。
 
 低层 `lingcoo-frame-migrate` CLI 只迁移 Database Core。仓库 `npm run db:migrate` 与生产部署调用
 `runSystemMigrations()`，会按实际 Defined System 纳入一方和领域扩展迁移。
