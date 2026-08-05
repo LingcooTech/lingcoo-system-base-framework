@@ -36,6 +36,7 @@ try {
   const database = packPackage(path.join(repositoryRoot, 'packages/database'));
   const extensionSdk = packPackage(path.join(repositoryRoot, 'packages/extension-sdk'));
   const admin = packPackage(path.join(repositoryRoot, 'packages/admin'));
+  const cms = packPackage(path.join(repositoryRoot, 'packages/cms'));
   const web = packPackage(path.join(repositoryRoot, 'packages/web'));
   const designTokens = packPackage(path.join(repositoryRoot, 'packages/design-tokens'));
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
@@ -58,7 +59,7 @@ try {
     'dist/migrations.js',
     'dist/schema.js',
     'drizzle/0000_base_system.sql',
-    'drizzle/0011_cms_workflow.sql',
+    'drizzle/0010_account_security.sql',
   ]);
   assertPackageFiles('@lingcoo/frame-extension-sdk', extensionSdk.files, [
     'dist/index.js',
@@ -72,6 +73,17 @@ try {
     'dist/index.d.ts',
     'dist/manifest.js',
     'dist/manifest.d.ts',
+  ]);
+  assertPackageFiles('@lingcoo/frame-cms', cms.files, [
+    'dist/index.js',
+    'dist/contracts.js',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
+    'dist/admin.js',
+    'dist/web.js',
+    'migrations/0009_cms_lite.sql',
+    'migrations/0011_cms_workflow.sql',
   ]);
   assertPackageFiles('@lingcoo/frame-web', web.files, [
     'dist/index.js',
@@ -111,6 +123,7 @@ try {
     extensionSdk.archive,
   ).href;
   fixtureManifest.dependencies['@lingcoo/frame-admin'] = pathToFileURL(admin.archive).href;
+  fixtureManifest.dependencies['@lingcoo/frame-cms'] = pathToFileURL(cms.archive).href;
   fixtureManifest.dependencies['@lingcoo/frame-web'] = pathToFileURL(web.archive).href;
   fixtureManifest.dependencies['@lingcoo/frame-design-tokens'] = pathToFileURL(
     designTokens.archive,

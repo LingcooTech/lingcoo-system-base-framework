@@ -13,6 +13,9 @@ import { Alert } from '@lingcoo/frame-ui/alert';
 import { FormField } from '@lingcoo/frame-ui/form-field';
 import { Input } from '@lingcoo/frame-ui/input';
 import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+import { createCmsWebExtension } from '@lingcoo/frame-cms/web';
+import { cmsManifest } from '@lingcoo/frame-cms/contracts';
+import { projectExtensionManifest } from '@lingcoo/frame-extension-sdk';
 import {
   createWebRegistry,
   defineWebExtension,
@@ -368,10 +371,6 @@ function PageRoute({ context, params }: WebRouteContext<PublicWebContext>) {
 const frameWebSurface = defineWebExtension<PublicWebContext>({
   routes: [
     { id: 'frame.auth', component: AuthRoute },
-    { id: 'frame.preview-content', component: PreviewContentRoute },
-    { id: 'frame.articles', component: ArticleIndexRoute },
-    { id: 'frame.article', component: ArticleRoute },
-    { id: 'frame.page', component: PageRoute },
     { id: 'frame.home', component: HomeRoute },
   ],
   seo: [
@@ -381,25 +380,12 @@ const frameWebSurface = defineWebExtension<PublicWebContext>({
         return { canonicalPath: '/' };
       },
     },
-    {
-      id: 'frame.articles',
-      resolve({ searchParams }) {
-        const page = Number(searchParams.get('page') || '1');
-        return {
-          title: '文章',
-          canonicalPath: page > 1 ? `/articles?page=${page}` : '/articles',
-        };
-      },
-    },
   ],
   sitemap: [
     {
-      id: 'frame.public-content',
+      id: 'frame.home',
       collect() {
-        return [
-          { path: '/', changeFrequency: 'weekly', priority: 1 },
-          { path: '/articles', changeFrequency: 'daily', priority: 0.8 },
-        ];
+        return [{ path: '/', changeFrequency: 'weekly', priority: 1 }];
       },
     },
   ],
@@ -416,10 +402,20 @@ const frameWebDefinition = defineExtension({
   web: frameWebSurface,
 });
 
+const cmsWebDefinition = defineExtension({
+  manifest: projectExtensionManifest(cmsManifest, ['web']),
+  web: createCmsWebExtension<PublicWebContext>({
+    preview: PreviewContentRoute,
+    articleIndex: ArticleIndexRoute,
+    article: ArticleRoute,
+    page: PageRoute,
+  }),
+});
+
 const publicWebSystem = defineSystem({
   id: 'frame-reference-web',
   version: FRAME_VERSION,
-  extensions: [frameWebDefinition],
+  extensions: [frameWebDefinition, cmsWebDefinition],
 });
 
 const webRegistry = createWebRegistry<PublicWebContext>(publicWebSystem);

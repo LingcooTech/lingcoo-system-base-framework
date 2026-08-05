@@ -3,7 +3,6 @@ import { auditModule } from './audit/index.js';
 import { dataExchangeModule } from './data-exchange/index.js';
 import { assetsModule } from './assets/index.js';
 import { authModule } from './auth/index.js';
-import { cmsModule } from './cms/index.js';
 import { integrationsModule } from './integrations/index.js';
 import { jobsModule } from './jobs/index.js';
 import { metadataModule } from './metadata/index.js';
@@ -21,7 +20,6 @@ export const appModules: AppModule[] = [
   settingsModule,
   presentationModule,
   authModule,
-  cmsModule,
   publicSiteModule,
   accessModule,
   auditModule,

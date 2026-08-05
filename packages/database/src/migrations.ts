@@ -18,13 +18,11 @@ const frameMigrationFiles = [
   '0006_metadata_exchange.sql',
   '0007_observability.sql',
   '0008_presentation.sql',
-  '0009_cms_lite.sql',
   '0010_account_security.sql',
-  '0011_cms_workflow.sql',
 ] as const;
 
 export const frameMigrationsDirectory = path.join(packageDirectory, 'drizzle');
-export const FRAME_DATABASE_VERSION = '0.4.0';
+export const FRAME_DATABASE_VERSION = '0.5.0';
 
 export interface MigrationLogger {
   log(message: string): void;
@@ -164,7 +162,14 @@ export function compileMigrationPlan(sources: readonly MigrationSource[]): Compi
         migrationError(`declared checksum does not match ${canonicalId}`);
       }
       for (const alias of migration.legacyAliases ?? []) {
-        if (!alias || alias.includes('/') || alias.includes('\\')) {
+        const parts = alias.split('/');
+        if (
+          !alias ||
+          alias.includes('\\') ||
+          parts.length > 2 ||
+          (parts.length === 2 &&
+            (!sourceIdPattern.test(parts[0]!) || !migrationIdPattern.test(parts[1]!)))
+        ) {
           migrationError(`invalid Legacy Alias ${alias} for ${canonicalId}`);
         }
         const aliasOwner = aliasClaims.get(alias);

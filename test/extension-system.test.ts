@@ -32,7 +32,7 @@ function extension(id: string, contributions: Partial<ExtensionManifest> = {}) {
       id,
       version: '1.0.0',
       apiVersion: '1',
-      frame: '^0.4.0',
+      frame: '^0.5.0',
       ...contributions,
     },
   });
@@ -201,8 +201,8 @@ test('Server composition rejects extension routes that collide with Frame core',
       id: 'collision',
       version: '1.0.0',
       apiVersion: '1',
-      frame: '^0.4.0',
-      dependencies: [{ id: 'frame', version: '^0.4.0' }],
+      frame: '^0.5.0',
+      dependencies: [{ id: 'frame', version: '^0.5.0' }],
       server: { routes: [{ method: 'GET', path: '/health' }] },
     },
     server: defineServerExtension({
@@ -226,11 +226,11 @@ test('runtime rejects a Defined System compiled for a different Frame version', 
   const system = defineSystem({
     id: 'version-mismatch-system',
     version: '1.0.0',
-    frameVersion: '0.4.1',
+    frameVersion: '0.5.1',
     extensions: [frameCoreExtension],
   });
   await assert.rejects(
     () => buildApp(testEnv(), { system }),
-    /targets Frame 0\.4\.1, but this runtime is 0\.4\.0/,
+    /targets Frame 0\.5\.1, but this runtime is 0\.5\.0/,
   );
 });

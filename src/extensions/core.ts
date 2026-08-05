@@ -7,8 +7,6 @@ import { frameMigrationSource, type Database } from '@lingcoo/frame-database';
 import type { AppEnv } from '../lib/env.js';
 import { assetDeleteJobPayloadSchema } from '../modules/assets/schemas.js';
 import { AssetService } from '../modules/assets/service.js';
-import { cmsScheduledJobSchema } from '../modules/cms/schemas.js';
-import { CmsService } from '../modules/cms/service.js';
 import { createIntegrationProviderRegistry } from '../modules/integrations/registry.js';
 import { QiniuService } from '../modules/integrations/providers/qiniu-service.js';
 import { IntegrationService } from '../modules/integrations/service.js';
@@ -18,6 +16,7 @@ import { registerNotificationPolicies } from '../modules/notifications/policies.
 import { NotificationService } from '../modules/notifications/service.js';
 import { baseSettingDefinitions } from '../modules/settings/registry.js';
 import { frameCoreManifest } from './manifest.js';
+import { frameCmsExtension } from './cms.js';
 
 const frameCoreServer = defineServerExtension({
   settings: baseSettingDefinitions,
@@ -40,7 +39,6 @@ const frameCoreWorker = defineWorkerExtension<AppEnv, Database>({
     );
     const notifications = new NotificationService(context.database);
     const assets = new AssetService(context.database, new QiniuService(integrations));
-    const cms = new CmsService(context.database);
 
     context.registerJob('notification.email.deliver', ({ payload }) =>
       delivery.deliverEmail(payload),
@@ -51,10 +49,6 @@ const frameCoreWorker = defineWorkerExtension<AppEnv, Database>({
     context.registerJob('storage.asset.expire-upload', ({ payload }) =>
       assets.expireUpload(assetDeleteJobPayloadSchema.parse(payload).assetId),
     );
-    context.registerJob('cms.content.publish-scheduled', ({ payload }) => {
-      const input = cmsScheduledJobSchema.parse(payload);
-      return cms.publishScheduled(input.contentId, input.publishAt, input.actorId);
-    });
     registerNotificationPolicies(
       { subscribe: (topic, subscriber) => context.subscribe(topic, subscriber) },
       notifications,
@@ -74,5 +68,7 @@ export const frameCoreExtension = defineExtension({
 export const defaultFrameSystem = defineSystem({
   id: 'frame-reference-system',
   version: FRAME_VERSION,
-  extensions: [frameCoreExtension],
+  extensions: [frameCoreExtension, frameCmsExtension],
 });
+
+export { frameCmsExtension } from './cms.js';

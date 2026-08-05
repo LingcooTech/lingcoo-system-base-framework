@@ -58,7 +58,7 @@ if ! docker compose -f "${DEPLOY_COMPOSE_FILE}" pull api; then
 fi
 docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d postgres
 docker compose -f "${DEPLOY_COMPOSE_FILE}" run --rm \
-  api node packages/database/dist/cli.js
+  api node dist/migrate.js
 docker compose -f "${DEPLOY_COMPOSE_FILE}" up -d --remove-orphans api worker caddy
 cleanup_docker_space
 

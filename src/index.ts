@@ -1,5 +1,5 @@
 export { buildApp, type BuildAppOptions } from './app.js';
-export { defaultFrameSystem, frameCoreExtension } from './extensions/core.js';
+export { defaultFrameSystem, frameCmsExtension, frameCoreExtension } from './extensions/core.js';
 export { loadEnv, type AppEnv } from './lib/env.js';
 export { runSystemMigrations, type RunSystemMigrationsOptions } from './runtime/migrations.js';
 export {

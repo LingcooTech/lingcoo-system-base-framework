@@ -16,7 +16,6 @@ const frameWorkerJobs = [
   'notification.email.deliver',
   'storage.asset.delete',
   'storage.asset.expire-upload',
-  'cms.content.publish-scheduled',
 ] as const;
 
 const frameMigrations = [
@@ -29,9 +28,7 @@ const frameMigrations = [
   '0006_metadata_exchange.sql',
   '0007_observability.sql',
   '0008_presentation.sql',
-  '0009_cms_lite.sql',
   '0010_account_security.sql',
-  '0011_cms_workflow.sql',
 ] as const;
 
 export const frameCoreManifest = {

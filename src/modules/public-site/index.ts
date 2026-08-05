@@ -1,5 +1,4 @@
 import type { AppModule } from '../types.js';
-import { CmsService } from '../cms/service.js';
 import { PresentationService } from '../presentation/service.js';
 import { buildRobots, buildSitemap } from './discovery.js';
 
@@ -10,7 +9,6 @@ function requestBaseUrl(request: { protocol: string; hostname: string }) {
 export const publicSiteModule: AppModule = {
   name: 'public-site',
   register(app) {
-    const cms = new CmsService(app.db);
     const presentation = new PresentationService(app.db);
 
     app.get('/robots.txt', async (request, reply) => {
@@ -23,7 +21,7 @@ export const publicSiteModule: AppModule = {
     app.get('/sitemap.xml', async (request, reply) => {
       const [profile, routes] = await Promise.all([
         presentation.getPublic(),
-        cms.listPublicRoutes(),
+        app.publicSiteRegistry.collectSitemapRoutes(),
       ]);
       const baseUrl =
         typeof profile.publicUrl === 'string' ? profile.publicUrl : requestBaseUrl(request);

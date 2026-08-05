@@ -11,7 +11,7 @@
 | 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成 |
 | 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成   |
 | 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成    |
-| 4. 第一方扩展     | Not started | -                                                  |
+| 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成    |
 | 5. Consumer 试点  | Not started | -                                                  |
 | 6. 文档与参考应用 | Not started | -                                                  |
 | 7. 开源 Beta      | Not started | -                                                  |
@@ -279,3 +279,81 @@
 - 为动态 Sitemap、资产选择和 Landing Block 持久化建立服务端 Port，但保持数据库只存 JSON 配置、
   Asset ID 和版本，不引入运行时上传插件或任意代码执行。
 - 继续验证空库、Stage 1/2 历史库升级、扩展启用/停用、真实 tarball Consumer 和生产镜像。
+
+## 阶段 4：第一方扩展
+
+### 范围
+
+- 审计 CMS、资产、通知和品牌展示对 Core 能力的真实依赖，避免一次性拆分全部模块。
+- 发布 `@lingcoo/frame-cms@0.5.0`，完成 Server、Worker、Admin、Web 与 Migration 五个运行面。
+- 通过最小 Service Port 倒置 CMS 对审计、资产、分类、任务/Outbox 和公共站点发现的依赖。
+- 让 CMS 能从 Defined System 显式启用或停用，不修改 Core 路由、菜单、Job 分支或迁移清单。
+- 保持阶段 1 至 3 数据库账本和历史 SQL 字节兼容。
+
+### 完成记录
+
+- Completed: 2026-08-05
+- Starting commit: `69c7d72`
+
+已交付：
+
+- 依赖审计：新增 `first-party-extensions.md`，记录 CMS、资产、通知和品牌展示的上下游依赖及后续
+  拆分前置条件。CMS 不直接依赖 Settings/Integrations，因此被选为首个贯穿一方扩展。
+- CMS 包：新增独立 `@lingcoo/frame-cms` workspace 和浏览器安全 `./contracts`，以及 `./server`、
+  `./worker`、`./migrations`、`./admin`、`./web` 公开入口。版本统一推进到 `0.5.0`。
+- Service Port：CMS 服务只通过 `CmsAuditPort`、`CmsAssetPort`、`CmsTaxonomyPort` 和 `CmsJobPort`
+  使用其他能力；Frame 宿主提供现有 PostgreSQL/Audit/Assets/Metadata/Jobs 实现。
+- 公共发现：新增 `PublicSiteRegistry`。CMS 以命名贡献注册动态 Sitemap URL 与站内重定向解析器；
+  `src/app.ts` 和 Public Site Core 不再导入或构造 `CmsService`。
+- 组合启停：Core Manifest、模块数组、Worker 和 Admin/Web Manifest 均移除 CMS 声明；默认参考 System
+  显式加入 `frameCmsExtension`。Core-only System 不出现 CMS API、Job、搜索源、前端路由或迁移。
+- 前端运行面：CMS 包拥有 Admin Route/Navigation 与 Web Route/SEO/Sitemap 声明和 Surface 工厂；参考
+  Admin/Web 通过 Registry 安装完整现有页面，不再把 CMS 路由归属到 Frame Core。
+- 迁移归属：`0009_cms_lite.sql` 与 `0011_cms_workflow.sql` 从 Database Core 原字节移动到 CMS 包；
+  Core 从 12 条迁移缩减为 10 条，默认 System 仍为 12 条。
+- 历史升级：Legacy Alias 现在安全支持 `source/id.sql` 形式。CMS 同时接管 Stage 1 文件名和 Stage 2/3
+  的 `frame/...` canonical 记录，checksum 匹配时仅新增 `frame-cms/...` adoption 记录。
+- 部署迁移：`npm run db:migrate` 和生产部署改为调用 `dist/migrate.js` 的 System 迁移计划，不再错误地
+  只运行 Database Core CLI。
+- 分发与镜像：CMS tarball、Docker dependencies/build/runtime 三层、根包依赖与 Consumer Fixture 已
+  全部接入；生产镜像包含 CMS 编译产物和两条 SQL。
+
+验证结果：
+
+- PostgreSQL 17 空库：10 条 Core 和 2 条 CMS canonical 迁移按依赖顺序全部应用；后端 66/66 通过，
+  无跳过项；Public Web 4/4 与 Frame UI 4/4 通过。
+- Stage 3 数据库：10 条 Core 已存在；`frame-cms/0009` 和 `frame-cms/0011` 分别从旧 `frame/...`
+  记录 adopted，SQL 未重放。迁移文件与阶段 3 原文件 SHA-256 完全一致。
+- 启停矩阵：Core-only 与 Core+CMS 的 Server、Worker、Migration、Admin 和 Web 注册状态均有自动测试；
+  `defineSystem()` 将依赖稳定排序为 `frame -> frame-cms`，无循环。
+- `npm run packages:verify`：9 个真实 tarball 构建并在临时 Consumer 隔离安装；Consumer 从公开入口
+  验证 CMS API、Job、迁移、Admin/Web 路由、SEO/Sitemap，并组合示例扩展的 13 条系统迁移。
+- `npm run build:all`：Server、Admin UI、Public Web 与全部共享/扩展包生产构建通过。
+- 生产 Docker 镜像：全新依赖安装、构建和 prune 通过；生产依赖审计为 0 漏洞；非 root UID 100
+  可导入 Frame/CMS，并识别 `frame + frame-cms` 和 12 条默认迁移。镜像内 `node dist/migrate.js`
+  已实际连接 PostgreSQL 并通过。
+- `npm run lint`、`npm run format:check` 与 `git diff --check`：通过。
+
+未解决事项：
+
+- Admin 生产单入口约 526 kB，仍触发 Vite 500 kB 分包提示；功能和构建不受影响，真实 Consumer 试点
+  应以路由懒加载处理，而不是调高警告阈值。
+- CMS Admin/Web Surface 工厂当前接收 Consumer 页面组件，参考应用保留完整默认实现。这允许站点壳与
+  产品视觉不同，但阶段 5 需要用真实 Consumer 验证是否还应把更多默认页面实现提入一方包。
+- CMS Drizzle Schema 暂时仍由 Database 包统一导出，只有迁移归属完成拆分；0.x 期间继续以一个共享
+  Schema 包支持模块化单体，避免过早拆出循环 Schema 包。
+- Assets、Notifications 和 Presentation 仍属于 `frameCoreExtension`；依赖审计已经确定前置 Port，但
+  本阶段按路线约束不同时拆分。
+- Landing Block 持久化端口没有空实现：当前 CMS 不存 Landing Block，没有可验证消费者。应由阶段 5
+  的真实首页内容模型证明存储边界后再加入。
+- Changesets、Registry 发布和公共 Beta 仍属于阶段 7，不在本阶段发布公共 npm 版本。
+
+阶段 5 输入：
+
+- 选择一个已有生产数据和部署链路的真实业务系统作为 Consumer，优先使用即将开发的官网系统。
+- 业务仓库只保留组合配置、品牌/站点页面、领域扩展和部署环境；不得复制 Frame Core 或 CMS 后端源码。
+- 同一个 Defined System 必须用于 API、Worker 和迁移；Admin/Web 使用相同扩展清单的浏览器投影。
+- 先建立数据和功能基线，再原地采用 Frame 0.5 包；验证现有数据、登录、CMS、Sitemap、Worker 和部署
+  不中断，并记录从 0.5 升级的真实摩擦点。
+- 根据 Consumer 证据决定是否提取 CMS 默认前端页面、Admin 路由懒加载和 Landing Block 持久化 Port，
+  不在试点前继续凭假设扩展公开 API。

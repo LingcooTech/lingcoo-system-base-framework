@@ -11,6 +11,7 @@ import {
   frameMigrationSource,
   runMigrations,
 } from '@lingcoo/frame-database/migrations';
+import { cmsMigrationSource } from '@lingcoo/frame-cms/migrations';
 
 test('Migration V2 preserves manifest order and sorts source dependencies', () => {
   const base = defineMigrationSource({
@@ -84,10 +85,19 @@ test('Migration V2 rejects duplicate aliases, changed checksums and dependency c
 
 test('Frame migrations expose canonical IDs and immutable historical aliases', () => {
   const plan = compileMigrationPlan([frameMigrationSource]);
-  assert.equal(plan.length, 12);
+  assert.equal(plan.length, 10);
   assert.equal(plan[0].canonicalId, 'frame/0000_base_system.sql');
   assert.deepEqual(plan[0].legacyAliases, ['0000_base_system.sql']);
-  assert.equal(plan.at(-1)?.canonicalId, 'frame/0011_cms_workflow.sql');
+  assert.equal(plan.at(-1)?.canonicalId, 'frame/0010_account_security.sql');
+
+  const systemPlan = compileMigrationPlan([cmsMigrationSource, frameMigrationSource]);
+  assert.equal(systemPlan.length, 12);
+  assert.equal(systemPlan.at(-2)?.canonicalId, 'frame-cms/0009_cms_lite.sql');
+  assert.deepEqual(systemPlan.at(-2)?.legacyAliases, [
+    '0009_cms_lite.sql',
+    'frame/0009_cms_lite.sql',
+  ]);
+  assert.equal(systemPlan.at(-1)?.canonicalId, 'frame-cms/0011_cms_workflow.sql');
 });
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -98,7 +108,7 @@ test(
   async () => {
     const suffix = randomUUID().replaceAll('-', '');
     const sourceId = `adoption-${suffix}`;
-    const alias = `legacy_${suffix}.sql`;
+    const alias = `legacy-${suffix}/0001_previous.sql`;
     const sql = `SELECT '${suffix}'`;
     const checksum = calculateMigrationChecksum(sql);
     const pool = new pg.Pool({ connectionString: databaseUrl });

@@ -5,6 +5,7 @@ import type { SearchProviderRegistry } from '../modules/search/registry.js';
 import type { DatasetRegistry } from '../modules/data-exchange/registry.js';
 import type { ObservabilityService } from '../modules/observability/service.js';
 import type { SettingsRegistry } from '../modules/settings/registry.js';
+import type { PublicSiteRegistry } from '../modules/public-site/registry.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -13,6 +14,7 @@ declare module 'fastify' {
     searchRegistry: SearchProviderRegistry;
     datasetRegistry: DatasetRegistry;
     observability: ObservabilityService;
+    publicSiteRegistry: PublicSiteRegistry;
     settingsRegistry: SettingsRegistry;
     authenticate: (request: import('fastify').FastifyRequest) => Promise<void>;
     requirePermission: (

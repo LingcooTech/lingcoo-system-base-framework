@@ -20,12 +20,12 @@ import { hasAnyPermission, type PermissionCode } from './lib/rbac.js';
 import { runWithRequestContext, setRequestActor } from './lib/request-context.js';
 import { serializeSafeError } from './lib/structured-log.js';
 import { AuthRepository } from './modules/auth/repository.js';
-import { CmsService } from './modules/cms/service.js';
 import { baseDatasetAdapters } from './modules/data-exchange/adapters.js';
 import { DatasetRegistry } from './modules/data-exchange/registry.js';
 import { installObservability } from './modules/observability/index.js';
 import { MetricsRegistry } from './modules/observability/metrics.js';
 import { ObservabilityService } from './modules/observability/service.js';
+import { PublicSiteRegistry } from './modules/public-site/registry.js';
 import { baseSearchProviders } from './modules/search/providers.js';
 import { SearchProviderRegistry } from './modules/search/registry.js';
 import {
@@ -86,7 +86,6 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
     trustProxy: true,
   });
   const { db, pool } = createDatabase(env.DATABASE_URL);
-  const cms = new CmsService(db);
 
   app.decorate('appEnv', env);
   app.decorate('db', db);
@@ -97,6 +96,7 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
   const datasetRegistry = new DatasetRegistry();
   for (const adapter of baseDatasetAdapters) datasetRegistry.register(adapter);
   app.decorate('datasetRegistry', datasetRegistry);
+  app.decorate('publicSiteRegistry', new PublicSiteRegistry());
   app.decorate('observability', new ObservabilityService(db, new MetricsRegistry()));
   app.addHook('onRequest', (request, reply, done) => {
     reply.header('x-request-id', request.id);
@@ -251,7 +251,7 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
     if (request.url.startsWith('/admin') && existsSync(adminDist)) {
       return reply.sendFile('index.html', adminDist);
     }
-    const redirect = await cms.resolveRedirect(request.url.split('?')[0]);
+    const redirect = await app.publicSiteRegistry.resolveRedirect(request.url.split('?')[0]);
     if (redirect) {
       return reply.code(redirect.statusCode).header('Location', redirect.targetPath).send();
     }

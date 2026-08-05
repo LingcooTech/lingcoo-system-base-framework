@@ -1,0 +1,20 @@
+import type { Database } from '@lingcoo/frame-database';
+import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
+
+import type { CmsServicePorts } from './ports.js';
+import { cmsScheduledJobSchema } from './schemas.js';
+import { CmsService } from './service.js';
+
+export function createCmsWorkerExtension<TEnvironment>(options: {
+  servicePorts(database: Database): CmsServicePorts;
+}) {
+  return defineWorkerExtension<TEnvironment, Database>({
+    register(context) {
+      const service = new CmsService(context.database, options.servicePorts(context.database));
+      context.registerJob('cms.content.publish-scheduled', ({ payload }) => {
+        const input = cmsScheduledJobSchema.parse(payload);
+        return service.publishScheduled(input.contentId, input.publishAt, input.actorId);
+      });
+    },
+  });
+}

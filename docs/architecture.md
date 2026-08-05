@@ -1,7 +1,7 @@
 # 基础框架架构
 
-> 当前 `0.4` 已提供可安装的 Backend、Database、Extension SDK、Admin/Web Shell、UI 和 Design
-> Tokens 包，同时保留完整参考应用；下一步是通过 Service Port 拆分可选第一方扩展。平台化边界见
+> 当前 `0.5` 已提供可安装的 Backend、Database、Extension SDK、Admin/Web Shell、UI、Design
+> Tokens 和 CMS 一方扩展包，同时保留完整参考应用。平台化边界见
 > [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
 
 ## 1. 定位
@@ -38,6 +38,7 @@ admin-ui/              管理后台应用
 public-web/            公共用户侧应用
 packages/
   admin/               Admin Shell、路由、导航、Widget、搜索与编辑器注册表
+  cms/                 可选 CMS 的 Contracts、Server、Worker、Admin、Web 与迁移
   database/            Database、基础 Schema、迁移执行器与不可变 SQL
   design-tokens/       双 Web 入口共享的语义设计变量
   extension-sdk/       浏览器安全 Manifest、System 组合与分运行面契约
@@ -59,13 +60,13 @@ src/
     jobs/              持久化任务、Outbox 与处理器注册表
     notifications/     站内通知、公告策略与邮件投递
     observability/      请求指标、服务心跳与异常聚合
-    index.ts            模块组合根
+    index.ts            Frame Core 模块组合根，不包含可选 CMS
 fixtures/consumer/     只通过 npm tarball 使用 Frame 的最小 Consumer
 deploy/                入口代理配置
 docs/                  架构约束与扩展指南
 ```
 
-`src/app.ts` 是组合根，不承载业务规则。具体业务只能通过模块注册进入应用。
+`src/app.ts` 是宿主，不承载业务规则。Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。
 
 ## 4. 基础能力
 
@@ -105,12 +106,12 @@ Fastify 宿主统一提供：
 
 ### 数据库
 
-PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供 Drizzle Schema、连接工厂和 Migration
+PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供共享 Drizzle Schema、连接工厂和 Migration
 V2 执行器。迁移使用 `source/id.sql` canonical ID，来源按依赖拓扑排序，来源内严格保持 Manifest
 顺序，并以 SHA-256 防止已发布 SQL 被修改。历史迁移 SQL 保持不变，旧文件名账本通过 Legacy Alias
 adoption 原地升级且不重放 SQL；执行过程由 PostgreSQL advisory lock 串行化。
 
-基础层当前包含：
+共享 Schema 当前包含：
 
 - `system_settings`：登记过的非敏感系统设置当前值
 - `system_setting_versions`：系统设置的不可变版本历史
@@ -135,7 +136,8 @@ adoption 原地升级且不重放 SQL；执行过程由 PostgreSQL advisory lock
 - `system_incidents`：按安全指纹聚合的 API 与 Worker 异常
 - `framework_migrations`：迁移执行记录
 
-这些表不包含行业业务。
+这些表不包含行业业务。CMS 表的 TypeScript Schema 暂时仍由 Database 包统一导出，但建表 SQL 已归属
+`@lingcoo/frame-cms`；禁用 CMS 的新数据库不会创建 CMS 表。
 
 `system_settings` 只接受代码注册表中声明的非敏感键，并在写入前执行类型校验；每次变更同步追加到 `system_setting_versions`，保留版本、操作者与变更原因。部署密钥来自运行环境，Provider 凭据使用 AES-256-GCM 加密并存入独立连接表，不进入普通设置接口。`audit_logs` 通过统一写入函数记录操作者、动作、资源和安全上下文，领域模块不直接拼装表字段，也不得写入密码、令牌或 Provider 密钥。
 

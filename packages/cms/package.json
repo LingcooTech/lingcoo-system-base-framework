@@ -1,0 +1,72 @@
+{
+  "name": "@lingcoo/frame-cms",
+  "version": "0.5.0",
+  "private": false,
+  "type": "module",
+  "description": "First-party CMS extension for Lingcoo Frame.",
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "import": "./dist/contracts.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
+    },
+    "./migrations": {
+      "types": "./dist/migrations.d.ts",
+      "import": "./dist/migrations.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js"
+    },
+    "./web": {
+      "types": "./dist/web.d.ts",
+      "import": "./dist/web.js"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@lingcoo/frame-admin": "^0.5.0",
+    "@lingcoo/frame-database": "^0.5.0",
+    "@lingcoo/frame-extension-sdk": "^0.5.0",
+    "@lingcoo/frame-web": "^0.5.0",
+    "drizzle-orm": "^0.45.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.2.0",
+    "eslint": "^10.8.0",
+    "fastify": "^5.6.1",
+    "globals": "^16.0.0",
+    "react": "^19.2.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "peerDependencies": {
+    "fastify": "^5.6.0",
+    "react": ">=19.0.0 <20.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

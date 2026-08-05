@@ -10,6 +10,7 @@
     "surfaces",
     "infrastructure",
     "foundationModules",
+    "firstPartyExtensions",
     "domainModules"
   ],
   "properties": {
@@ -20,6 +21,7 @@
     "surfaces": { "type": "array", "items": { "type": "string" } },
     "infrastructure": { "type": "array", "items": { "type": "string" } },
     "foundationModules": { "type": "array", "items": { "type": "string" } },
+    "firstPartyExtensions": { "type": "array", "items": { "type": "string" } },
     "domainModules": { "type": "array", "items": { "type": "string" } }
   },
   "additionalProperties": false

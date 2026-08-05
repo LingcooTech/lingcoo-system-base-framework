@@ -1,6 +1,6 @@
 import semver from 'semver';
 
-export const FRAME_VERSION = '0.4.0';
+export const FRAME_VERSION = '0.5.0';
 export const EXTENSION_API_VERSION = '1';
 
 const identifierPattern = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
@@ -284,7 +284,14 @@ function validateManifest(
         fail(`Invalid migration id in ${manifest.id}: ${migration.id}`);
       }
       for (const alias of migration.legacyAliases ?? []) {
-        if (!alias || alias.includes('/') || alias.includes('\\')) {
+        const parts = alias.split('/');
+        if (
+          !alias ||
+          alias.includes('\\') ||
+          parts.length > 2 ||
+          (parts.length === 2 &&
+            (!identifierPattern.test(parts[0]!) || !migrationIdPattern.test(parts[1]!)))
+        ) {
           fail(`Invalid Legacy Alias in ${manifest.id}: ${alias}`);
         }
       }

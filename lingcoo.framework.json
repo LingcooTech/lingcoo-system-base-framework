@@ -1,7 +1,7 @@
 {
   "$schema": "./docs/framework-manifest.schema.json",
   "name": "@lingcoo/frame",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "kind": "runnable-base-framework",
   "origin": {
     "referenceProject": "lingcoo-edu-system",
@@ -23,9 +23,9 @@
     "notifications",
     "assets",
     "presentation",
-    "cms",
     "public-site",
     "observability"
   ],
+  "firstPartyExtensions": ["frame-cms"],
   "domainModules": []
 }

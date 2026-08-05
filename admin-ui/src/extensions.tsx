@@ -1,6 +1,13 @@
 import { createAdminRegistry, defineAdminExtension } from '@lingcoo/frame-admin';
 import { frameAdminManifest } from '@lingcoo/frame-admin/manifest';
-import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+import { createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
+import { cmsManifest } from '@lingcoo/frame-cms/contracts';
+import {
+  defineExtension,
+  defineSystem,
+  FRAME_VERSION,
+  projectExtensionManifest,
+} from '@lingcoo/frame-extension-sdk';
 import {
   Activity,
   Bell,
@@ -50,7 +57,6 @@ const frameAdminSurface = defineAdminExtension<AdminAppContext>({
     { id: 'frame.metadata', component: MetadataPage },
     { id: 'frame.audit', component: AuditPage },
     { id: 'frame.presentation', component: PresentationPage },
-    { id: 'frame.cms', component: CmsPage },
     { id: 'frame.account', component: AccountPage },
     { id: 'frame.settings', component: SettingsPage },
     { id: 'frame.help', component: HelpPage },
@@ -67,7 +73,6 @@ const frameAdminSurface = defineAdminExtension<AdminAppContext>({
     { id: 'frame.metadata', icon: DatabaseZap },
     { id: 'frame.audit', icon: ScrollText },
     { id: 'frame.presentation', icon: Palette },
-    { id: 'frame.cms', icon: BookOpenText },
     { id: 'frame.settings', icon: Settings2 },
     { id: 'frame.help', icon: CircleHelp },
   ],
@@ -103,10 +108,18 @@ const frameAdminDefinition = defineExtension({
   admin: frameAdminSurface,
 });
 
+const cmsAdminDefinition = defineExtension({
+  manifest: projectExtensionManifest(cmsManifest, ['admin']),
+  admin: createCmsAdminExtension<AdminAppContext>({
+    component: CmsPage,
+    icon: BookOpenText,
+  }),
+});
+
 export const adminSystem = defineSystem({
   id: 'frame-reference-admin',
   version: FRAME_VERSION,
-  extensions: [frameAdminDefinition],
+  extensions: [frameAdminDefinition, cmsAdminDefinition],
 });
 
 export const adminRegistry = createAdminRegistry<AdminAppContext>(adminSystem);

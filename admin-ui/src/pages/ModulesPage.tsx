@@ -26,7 +26,7 @@ const rows: ModuleRow[] = [
   { id: 'assets', name: 'assets', kind: '框架内置模块', status: '已启用' },
   { id: 'observability', name: 'observability', kind: '框架内置模块', status: '已启用' },
   { id: 'presentation', name: 'presentation', kind: '框架内置模块', status: '已启用' },
-  { id: 'cms', name: 'cms', kind: '框架内置模块', status: '已启用' },
+  { id: 'cms', name: 'frame-cms', kind: '一方扩展', status: '已启用' },
 ];
 
 const columns: DataTableColumn<ModuleRow>[] = [
@@ -45,7 +45,7 @@ export function ModulesPage() {
     <PageFrame section={sections.modules}>
       <ResourceSection
         title="已注册模块"
-        description="后续行业能力在 src/modules 中实现，并从模块索引显式注册。"
+        description="基础模块与一方扩展由组合根显式安装；行业能力使用相同扩展契约接入。"
       >
         <DataTable columns={columns} getRowKey={(row) => row.id} rows={rows} />
       </ResourceSection>

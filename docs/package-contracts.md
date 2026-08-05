@@ -1,9 +1,9 @@
-# Frame 0.4 Package Contracts
+# Frame 0.5 Package Contracts
 
 ## 状态
 
-`0.4` 是内部预览包契约。仓库 CI 验证真实 npm tarball，但本阶段不向公共 npm Registry 发布。
-Consumer 应锁定同一 `0.4.x` Backend、Database、Extension SDK、Admin 和 Web 版本，不导入
+`0.5` 是内部预览包契约。仓库 CI 验证真实 npm tarball，但本阶段不向公共 npm Registry 发布。
+Consumer 应锁定同一 `0.5.x` Backend、Database、Extension SDK、Admin、Web 和一方扩展版本，不导入
 `exports` 之外的文件。
 
 ## 包边界
@@ -15,6 +15,7 @@ Consumer 应锁定同一 `0.4.x` Backend、Database、Extension SDK、Admin 和 
 | `@lingcoo/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                     |
 | `@lingcoo/frame-admin`         | Admin Shell、路由、导航、Widget、搜索与编辑器注册表 | `.`, `./manifest`                                                               |
 | `@lingcoo/frame-web`           | Web Shell、路由、SEO、Sitemap 与 Landing Block      | `.`, `./manifest`                                                               |
+| `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`  |
 | `@lingcoo/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                 |
 | `@lingcoo/frame-design-tokens` | 基础、后台和公共站点语义 Token                      | `./base.css`, `./admin.css`, `./public.css`                                     |
 
@@ -24,24 +25,25 @@ Frame Core 页面。业务系统消费 Shell 包并安装自己的前端扩展�
 ## 系统组合
 
 ```ts
-import { buildApp, createFrameWorker, frameCoreExtension } from '@lingcoo/frame';
+import { buildApp, createFrameWorker, frameCmsExtension, frameCoreExtension } from '@lingcoo/frame';
 import { defineSystem } from '@lingcoo/frame-extension-sdk';
 import { officialSiteExtension } from '@lingcoo/official-site-extension';
 
 const system = defineSystem({
   id: 'official-site',
   version: '0.1.0',
-  extensions: [frameCoreExtension, officialSiteExtension],
+  extensions: [frameCoreExtension, frameCmsExtension, officialSiteExtension],
 });
 
 const app = await buildApp(env, { system });
 const worker = createFrameWorker(env, { system });
 ```
 
+省略 `frameCmsExtension` 即可得到不含 CMS API、Job、Admin/Web 路由与迁移的 Core-only 系统。
 `defineSystem()` 校验扩展 ID、SemVer、Frame/API 兼容范围、依赖完整性和循环，并稳定拓扑排序。它会
 拒绝重复权限、设置、路由、Job Kind、Migration Source 和 Legacy Alias；多个扩展订阅同一个 Outbox
 Topic 是合法 fan-out。`buildApp(env)` 与 `createFrameWorker(env)` 继续使用默认核心 System，兼容
-0.2 调用方式。
+0.2 调用方式；默认参考 System 安装 CMS。
 
 ## 运行面
 
@@ -73,8 +75,8 @@ await runSystemMigrations({
 旧记录 checksum 匹配时只写入 canonical adoption 记录，不执行 SQL；不匹配、重复 alias 或已应用
 canonical checksum 变化都会立即失败。未知历史记录保持不变。
 
-默认 `lingcoo-frame-migrate` CLI 只迁移 Frame Core。业务系统应在自己的迁移入口调用
-`runSystemMigrations()`，确保领域扩展迁移也进入同一计划。
+低层 `lingcoo-frame-migrate` CLI 只迁移 Database Core。仓库 `npm run db:migrate` 与生产部署调用
+`runSystemMigrations()`，会按实际 Defined System 纳入一方和领域扩展迁移。
 
 ## 受控 Landing Block
 
@@ -84,9 +86,10 @@ canonical checksum 变化都会立即失败。未知历史记录保持不变。
 
 ## 发布产物验收
 
-`npm run packages:verify` 构建并打包 Frame、Database、Extension SDK、Admin、Web、UI、Design Tokens
-与完整示例扩展，再在临时目录隔离安装。Consumer Fixture 会进行 TypeScript 公共入口编译，组合
+`npm run packages:verify` 构建并打包 Frame、Database、Extension SDK、Admin、Web、CMS、UI、Design
+Tokens 与完整示例扩展，再在临时目录隔离安装。Consumer Fixture 会进行 TypeScript 公共入口编译，组合
 API/Worker/Admin/Web，验证示例页面、搜索、SEO、Sitemap、Landing Block 和 13 条系统迁移。CI 提供
 PostgreSQL 17，并真实执行全部迁移。
 
-完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)。
+完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见
+[第一方扩展边界](first-party-extensions.md)。

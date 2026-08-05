@@ -2,7 +2,7 @@
 
 ## 当前能力
 
-Frame 0.4 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
+Frame 0.5 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
 中，不提供安全沙箱、生产 ZIP 上传、无重启卸载或运行时插件市场。
 
 一个领域扩展可以贡献：
@@ -39,8 +39,8 @@ export const manifest = {
   id: 'example',
   version: '0.1.0',
   apiVersion: '1',
-  frame: '^0.4.0',
-  dependencies: [{ id: 'frame', version: '^0.4.0' }],
+  frame: '^0.5.0',
+  dependencies: [{ id: 'frame', version: '^0.5.0' }],
   permissions: ['example.read'],
   settings: ['example.greeting'],
   server: { routes: [{ method: 'GET', path: '/api/example' }] },
@@ -113,7 +113,7 @@ import {
 const source = defineMigrationSource({
   id: 'example',
   version: '0.1.0',
-  dependencies: [{ id: 'frame', version: '^0.4.0' }],
+  dependencies: [{ id: 'frame', version: '^0.5.0' }],
   migrations: [
     {
       id: '0001_initial.sql',
@@ -135,6 +135,7 @@ export const migrations = defineMigrationExtension(source);
 import {
   buildApp,
   createFrameWorker,
+  frameCmsExtension,
   frameCoreExtension,
   runSystemMigrations,
 } from '@lingcoo/frame';
@@ -144,7 +145,7 @@ import { exampleExtension } from '@lingcoo/example-extension';
 export const system = defineSystem({
   id: 'example-system',
   version: '0.1.0',
-  extensions: [frameCoreExtension, exampleExtension],
+  extensions: [frameCoreExtension, frameCmsExtension, exampleExtension],
 });
 
 await runSystemMigrations({ connectionString: env.DATABASE_URL, system });

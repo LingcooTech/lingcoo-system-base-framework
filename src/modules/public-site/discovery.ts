@@ -1,7 +1,6 @@
 export interface PublicRoute {
-  type: string;
-  slug: string;
-  updatedAt: Date;
+  path: string;
+  updatedAt?: Date | null;
 }
 
 function escapeXml(value: string) {
@@ -18,14 +17,7 @@ function absoluteUrl(baseUrl: string, path: string) {
 }
 
 export function buildSitemap(baseUrl: string, routes: PublicRoute[]) {
-  const entries = [
-    { path: '/', updatedAt: null },
-    { path: '/articles', updatedAt: null },
-    ...routes.map((route) => ({
-      path: `/${route.type === 'article' ? 'articles' : 'pages'}/${encodeURIComponent(route.slug)}`,
-      updatedAt: route.updatedAt,
-    })),
-  ];
+  const entries = [{ path: '/', updatedAt: null }, ...routes.filter((route) => route.path !== '/')];
   const urls = entries
     .map(
       ({ path, updatedAt }) =>

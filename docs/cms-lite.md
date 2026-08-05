@@ -1,6 +1,8 @@
 # 轻量内容中心
 
-`cms` 提供剔除行业业务后的页面与文章基础，正文第一阶段固定使用 Markdown。
+`@lingcoo/frame-cms` 是 Frame 首个可选一方扩展，提供剔除行业业务后的页面与文章基础，正文第一阶段
+固定使用 Markdown。参考系统默认安装它，Consumer 可以从 Defined System 中省略该扩展，同时移除其
+API、Worker Job、Admin/Web 路由和迁移。
 
 ## 已包含
 
@@ -24,7 +26,7 @@
 进入队列的旧任务；旧任务执行时发现时间戳已变化会安全跳过。手动发布、撤回或归档都会清除当前计划。
 
 定时发布复用 `job_runs` 和现有 Worker，不增加 Redis 等运行依赖。生产环境必须同时运行 API、Worker，
-并在部署时执行 `0011_cms_workflow.sql`。
+并在部署时通过 `runSystemMigrations()` 执行 `frame-cms/0011_cms_workflow.sql`。
 
 ## URL 重定向
 

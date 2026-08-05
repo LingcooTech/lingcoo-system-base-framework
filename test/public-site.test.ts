@@ -5,8 +5,9 @@ import { buildRobots, buildSitemap } from '../src/modules/public-site/discovery.
 
 test('public discovery files use the configured site URL and published CMS routes', () => {
   const sitemap = buildSitemap('https://example.test/base', [
-    { type: 'article', slug: 'release-notes', updatedAt: new Date('2026-08-03T08:00:00Z') },
-    { type: 'page', slug: 'about-us', updatedAt: new Date('2026-08-02T08:00:00Z') },
+    { path: '/articles', updatedAt: null },
+    { path: '/articles/release-notes', updatedAt: new Date('2026-08-03T08:00:00Z') },
+    { path: '/pages/about-us', updatedAt: new Date('2026-08-02T08:00:00Z') },
   ]);
   assert.match(sitemap, /<loc>https:\/\/example\.test\/articles\/release-notes<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/example\.test\/pages\/about-us<\/loc>/);

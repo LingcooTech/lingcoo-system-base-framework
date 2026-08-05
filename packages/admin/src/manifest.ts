@@ -80,13 +80,6 @@ export const frameAdminManifest = {
       permission: 'presentation.read',
     },
     {
-      id: 'frame.cms',
-      path: '/cms/*',
-      title: '轻量内容中心',
-      description: '管理通用页面与文章的草稿、发布和版本。',
-      permission: 'cms.read',
-    },
-    {
       id: 'frame.account',
       path: '/account/*',
       title: '个人账号与安全',
@@ -196,14 +189,6 @@ export const frameAdminManifest = {
       label: '品牌设置',
       group: '站点',
       order: 110,
-    },
-    {
-      id: 'frame.cms',
-      routeId: 'frame.cms',
-      href: '/cms',
-      label: '内容管理',
-      group: '站点',
-      order: 120,
     },
     {
       id: 'frame.settings',
