@@ -1,15 +1,20 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 
 import { eq } from 'drizzle-orm';
 
-import { accounts, passwordCredentials } from '@lingcoo/frame-database/schema';
+import {
+  accountRoles,
+  accounts,
+  passwordCredentials,
+  roles as roleRecords,
+} from '@lingcoo/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { buildApp } from '../src/host/app.js';
 import { loadEnv } from '../src/host/env.js';
 
 const databaseUrl = process.env.DATABASE_URL;
-const bootstrapEmail = 'frame-owner@example.test';
 const initialPassword = 'Frame-bootstrap-2026!';
 const changedPassword = 'Frame-changed-2026!!';
 
@@ -32,27 +37,30 @@ test(
         LOG_LEVEL: 'silent',
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'frame-integration-jwt-secret-with-32-characters',
-        AUTH_BOOTSTRAP_EMAIL: bootstrapEmail,
-        AUTH_BOOTSTRAP_PASSWORD: initialPassword,
-        AUTH_BOOTSTRAP_DISPLAY_NAME: 'Frame Owner',
       }),
     );
 
-    const [bootstrapAccount] = await app.db
-      .select({ id: accounts.id })
-      .from(accounts)
-      .where(eq(accounts.email, bootstrapEmail))
+    const email = `frame-owner-${randomUUID()}@example.test`;
+    const [ownerRole] = await app.db
+      .select({ id: roleRecords.id })
+      .from(roleRecords)
+      .where(eq(roleRecords.code, 'owner'))
       .limit(1);
-    assert.ok(bootstrapAccount);
-    await app.db
-      .update(passwordCredentials)
-      .set({ passwordHash: await hashPassword(initialPassword), updatedAt: new Date() })
-      .where(eq(passwordCredentials.accountId, bootstrapAccount.id));
+    assert.ok(ownerRole);
+    const [account] = await app.db
+      .insert(accounts)
+      .values({ email, displayName: 'Frame Owner' })
+      .returning({ id: accounts.id });
+    await app.db.insert(passwordCredentials).values({
+      accountId: account.id,
+      passwordHash: await hashPassword(initialPassword),
+    });
+    await app.db.insert(accountRoles).values({ accountId: account.id, roleId: ownerRole.id });
 
     const login = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: bootstrapEmail, password: initialPassword },
+      payload: { email, password: initialPassword },
     });
     assert.equal(login.statusCode, 200);
     assert.equal('token' in login.json(), false);
@@ -94,14 +102,14 @@ test(
     const oldPasswordLogin = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: bootstrapEmail, password: initialPassword },
+      payload: { email, password: initialPassword },
     });
     assert.equal(oldPasswordLogin.statusCode, 401);
 
     const newPasswordLogin = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: bootstrapEmail, password: changedPassword },
+      payload: { email, password: changedPassword },
     });
     assert.equal(newPasswordLogin.statusCode, 200);
     const newCookie = sessionCookie(newPasswordLogin);
