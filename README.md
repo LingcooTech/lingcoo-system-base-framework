@@ -2,13 +2,14 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.5` 已完成首个一方扩展闭环：后端宿主、Database、Extension SDK、Admin/Web Shell、共享 UI、
+当前 `0.6` 已完成首个一方扩展闭环与目录架构对齐：后端宿主、Database、Extension SDK、Admin/Web Shell、共享 UI、
 Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务
 系统通过 `defineSystem()` 显式安装构建期扩展，而不是复制本仓库后长期维护底层源码副本。
 
 平台化路线见 [Frame 平台化改造路线](docs/platform-roadmap.md)，实际阶段记录见
 [Frame 平台化开发进度](docs/platform-progress.md)，当前公开包契约见
-[0.5 Package Contracts](docs/package-contracts.md)，长期决策见 [ADR](docs/adr/README.md)。
+[0.6 Package Contracts](docs/package-contracts.md)，代码阅读入口见 [CODEMAP](CODEMAP.md)，长期决策见
+[ADR](docs/adr/README.md)。
 
 ## 当前包含什么
 
@@ -37,7 +38,23 @@ Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。Frame 仍同
 
 当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
 `data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`public-site` 和
-`observability` 基础模块，并默认安装 `frame-cms` 一方扩展；没有商品、课程、订单等具体行业领域概念。
+`observability` 基础模块。`@lingcoo/frame` 默认只安装 Core；可部署的 Reference System 显式安装
+`frame-cms` 一方扩展。框架没有商品、课程、订单等具体行业领域概念。
+
+## 仓库结构
+
+```text
+apps/       可运行、可部署的参考系统及其 Admin/Web 应用
+packages/   可发布、可升级、供业务系统消费的 Frame 软件包
+fixtures/   只通过公开包入口验证 Consumer 和示例扩展
+test/       跨包集成测试
+scripts/    仓库工程与发布产物验收脚本
+deploy/     生产部署脚本和入口配置
+docs/       架构、契约、能力与演进记录
+```
+
+`apps` 证明框架可以组成一个完整系统，但不是框架公共 API；`packages` 才是业务系统长期依赖和升级的
+边界。两者的关系和推荐阅读顺序见 [CODEMAP](CODEMAP.md)。
 
 ## 架构来源
 

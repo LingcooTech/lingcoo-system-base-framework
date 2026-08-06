@@ -44,5 +44,6 @@ Worker 领取并分发事件，成功后标为 `published`；失败采用同样�
 ## 运行与健康
 
 本地使用 `npm run dev:worker`。生产环境的 `worker` 与 `api` 使用同一镜像，分别运行
-`dist/worker.js` 和 `dist/server.js`。Worker 在 `WORKER_HEALTH_PORT` 提供内部健康探针；部署只有在
+`apps/reference-system/dist/worker.js` 和 `apps/reference-system/dist/server.js`。Worker 在
+`WORKER_HEALTH_PORT` 提供内部健康探针；部署只有在
 迁移成功、Worker 健康且公开 `/ready` 通过后才完成。

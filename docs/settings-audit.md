@@ -1,7 +1,8 @@
 # 系统设置与审计中心
 
 系统设置是可在线调整的非敏感框架参数，不是任意键值仓库。新增设置必须先在
-`src/modules/settings/registry.ts` 登记类型、默认值和说明，接口拒绝未知键。数据库连接、JWT 密钥和
+`packages/frame/src/core/modules/settings/registry.ts` 登记类型、默认值和说明，接口拒绝未知键。
+数据库连接、JWT 密钥和
 Provider 凭据不属于这里：前两者由部署环境注入，后者由外部集成模块加密管理。
 
 每次设置变更会更新当前值、递增版本并追加一条不可变历史，同时写入 `system.setting_updated` 审计事件。

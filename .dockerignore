@@ -1,11 +1,8 @@
 .git
 .github
 node_modules
-admin-ui/node_modules
-public-web/node_modules
-dist
-admin-ui/dist
-public-web/dist
+**/node_modules
+**/dist
 .env
 *.log
 coverage

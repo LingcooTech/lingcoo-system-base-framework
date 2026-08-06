@@ -1,4 +1,5 @@
-import { frameCmsExtension, frameCoreExtension } from '@lingcoo/frame/extensions';
+import { frameCmsExtension } from '@lingcoo/frame/cms';
+import { frameCoreExtension } from '@lingcoo/frame/extensions';
 import { exampleExtension } from '@lingcoo/frame-example-extension';
 import { defineSystem } from '@lingcoo/frame-extension-sdk';
 

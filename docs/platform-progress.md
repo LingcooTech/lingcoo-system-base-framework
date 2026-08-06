@@ -349,12 +349,71 @@
   的真实首页内容模型证明存储边界后再加入。
 - Changesets、Registry 发布和公共 Beta 仍属于阶段 7，不在本阶段发布公共 npm 版本。
 
+## 阶段 4.5：架构与目录对齐
+
+### 范围
+
+- 让 Monorepo 物理目录与 Host、Core、Runtime、Integration、Package 和 Reference App 架构逐层对应。
+- 把根仓库从可发布 Backend 包改为私有 Workspace 调度器，将 `@lingcoo/frame` 迁入独立 Package。
+- 建立 API、Worker 和 Migration 共用的 Reference System 组合根，显式安装 Core 与 CMS。
+- 将参考前端、可发布 Shell、包内测试和跨包测试迁入清晰归属目录。
+- 更新本地构建、真实 tarball Consumer、Docker 和生产部署入口，不改变历史 Migration ID 与 SQL。
+
+### 完成记录
+
+- Completed: 2026-08-06
+- Starting commit: `3cfc463`
+
+已交付：
+
+- 顶层语义：形成 `apps/`、`packages/`、`fixtures/`、`test/integration/`、`scripts/`、`deploy/` 和
+  `docs/` 七个清晰入口；删除旧根 Backend `src/`、历史根 `dist/` 和空目录。
+- Frame 包：新增独立 `packages/frame@0.6.0`。源码按 `host/`、`core/`、`runtime/` 和
+  `integrations/` 分层；根 `package.json` 只负责 Workspace 调度，不再发布。
+- Reference System：新增 `apps/reference-system`，由 `system.ts` 显式组合
+  `frameCoreExtension + frameCmsExtension`；Server、Worker 和 Migration 全部读取同一个 System。
+- Reference Frontend：`admin-ui` 与 `public-web` 分别迁入 `apps/reference-admin` 和
+  `apps/reference-web`；可发布的 Admin/Web Registry 分别迁入 `packages/admin-shell` 和
+  `packages/web-shell`。
+- Core 默认语义：`buildApp()`、`createFrameWorker()` 与 `runSystemMigrations()` 默认只安装 Core；CMS
+  通过新的 `@lingcoo/frame/cms` 子入口显式接入，不再从 Frame 主入口隐式导出。
+- CMS 边界：Frame 对 CMS 的 Audit、Asset、Taxonomy、Job 和 Search 适配集中到
+  `packages/frame/src/integrations/cms`；旧 `core/modules/cms` 转发文件和空目录已删除。
+- 测试归属：Frame 内部测试迁入 `packages/frame/test`；CMS、Frontend Extension 与 Migration V2
+  组合测试迁入 `test/integration`；真实包消费者继续留在 `fixtures/consumer`。
+- 工程与部署：Dockerfile、Compose、GitHub Actions、迁移入口、部署脚本和 tarball verifier 已全部切换
+  到新路径。部署脚本由 `scripts/deploy` 迁入 `deploy/scripts`。
+- 文档：新增根 `CODEMAP.md`，说明 Apps/Fixtures、包依赖方向、Frame 四层、测试归属和推荐阅读顺序；
+  README、架构、包契约、扩展、前端、领域开发和运维文档统一推进到 0.6 目录模型。
+- 测试稳定性：修复 CMS、Auth、Notification 和 Metadata 集成测试对固定 slug、旧密码、SMTP 全局状态
+  与固定资源 ID 的依赖，使同一测试库可重复执行。
+
+验证结果：
+
+- `npm run format`、`npm run lint` 与 `npm run typecheck`：通过。
+- `npm run build:all`：全部 Packages、Reference System、Reference Admin 和 Reference Web 生产构建通过。
+- `npm run packages:verify`：9 个真实 npm tarball 在临时 Consumer 隔离安装，公开入口、System 组合、
+  Admin/Web Contribution 和 13 条 Consumer Migration 验收通过。
+- PostgreSQL 历史测试库：Reference System Migration 识别 10 条 Core + 2 条 CMS 迁移，全部保持已应用
+  状态且未重放 SQL；跨包 Integration 14/14、Frame 52/52、Public Web 4/4、Frame UI 4/4 通过。
+- 生产 Docker 镜像：全新 `npm ci`、全量构建和 production prune 通过；运行依赖 0 漏洞。镜像使用
+  UID 100 非 root 用户，能从公开入口加载 Core/CMS，并从容器内执行完整 System Migration。
+- 容器运行：`/health`、`/ready`、公共 `/` 与 `/admin/` 均返回 200，新静态目录与数据库连接正常。
+
+已知事项：
+
+- Reference Admin 主 Chunk 约 526 kB，仍触发 Vite 500 kB 提示，但不影响构建和运行。应在真实
+  Consumer 阶段通过路由懒加载解决。
+- 本阶段完成的是目录、所有权和默认组合语义调整，没有拆分 Assets、Notifications 或 Presentation；
+  这些能力仍属于 Core，是否继续拆成一方扩展必须由真实业务 Consumer 证明。
+- 0.6 仍使用内部 tarball 验收，Changesets、私有 Registry 和公共 Beta 发布属于后续发布阶段。
+
 阶段 5 输入：
 
 - 选择一个已有生产数据和部署链路的真实业务系统作为 Consumer，优先使用即将开发的官网系统。
 - 业务仓库只保留组合配置、品牌/站点页面、领域扩展和部署环境；不得复制 Frame Core 或 CMS 后端源码。
 - 同一个 Defined System 必须用于 API、Worker 和迁移；Admin/Web 使用相同扩展清单的浏览器投影。
-- 先建立数据和功能基线，再原地采用 Frame 0.5 包；验证现有数据、登录、CMS、Sitemap、Worker 和部署
+- 先建立数据和功能基线，再原地采用 Frame 0.6 包；验证现有数据、登录、CMS、Sitemap、Worker 和部署
   不中断，并记录从 0.5 升级的真实摩擦点。
 - 根据 Consumer 证据决定是否提取 CMS 默认前端页面、Admin 路由懒加载和 Landing Block 持久化 Port，
   不在试点前继续凭假设扩展公开 API。

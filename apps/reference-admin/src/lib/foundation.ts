@@ -1,0 +1,323 @@
+import {
+  Activity,
+  Bell,
+  BookOpenText,
+  DatabaseZap,
+  Gauge,
+  Images,
+  ListChecks,
+  PlugZap,
+  Palette,
+  ScrollText,
+  Settings2,
+  ShieldCheck,
+  UserRound,
+  CircleHelp,
+  Waypoints,
+} from 'lucide-react';
+import type { ComponentType } from 'react';
+import type {
+  AdminRegistry,
+  RegisteredAdminNavigation,
+  RegisteredAdminRoute,
+} from '@lingcoo/frame-admin';
+
+export type SectionKey =
+  | 'dashboard'
+  | 'modules'
+  | 'access'
+  | 'integrations'
+  | 'assets'
+  | 'operations'
+  | 'observability'
+  | 'notifications'
+  | 'metadata'
+  | 'audit'
+  | 'presentation'
+  | 'cms'
+  | 'account'
+  | 'settings'
+  | 'help';
+
+export interface SectionMeta {
+  id: string;
+  group: string;
+  title: string;
+  navLabel: string;
+  description: string;
+  href: string;
+  icon: ComponentType<{ className?: string; size?: number; 'aria-hidden'?: boolean }>;
+  permission: string;
+  context: [
+    { label: string; value: string; note: string },
+    { label: string; value: string; note: string },
+  ];
+}
+
+export const sections: Record<SectionKey, SectionMeta> = {
+  dashboard: {
+    id: 'dashboard',
+    group: '总览',
+    title: '基础框架控制台',
+    navLabel: '系统概览',
+    description: '查看运行面、基础服务和框架扩展状态。',
+    href: '/',
+    icon: Gauge,
+    permission: 'system.runtime.read',
+    context: [
+      { label: '框架阶段', value: 'Foundation', note: '尚未装载行业业务模块' },
+      { label: '运行模式', value: 'Single image', note: 'API 同时托管双 Web 产物' },
+    ],
+  },
+  modules: {
+    id: 'modules',
+    group: '架构',
+    title: '领域模块',
+    navLabel: '模块扩展',
+    description: '所有具体业务都通过明确的领域模块进入系统。',
+    href: '/modules',
+    icon: Waypoints,
+    permission: 'admin.access',
+    context: [
+      { label: 'Core 模块', value: '15', note: 'CMS 作为可选一方扩展安装' },
+      { label: '扩展目录', value: 'packages/*-extension', note: '业务扩展由 System 显式组合' },
+    ],
+  },
+  access: {
+    id: 'access',
+    group: '系统',
+    title: '身份与访问',
+    navLabel: '身份与权限',
+    description: '管理通用账号、会话、角色和资源权限。',
+    href: '/access',
+    icon: ShieldCheck,
+    permission: 'iam.accounts.read',
+    context: [
+      { label: '会话方式', value: 'HttpOnly JWT', note: '数据库支持主动撤销' },
+      { label: '权限模型', value: 'RBAC', note: '账号可同时拥有多个角色' },
+    ],
+  },
+  integrations: {
+    id: 'integrations',
+    group: '系统',
+    title: '外部集成',
+    navLabel: '外部集成',
+    description: '通过统一 Provider 契约管理服务配置、加密凭据、连通性和调用记录。',
+    href: '/integrations',
+    icon: PlugZap,
+    permission: 'integrations.read',
+    context: [
+      { label: '凭据存储', value: 'AES-256-GCM', note: '密钥与普通配置物理分离' },
+      { label: '接入方式', value: 'Provider', note: '服务适配器显式注册并版本化' },
+    ],
+  },
+  assets: {
+    id: 'assets',
+    group: '资源',
+    title: '媒体资产中心',
+    navLabel: '媒体资源库',
+    description: '统一管理文件身份、云存储对象、访问方式和领域引用关系。',
+    href: '/assets',
+    icon: Images,
+    permission: 'assets.read',
+    context: [
+      { label: '资产身份', value: 'Asset ID', note: '领域不直接绑定对象 URL' },
+      { label: '存储通道', value: 'Qiniu', note: '直传 · 复核 · 异步删除' },
+    ],
+  },
+  operations: {
+    id: 'operations',
+    group: '运行',
+    title: '任务与事件',
+    navLabel: '任务中心',
+    description: '查看持久化后台任务、重试状态和 Outbox 事件投影。',
+    href: '/operations',
+    icon: ListChecks,
+    permission: 'jobs.read',
+    context: [
+      { label: '任务队列', value: 'PostgreSQL', note: '行锁领取 · 不丢失' },
+      { label: '失败恢复', value: 'Backoff', note: '指数退避与人工重试' },
+    ],
+  },
+  observability: {
+    id: 'observability',
+    group: '运行',
+    title: '运行状态',
+    navLabel: '运行监控',
+    description: '查看 API、Worker、数据库、请求指标与聚合异常的实时状态。',
+    href: '/observability',
+    icon: Activity,
+    permission: 'observability.read',
+    context: [
+      { label: '关联标识', value: 'Request ID', note: '贯穿响应 · 日志 · 审计 · 异常' },
+      { label: '指标出口', value: 'Prometheus', note: '独立令牌保护 · 可按需启用' },
+    ],
+  },
+  notifications: {
+    id: 'notifications',
+    group: '运行',
+    title: '通知中心',
+    navLabel: '通知中心',
+    description: '管理站内通知、系统公告和异步邮件投递。',
+    href: '/notifications',
+    icon: Bell,
+    permission: 'notifications.read',
+    context: [
+      { label: '站内状态', value: 'Inbox', note: '未读 · 已读 · 归档' },
+      { label: '邮件投递', value: 'Async', note: 'SMTP Provider · Worker' },
+    ],
+  },
+  metadata: {
+    id: 'metadata',
+    group: '数据',
+    title: '通用数据基础',
+    navLabel: '数据字典与分类',
+    description: '管理非业务化的数据字典、分类法、标签和版本化数据交换。',
+    href: '/metadata',
+    icon: DatabaseZap,
+    permission: 'metadata.read',
+    context: [
+      {
+        label: '组织模型',
+        value: 'Dictionary + Taxonomy',
+        note: '稳定代码 · 可选层级 · 资源关联',
+      },
+      { label: '数据交换', value: 'Adapter', note: '版本化 JSON · 预检 · 原子 Upsert' },
+    ],
+  },
+  audit: {
+    id: 'audit',
+    group: '系统',
+    title: '审计中心',
+    navLabel: '审计日志',
+    description: '查询跨模块的关键操作记录、资源上下文和操作者。',
+    href: '/audit',
+    icon: ScrollText,
+    permission: 'audit.read',
+    context: [
+      { label: '记录方式', value: 'Append only', note: '业务操作只追加审计事件' },
+      { label: '查询维度', value: 'Structured', note: '动作 · 资源 · 操作者 · 时间' },
+    ],
+  },
+  presentation: {
+    id: 'presentation',
+    group: '站点',
+    title: '品牌与站点呈现',
+    navLabel: '品牌设置',
+    description: '统一管理系统标识、品牌色、联系方式和站点基础呈现。',
+    href: '/presentation',
+    icon: Palette,
+    permission: 'presentation.read',
+    context: [
+      { label: '资源引用', value: 'Asset ID', note: 'Logo 与站点图片不绑定存储 URL' },
+      { label: '发布方式', value: 'Public profile', note: '只公开安全的品牌呈现字段' },
+    ],
+  },
+  cms: {
+    id: 'cms',
+    group: '站点',
+    title: '轻量内容中心',
+    navLabel: '内容管理',
+    description: '管理通用页面与文章，保留清晰的草稿、发布、版本和分类边界。',
+    href: '/cms',
+    icon: BookOpenText,
+    permission: 'cms.read',
+    context: [
+      { label: '内容类型', value: 'Page + Article', note: '不预设任何行业内容模型' },
+      { label: '正文格式', value: 'Markdown', note: '版本化保存 · 安全公共渲染' },
+    ],
+  },
+  account: {
+    id: 'account',
+    group: '个人',
+    title: '个人账号与安全',
+    navLabel: '个人中心',
+    description: '维护个人资料、邮箱验证、密码和当前账号的登录会话。',
+    href: '/account',
+    icon: UserRound,
+    permission: 'admin.access',
+    context: [
+      { label: '账号身份', value: 'Stable account', note: '领域资料通过 Account ID 扩展' },
+      { label: '安全控制', value: 'Revocable', note: '会话 · 密码 · 一次性安全链接' },
+    ],
+  },
+  settings: {
+    id: 'settings',
+    group: '系统',
+    title: '框架设置',
+    navLabel: '系统设置',
+    description: '查看基础运行配置和后续系统能力的接入位置。',
+    href: '/settings',
+    icon: Settings2,
+    permission: 'system.settings.read',
+    context: [
+      { label: '配置方式', value: 'Typed registry', note: '只允许登记过的非敏感设置' },
+      { label: '变更历史', value: 'Versioned', note: '每次保存保留操作者与原因' },
+    ],
+  },
+  help: {
+    id: 'help',
+    group: '支持',
+    title: '框架帮助',
+    navLabel: '框架帮助',
+    description: '查看基础框架的能力边界、扩展入口和常用运行流程。',
+    href: '/help',
+    icon: CircleHelp,
+    permission: 'admin.access',
+    context: [
+      { label: '系统形态', value: 'Modular monolith', note: '统一部署 · 领域边界清晰' },
+      { label: '扩展原则', value: 'Explicit', note: 'Schema · Service · Route 显式注册' },
+    ],
+  },
+};
+
+export const sectionList = Object.values(sections);
+
+function coreSectionForRoute(routeId: string): SectionMeta | undefined {
+  const key = routeId.startsWith('frame.') ? routeId.slice('frame.'.length) : '';
+  return sections[key as SectionKey];
+}
+
+export function sectionFromNavigation(navigation: RegisteredAdminNavigation<unknown>): SectionMeta {
+  const core = coreSectionForRoute(navigation.route.id);
+  return {
+    id: navigation.id,
+    group: navigation.group,
+    title: navigation.route.title,
+    navLabel: navigation.label,
+    description: navigation.route.description ?? '',
+    href: navigation.href,
+    icon: navigation.icon ?? Waypoints,
+    permission: navigation.route.permission,
+    context: core?.context ?? [
+      { label: '扩展', value: navigation.extensionId, note: 'Build-time extension' },
+      { label: '路由', value: navigation.route.path, note: 'Registry managed' },
+    ],
+  };
+}
+
+function sectionFromRoute(route: RegisteredAdminRoute<unknown>): SectionMeta {
+  const core = coreSectionForRoute(route.id);
+  if (core) return core;
+  return {
+    id: route.id,
+    group: '扩展',
+    title: route.title,
+    navLabel: route.title,
+    description: route.description ?? '',
+    href: route.path.replace(/\/\*$/, ''),
+    icon: Waypoints,
+    permission: route.permission,
+    context: [
+      { label: '扩展', value: route.extensionId, note: 'Build-time extension' },
+      { label: '路由', value: route.path, note: 'Registry managed' },
+    ],
+  };
+}
+
+export function getSectionByPath(pathname: string, registry: AdminRegistry<unknown>): SectionMeta {
+  const match = registry.matchRoute(pathname);
+  if (!match) return sections.dashboard;
+  const navigation = registry.navigation.find((item) => item.route.id === match.route.id);
+  return navigation ? sectionFromNavigation(navigation) : sectionFromRoute(match.route);
+}

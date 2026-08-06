@@ -40,7 +40,7 @@ services:
     restart: unless-stopped
     init: true
     environment: *runtime-environment
-    command: ['node', 'dist/server.js']
+    command: ['node', 'apps/reference-system/dist/server.js']
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,7 +71,7 @@ services:
     restart: unless-stopped
     init: true
     environment: *runtime-environment
-    command: ['node', 'dist/worker.js']
+    command: ['node', 'apps/reference-system/dist/worker.js']
     depends_on:
       postgres:
         condition: service_healthy

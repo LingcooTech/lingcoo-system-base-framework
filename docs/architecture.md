@@ -1,6 +1,6 @@
 # 基础框架架构
 
-> 当前 `0.5` 已提供可安装的 Backend、Database、Extension SDK、Admin/Web Shell、UI、Design
+> 当前 `0.6` 已提供可安装的 Backend、Database、Extension SDK、Admin/Web Shell、UI、Design
 > Tokens 和 CMS 一方扩展包，同时保留完整参考应用。平台化边界见
 > [Frame 平台化改造路线](platform-roadmap.md) 和 [ADR](adr/README.md)。
 
@@ -27,46 +27,46 @@ Browser
                          └─ PostgreSQL ← Worker
 ```
 
-开发时 API、Worker 和两个 Web 应用独立运行，以获得快速热更新；`admin-ui`、`public-web` 和共享包由 npm workspace 统一管理。生产时两个前端编译为静态资源，API 与 Worker 使用同一镜像、不同进程。Caddy 只负责入口、压缩、TLS 和反向代理。
+开发时 API、Worker 和两个 Web 应用独立运行，以获得快速热更新；`apps/reference-system`、
+`apps/reference-admin`、`apps/reference-web` 和共享包由 npm workspace 统一管理。生产时两个前端编译为
+静态资源，API 与 Worker 使用同一镜像、不同进程。Caddy 只负责入口、压缩、TLS 和反向代理。
 
 这种形态保持了前端职责的独立性，同时避免一个基础系统一开始就承担多镜像编排、服务发现和跨服务认证等不必要复杂度。
 
 ## 3. 目录职责
 
 ```text
-admin-ui/              管理后台应用
-public-web/            公共用户侧应用
+apps/
+  reference-system/    API、Worker、Migration 的可部署组合根
+  reference-admin/     参考管理后台应用
+  reference-web/       参考公共用户侧应用
 packages/
-  admin/               Admin Shell、路由、导航、Widget、搜索与编辑器注册表
+  frame/               Backend Host、Core、Runtime 与一方扩展适配
+  admin-shell/         Admin Shell、路由、导航、Widget、搜索与编辑器注册表
   cms/                 可选 CMS 的 Contracts、Server、Worker、Admin、Web 与迁移
   database/            Database、基础 Schema、迁移执行器与不可变 SQL
   design-tokens/       双 Web 入口共享的语义设计变量
   extension-sdk/       浏览器安全 Manifest、System 组合与分运行面契约
   ui/                  无业务含义的 React 基础组件
-  web/                 Web Shell、路由、SEO、Sitemap 与 Landing Block 注册表
-src/
-  index.ts             @lingcoo/frame 公共入口
-  app.ts               HTTP 宿主与通用中间件
-  server.ts            进程入口
-  worker.ts            后台任务与 Outbox 独立进程入口
-  runtime/worker.ts    无导入副作用的 Worker 运行时
-  lib/                 无领域含义的运行工具
-  modules/
-    system/            健康、就绪和运行时信息
-    auth/              登录、会话与密码生命周期
-    access/            账号、角色与权限管理
-    integrations/      Provider、加密凭据与连接生命周期
-    assets/            文件身份、上传意图、引用与删除生命周期
-    jobs/              持久化任务、Outbox 与处理器注册表
-    notifications/     站内通知、公告策略与邮件投递
-    observability/      请求指标、服务心跳与异常聚合
-    index.ts            Frame Core 模块组合根，不包含可选 CMS
-fixtures/consumer/     只通过 npm tarball 使用 Frame 的最小 Consumer
-deploy/                入口代理配置
+  web-shell/           Web Shell、路由、SEO、Sitemap 与 Landing Block 注册表
+fixtures/
+  consumer/            只通过 npm tarball 使用 Frame 的最小 Consumer
+  example-extension/   完整领域扩展示例
+test/integration/      跨包、扩展和迁移组合测试
+scripts/               仓库级构建与发布产物验收
+deploy/                生产部署脚本和入口配置
 docs/                  架构约束与扩展指南
 ```
 
-`src/app.ts` 是宿主，不承载业务规则。Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。
+`packages/frame/src` 继续分为四层：
+
+- `host/`：HTTP 宿主、环境、请求上下文和日志，不承载业务规则。
+- `core/`：Core Manifest、Core Extension 与稳定基础模块。
+- `runtime/`：System 的扩展安装、Worker 和 Migration 执行。
+- `integrations/`：Frame 对可选一方扩展的 Service Port 适配，例如 CMS。
+
+Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。完整目录阅读顺序见根
+[CODEMAP](../CODEMAP.md)。
 
 ## 4. 基础能力
 
@@ -199,16 +199,19 @@ JSON 适配器，执行版本校验、引用预检、事务 Upsert、运行记�
 每个领域模块应包含完整的垂直能力，而不是只按技术层横向堆放：
 
 ```text
-src/modules/catalog/
-  index.ts
-  schema.ts
-  repository.ts
-  service.ts
-  routes.ts
+packages/catalog-extension/src/
   contracts.ts
+  server.ts
+  worker.ts
+  migrations.ts
+  admin.tsx
+  web.tsx
+  index.ts
 ```
 
-模块可以引用基础库，但基础库不能引用领域模块；领域模块之间也不应直接读写对方的数据表，应通过公开服务边界协作。
+领域扩展可以引用 Frame 公开入口，但 Frame 包不能引用领域扩展；领域扩展之间也不应直接读写对方的
+私有表，应通过公开 Service Port 或 Outbox 事件协作。具体结构见
+[扩展开发与系统组合](extension-development.md)。
 
 ## 6. 暂不纳入的能力
 

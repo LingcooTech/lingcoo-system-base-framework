@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {
   buildApp,
   createFrameWorker,
-  frameCmsExtension,
   frameCoreExtension,
   loadEnv,
   runSystemMigrations,
 } from '@lingcoo/frame';
+import { frameCmsExtension } from '@lingcoo/frame/cms';
 import { frameCoreManifest } from '@lingcoo/frame/manifest';
 import { exampleExtension } from '@lingcoo/frame-example-extension';
 import { exampleAdminExtension } from '@lingcoo/frame-example-extension/admin';

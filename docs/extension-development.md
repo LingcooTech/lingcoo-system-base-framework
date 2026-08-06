@@ -2,7 +2,7 @@
 
 ## 当前能力
 
-Frame 0.5 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
+Frame 0.6 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
 中，不提供安全沙箱、生产 ZIP 上传、无重启卸载或运行时插件市场。
 
 一个领域扩展可以贡献：
@@ -39,8 +39,8 @@ export const manifest = {
   id: 'example',
   version: '0.1.0',
   apiVersion: '1',
-  frame: '^0.5.0',
-  dependencies: [{ id: 'frame', version: '^0.5.0' }],
+  frame: '^0.6.0',
+  dependencies: [{ id: 'frame', version: '^0.6.0' }],
   permissions: ['example.read'],
   settings: ['example.greeting'],
   server: { routes: [{ method: 'GET', path: '/api/example' }] },
@@ -113,7 +113,7 @@ import {
 const source = defineMigrationSource({
   id: 'example',
   version: '0.1.0',
-  dependencies: [{ id: 'frame', version: '^0.5.0' }],
+  dependencies: [{ id: 'frame', version: '^0.6.0' }],
   migrations: [
     {
       id: '0001_initial.sql',
@@ -132,13 +132,9 @@ export const migrations = defineMigrationExtension(source);
 ## 应用组合根
 
 ```ts
-import {
-  buildApp,
-  createFrameWorker,
-  frameCmsExtension,
-  frameCoreExtension,
-  runSystemMigrations,
-} from '@lingcoo/frame';
+import { buildApp, createFrameWorker, runSystemMigrations } from '@lingcoo/frame';
+import { frameCmsExtension } from '@lingcoo/frame/cms';
+import { frameCoreExtension } from '@lingcoo/frame/extensions';
 import { defineSystem } from '@lingcoo/frame-extension-sdk';
 import { exampleExtension } from '@lingcoo/example-extension';
 

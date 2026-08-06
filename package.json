@@ -1,109 +1,49 @@
 {
-  "name": "@lingcoo/frame",
-  "version": "0.5.0",
-  "private": false,
+  "name": "lingcoo-system-base-framework-workspace",
+  "private": true,
   "type": "module",
-  "description": "Lingcoo 可运行、可部署、可扩展的业务系统基础框架。",
-  "files": [
-    "dist",
-    "admin-ui/dist",
-    "public-web/dist",
-    "README.md"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./app": {
-      "types": "./dist/app.d.ts",
-      "import": "./dist/app.js"
-    },
-    "./env": {
-      "types": "./dist/lib/env.d.ts",
-      "import": "./dist/lib/env.js"
-    },
-    "./worker": {
-      "types": "./dist/runtime/worker.d.ts",
-      "import": "./dist/runtime/worker.js"
-    },
-    "./extensions": {
-      "types": "./dist/extensions/core.d.ts",
-      "import": "./dist/extensions/core.js"
-    },
-    "./manifest": {
-      "types": "./dist/extensions/manifest.d.ts",
-      "import": "./dist/extensions/manifest.js"
-    },
-    "./migrations": {
-      "types": "./dist/runtime/migrations.d.ts",
-      "import": "./dist/runtime/migrations.js"
-    }
-  },
+  "description": "Lingcoo Frame packages, reference applications and verification workspace.",
   "workspaces": [
-    "admin-ui",
-    "public-web",
+    "apps/*",
     "packages/*",
     "fixtures/example-extension"
   ],
   "scripts": {
     "setup": "npm install && npm run build:packages",
-    "dev": "tsx watch src/server.ts",
-    "dev:api": "npm run dev",
-    "dev:worker": "tsx watch src/worker.ts",
-    "dev:admin": "npm run dev --workspace @lingcoo-base/admin-ui",
-    "dev:public": "npm run dev --workspace @lingcoo/base-public-web",
-    "build:packages": "npm run build --workspace @lingcoo/frame-design-tokens && npm run build --workspace @lingcoo/frame-ui && npm run build --workspace @lingcoo/frame-database && npm run build --workspace @lingcoo/frame-extension-sdk && npm run build --workspace @lingcoo/frame-admin && npm run build --workspace @lingcoo/frame-web && npm run build --workspace @lingcoo/frame-cms && npm run build --workspace @lingcoo/frame-example-extension",
-    "build:server": "node scripts/clean-server-build.mjs && tsc -p tsconfig.json",
-    "build": "npm run build:packages && npm run build:server",
-    "build:admin": "npm run build --workspace @lingcoo-base/admin-ui",
-    "build:public": "npm run build --workspace @lingcoo/base-public-web",
-    "build:all": "npm run build:packages && npm run build:server && npm run build:admin && npm run build:public",
-    "start": "node dist/server.js",
-    "start:worker": "node dist/worker.js",
-    "test": "npm run build:packages && node --import tsx --test --test-concurrency=1 test/**/*.test.ts && npm run test --workspaces --if-present",
-    "typecheck": "npm run build:packages && tsc --noEmit && npm run typecheck --workspaces --if-present",
+    "dev:api": "npm run dev --workspace @lingcoo/frame-reference-system",
+    "dev:worker": "npm run dev:worker --workspace @lingcoo/frame-reference-system",
+    "dev:admin": "npm run dev --workspace @lingcoo/frame-reference-admin",
+    "dev:public": "npm run dev --workspace @lingcoo/frame-reference-web",
+    "build:packages": "npm run build --workspace @lingcoo/frame-design-tokens && npm run build --workspace @lingcoo/frame-ui && npm run build --workspace @lingcoo/frame-database && npm run build --workspace @lingcoo/frame-extension-sdk && npm run build --workspace @lingcoo/frame-admin && npm run build --workspace @lingcoo/frame-web && npm run build --workspace @lingcoo/frame-cms && npm run build --workspace @lingcoo/frame && npm run build --workspace @lingcoo/frame-example-extension",
+    "build:server": "npm run build --workspace @lingcoo/frame-reference-system",
+    "build:admin": "npm run build --workspace @lingcoo/frame-reference-admin",
+    "build:public": "npm run build --workspace @lingcoo/frame-reference-web",
+    "build:apps": "npm run build:server && npm run build:admin && npm run build:public",
+    "build:all": "npm run build:packages && npm run build:apps",
+    "start": "npm run start --workspace @lingcoo/frame-reference-system",
+    "start:worker": "npm run start:worker --workspace @lingcoo/frame-reference-system",
+    "test:integration": "node --import tsx --test --test-concurrency=1 test/integration/**/*.test.ts",
+    "test": "npm run build:packages && npm run test:integration && npm run test --workspaces --if-present",
+    "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
     "lint": "eslint . && npm run lint --workspaces --if-present",
     "check": "npm run typecheck && npm test && npm run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "packages:verify": "npm run build:all && node scripts/verify-packages.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --import tsx src/migrate.ts",
+    "db:migrate": "npm run migrate --workspace @lingcoo/frame-reference-system",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
-  },
-  "dependencies": {
-    "@lingcoo/frame-admin": "^0.5.0",
-    "@lingcoo/frame-cms": "^0.5.0",
-    "@lingcoo/frame-database": "^0.5.0",
-    "@lingcoo/frame-extension-sdk": "^0.5.0",
-    "@lingcoo/frame-web": "^0.5.0",
-    "@fastify/cookie": "^10.0.1",
-    "@fastify/cors": "^11.1.0",
-    "@fastify/helmet": "^13.0.2",
-    "@fastify/jwt": "^10.2.1",
-    "@fastify/rate-limit": "^10.3.0",
-    "@fastify/sensible": "^6.0.4",
-    "@fastify/static": "^10.1.2",
-    "alipay-sdk": "^4.14.0",
-    "drizzle-orm": "^0.45.2",
-    "fastify": "^5.6.1",
-    "nodemailer": "^9.0.3",
-    "pg": "^8.16.3",
-    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.5.2",
-    "@types/nodemailer": "^8.0.1",
-    "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.8.0",
     "globals": "^16.0.0",
     "prettier": "^3.8.3",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.65.0"
   },
   "engines": {

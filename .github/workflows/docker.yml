@@ -7,12 +7,10 @@ on:
       - 'Dockerfile'
       - 'docker-compose*.yml'
       - 'package*.json'
-      - 'admin-ui/**'
-      - 'public-web/**'
+      - 'apps/**'
       - 'packages/**'
       - 'scripts/**'
-      - 'src/**'
-      - 'tsconfig.json'
+      - 'test/**'
   workflow_dispatch:
 
 permissions:

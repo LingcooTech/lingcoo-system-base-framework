@@ -195,7 +195,7 @@ jobs:
 
           while true; do
             set +e
-            ssh $ssh_opts "${DEPLOY_USER}@${DEPLOY_HOST}" "${remote_cmd}" < ./scripts/deploy/deploy.sh
+            ssh $ssh_opts "${DEPLOY_USER}@${DEPLOY_HOST}" "${remote_cmd}" < ./deploy/scripts/deploy.sh
             code=$?
             set -e
 

@@ -1,6 +1,7 @@
 # 双 Web 前端与共享组件规划
 
-Frame 从一开始就包含两个前端入口：`admin-ui` 是管理后台，`public-web` 是公共用户侧宿主。它们
+Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考管理后台，
+`apps/reference-web` 是参考公共用户侧宿主。它们
 共享 `@lingcoo/frame-design-tokens` 和 `@lingcoo/frame-ui`，但应用壳与页面组件保持独立。
 
 ## 当前共享基础

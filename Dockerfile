@@ -4,16 +4,18 @@ FROM ${NODE_BASE_IMAGE} AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY admin-ui/package.json ./admin-ui/
-COPY public-web/package.json ./public-web/
+COPY apps/reference-system/package.json ./apps/reference-system/
+COPY apps/reference-admin/package.json ./apps/reference-admin/
+COPY apps/reference-web/package.json ./apps/reference-web/
 COPY fixtures/example-extension/package.json ./fixtures/example-extension/
 COPY packages/database/package.json ./packages/database/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/extension-sdk/package.json ./packages/extension-sdk/
-COPY packages/admin/package.json ./packages/admin/
+COPY packages/admin-shell/package.json ./packages/admin-shell/
 COPY packages/cms/package.json ./packages/cms/
+COPY packages/frame/package.json ./packages/frame/
 COPY packages/ui/package.json ./packages/ui/
-COPY packages/web/package.json ./packages/web/
+COPY packages/web-shell/package.json ./packages/web-shell/
 RUN npm ci
 
 FROM dependencies AS build
@@ -33,22 +35,25 @@ RUN addgroup -S lingcoo && adduser -S lingcoo -G lingcoo
 
 COPY --from=build --chown=lingcoo:lingcoo /app/package.json /app/package-lock.json ./
 COPY --from=build --chown=lingcoo:lingcoo /app/node_modules ./node_modules
-COPY --from=build --chown=lingcoo:lingcoo /app/dist ./dist
+COPY --from=build --chown=lingcoo:lingcoo /app/apps/reference-system/package.json ./apps/reference-system/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/apps/reference-system/dist ./apps/reference-system/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/apps/reference-admin/dist ./apps/reference-admin/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/apps/reference-web/dist ./apps/reference-web/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/frame/package.json ./packages/frame/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/frame/dist ./packages/frame/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/package.json ./packages/database/package.json
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/dist ./packages/database/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/database/drizzle ./packages/database/drizzle
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/extension-sdk/package.json ./packages/extension-sdk/package.json
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/extension-sdk/dist ./packages/extension-sdk/dist
-COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin/package.json ./packages/admin/package.json
-COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin/dist ./packages/admin/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin-shell/package.json ./packages/admin-shell/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/admin-shell/dist ./packages/admin-shell/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/cms/package.json ./packages/cms/package.json
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/cms/dist ./packages/cms/dist
 COPY --from=build --chown=lingcoo:lingcoo /app/packages/cms/migrations ./packages/cms/migrations
-COPY --from=build --chown=lingcoo:lingcoo /app/packages/web/package.json ./packages/web/package.json
-COPY --from=build --chown=lingcoo:lingcoo /app/packages/web/dist ./packages/web/dist
-COPY --from=build --chown=lingcoo:lingcoo /app/admin-ui/dist ./admin-ui/dist
-COPY --from=build --chown=lingcoo:lingcoo /app/public-web/dist ./public-web/dist
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/web-shell/package.json ./packages/web-shell/package.json
+COPY --from=build --chown=lingcoo:lingcoo /app/packages/web-shell/dist ./packages/web-shell/dist
 
 USER lingcoo
 EXPOSE 8090
-CMD ["node", "dist/server.js"]
+CMD ["node", "apps/reference-system/dist/server.js"]

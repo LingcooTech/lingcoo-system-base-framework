@@ -1,6 +1,6 @@
 {
   "name": "@lingcoo/frame-database",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "type": "module",
   "description": "Database client, schema and migration runtime for Lingcoo Frame.",

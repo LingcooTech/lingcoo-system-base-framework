@@ -32,12 +32,12 @@ function assertPackageFiles(packageName, actualFiles, expectedFiles) {
 await mkdir(archiveDirectory, { recursive: true });
 
 try {
-  const frame = packPackage(repositoryRoot);
+  const frame = packPackage(path.join(repositoryRoot, 'packages/frame'));
   const database = packPackage(path.join(repositoryRoot, 'packages/database'));
   const extensionSdk = packPackage(path.join(repositoryRoot, 'packages/extension-sdk'));
-  const admin = packPackage(path.join(repositoryRoot, 'packages/admin'));
+  const admin = packPackage(path.join(repositoryRoot, 'packages/admin-shell'));
   const cms = packPackage(path.join(repositoryRoot, 'packages/cms'));
-  const web = packPackage(path.join(repositoryRoot, 'packages/web'));
+  const web = packPackage(path.join(repositoryRoot, 'packages/web-shell'));
   const designTokens = packPackage(path.join(repositoryRoot, 'packages/design-tokens'));
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
   const exampleExtension = packPackage(path.join(repositoryRoot, 'fixtures/example-extension'));
@@ -45,14 +45,15 @@ try {
   assertPackageFiles('@lingcoo/frame', frame.files, [
     'dist/index.js',
     'dist/index.d.ts',
-    'dist/app.js',
+    'dist/host/app.js',
     'dist/runtime/worker.js',
     'dist/runtime/migrations.js',
-    'dist/extensions/core.js',
-    'dist/extensions/manifest.js',
-    'admin-ui/dist/index.html',
-    'public-web/dist/index.html',
+    'dist/core/extension.js',
+    'dist/core/manifest.js',
+    'dist/integrations/cms/extension.js',
   ]);
+  assert.equal(frame.files.has('apps/reference-admin/dist/index.html'), false);
+  assert.equal(frame.files.has('apps/reference-web/dist/index.html'), false);
   assertPackageFiles('@lingcoo/frame-database', database.files, [
     'dist/index.js',
     'dist/index.d.ts',
