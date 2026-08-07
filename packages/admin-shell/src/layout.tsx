@@ -419,7 +419,7 @@ export function AdminApplicationShell<TContext>({
   const activeRoute = registry.matchRoute(pathname)?.route;
   const canSearch = hasPermission('search.use');
   const canReadNotifications = hasPermission('notifications.read');
-  const canReadSettings = hasPermission('system.settings.read');
+  const canOpenSettings = hasPermission('admin.access');
   const canReadPresentation = hasPermission('presentation.read');
   const canOpenSystemInfo = frame?.systemInfoHref
     ? !frame.systemInfoPermission || hasPermission(frame.systemInfoPermission)
@@ -562,7 +562,7 @@ export function AdminApplicationShell<TContext>({
                 account={account}
                 accountHref={accountHref}
                 accountSecurityHref={accountSecurityHref}
-                canReadSettings={canReadSettings}
+                canReadSettings={canOpenSettings}
                 onLogout={() => void logout()}
                 settingsHref={settingsHref}
               />

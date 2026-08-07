@@ -63,6 +63,11 @@ CMS。
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。
 
+Frame Admin Manifest 不注册 `/`，Consumer 必须为自己的应用首页声明 Route。Frame 技术 Route 会注册到
+Registry 并继续执行权限控制，但不产生侧栏 Navigation；默认只贡献一个 `/settings` 应用设置入口。
+安装 CMS 或领域扩展时，业务导航由对应扩展 Manifest 独立贡献。Footer 的 `/system` 是 Frame 系统信息的
+默认入口，不应由 Consumer 再复制一组技术导航。
+
 设置 Registry 归属于每个 Defined System，不再由业务扩展修改进程级全局数组。Worker 注册器同样按
 Worker 实例创建；扩展只能注册 Manifest 已声明的 Job 和 Topic。
 

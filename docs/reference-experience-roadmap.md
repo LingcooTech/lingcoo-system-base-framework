@@ -333,3 +333,41 @@ R3 输入：
 - 将“外部集成”产品化为 Connections，并在应用设置与具体业务配置中提供上下文入口。
 - 统一成员与权限、品牌、通知和设置的应用级入口；通知继续由 Topbar 承载，不新增独立能力导航区域。
 - 保持 Reference Admin 能验证全部 Frame 能力，但通过隐藏 Route 和权限控制访问开发/运维信息。
+
+## 12. R3 完成记录
+
+- Completed: 2026-08-07
+- Starting commit: `680faa5`
+
+已完成：
+
+- Frame Admin Manifest 不再注册 `/`，默认业务首页正式归 Consumer App 所有；Reference Admin 通过独立的
+  `frame-reference-app` 扩展注册自己的最小应用首页。
+- Frame 的 Navigation Contribution 从 13 项收敛为唯一的“应用设置”；CMS 等业务扩展继续按自己的
+  Manifest 贡献工作导航，技术路由仍完整注册并执行原有权限门禁。
+- `/settings` 升级为统一应用设置入口，按账号权限提供成员与权限、连接、品牌与站点、数据字典与分类、
+  审计记录和类型化基础设置，不再要求这些能力分别占据侧栏。
+- “外部集成”前台产品名称统一为“连接”；Provider、Connection、Credential、Capability、Activity、
+  数据库结构和 `/api/integrations/*` 后端契约保持不变。
+- 通知继续只由 Topbar 承载，个人中心与账号安全继续只进入账户菜单；媒体资产保留 AssetPicker 上下文
+  工作流和受保护的直接管理 Route，但不进入应用主导航。
+- Footer 的 Frame 版本链接进入 `/system`；Reference Admin 在该隐藏页面按权限提供扩展、任务与事件、
+  运行状态、资产管理和 Frame 帮助入口，用于验证全部现有能力。
+- Admin 包测试锁定“Frame 不占用根路由、技术 Route 不生成 Navigation、仅一个应用设置入口”；CMS
+  组合测试锁定安装 CMS 后的侧栏只包含“内容管理 + 应用设置”。
+
+验证结果：
+
+- `@lingcoo/frame-admin` 类型检查、Lint 与 3/3 测试通过；Reference Admin 类型检查、Lint 和生产构建通过。
+- `npm run packages:verify`：9 个公开包与示例扩展完成 tarball 验收，隔离 Consumer 安装 251 个包后完成
+  TypeScript 和运行时验证。
+- `npm run check`：14 项跨包集成测试、52 项 Frame 测试及 Admin/Web/UI 测试全部通过；其中依赖
+  PostgreSQL 的 11 项测试在无数据库环境按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R4 输入：
+
+- 将当前 Reference `/system` 页面提炼为 `@lingcoo/frame-admin` 可复用的系统信息产品面。
+- 建立浏览器安全的系统摘要契约，统一展示 Frame/应用版本、扩展、API/Worker/Database、Migration、
+  Job/Outbox、指标和异常状态。
+- 把分散的技术详情按权限组合到一个系统信息路由，继续保持零技术主导航贡献。

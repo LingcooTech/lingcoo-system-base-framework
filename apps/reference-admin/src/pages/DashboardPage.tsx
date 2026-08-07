@@ -1,5 +1,16 @@
-import { Activity, Blocks, Database, MonitorCog } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  Blocks,
+  CircleHelp,
+  Database,
+  Images,
+  ListChecks,
+  MonitorCog,
+  Waypoints,
+} from 'lucide-react';
 import { AdminDashboardWidgets } from '@lingcoo/frame-admin';
+import { AdminLink } from '@lingcoo/frame-admin/router';
 import { useEffect, useState } from 'react';
 
 import { fetchRuntime, type RuntimeInfo } from '../api/client';
@@ -62,6 +73,44 @@ const metrics = [
   },
 ];
 
+const systemAreas = [
+  {
+    href: '/modules',
+    icon: Waypoints,
+    title: '扩展与模块',
+    description: '查看当前系统装载的 Frame 模块与扩展边界。',
+    permission: 'admin.access',
+  },
+  {
+    href: '/operations',
+    icon: ListChecks,
+    title: '任务与事件',
+    description: '检查后台任务、重试状态与 Outbox 事件投影。',
+    permission: 'jobs.read',
+  },
+  {
+    href: '/observability',
+    icon: Activity,
+    title: '运行状态',
+    description: '检查 API、Worker、数据库、指标与聚合异常。',
+    permission: 'observability.read',
+  },
+  {
+    href: '/assets',
+    icon: Images,
+    title: '资产管理',
+    description: '直接检查文件身份、存储对象和领域引用关系。',
+    permission: 'assets.read',
+  },
+  {
+    href: '/help',
+    icon: CircleHelp,
+    title: 'Frame 帮助',
+    description: '查看框架能力边界、扩展约束和常用控制面。',
+    permission: 'admin.access',
+  },
+] as const;
+
 export function DashboardPage() {
   const { hasPermission } = useAuth();
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
@@ -118,6 +167,27 @@ export function DashboardPage() {
       </div>
       <ResourceSection title="运行面" description="基础框架只提供系统宿主，不预置行业资源。">
         <DataTable columns={columns} getRowKey={(row) => row.id} rows={surfaces} />
+      </ResourceSection>
+      <ResourceSection
+        title="系统管理入口"
+        description="这些入口只面向具备相应权限的开发与运维人员，不进入应用主导航。"
+      >
+        <div className="settings-hub-grid">
+          {systemAreas
+            .filter((area) => hasPermission(area.permission))
+            .map(({ href, icon: Icon, title, description }) => (
+              <AdminLink className="settings-hub-card" href={href} key={href}>
+                <span className="settings-hub-card__icon">
+                  <Icon aria-hidden size={18} />
+                </span>
+                <span>
+                  <strong>{title}</strong>
+                  <small>{description}</small>
+                </span>
+                <ArrowRight aria-hidden size={16} />
+              </AdminLink>
+            ))}
+        </div>
       </ResourceSection>
       <div className="extension-dashboard-widgets">
         <AdminDashboardWidgets<AdminAppContext> context={{}} hasPermission={hasPermission} />

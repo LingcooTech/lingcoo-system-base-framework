@@ -564,6 +564,69 @@ a {
   display: grid;
 }
 
+#general {
+  scroll-margin-top: 76px;
+}
+
+.settings-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-hub-grid--compact {
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+}
+
+.settings-hub-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 94px;
+  padding: 18px 20px;
+  border-right: 1px solid #edf0ed;
+  border-bottom: 1px solid #edf0ed;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.settings-hub-card:nth-child(2n) {
+  border-right: 0;
+}
+
+.settings-hub-card:hover {
+  color: #235d3c;
+  background: #f7faf8;
+}
+
+.settings-hub-card > span:nth-child(2) {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.settings-hub-card strong {
+  color: #2f3c34;
+  font-size: 14px;
+}
+
+.settings-hub-card small {
+  color: #758079;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.settings-hub-card__icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  color: #2e6c48;
+  background: #e9f3ec;
+  border-radius: 8px;
+  place-items: center;
+}
+
 .settings-list > div,
 .setting-row {
   display: grid;
@@ -1647,6 +1710,16 @@ a {
   .setting-row {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .settings-hub-grid,
+  .settings-hub-grid--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-hub-card,
+  .settings-hub-card:nth-child(2n) {
+    border-right: 0;
   }
 
   .account-grid,

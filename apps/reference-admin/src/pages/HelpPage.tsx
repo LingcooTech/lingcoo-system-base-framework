@@ -15,7 +15,7 @@ const capabilityGroups = [
   },
   {
     title: '扩展基础',
-    items: ['模块显式注册', '统一搜索与权限', 'Metadata 分类能力', 'Provider 外部集成'],
+    items: ['模块显式注册', '统一搜索与权限', 'Metadata 分类能力', 'Provider 连接'],
   },
 ];
 

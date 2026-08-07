@@ -8,22 +8,7 @@ import {
   FRAME_VERSION,
   projectExtensionManifest,
 } from '@lingcoo/frame-extension-sdk';
-import {
-  Activity,
-  Bell,
-  BookOpenText,
-  CircleHelp,
-  DatabaseZap,
-  Gauge,
-  Images,
-  ListChecks,
-  Palette,
-  PlugZap,
-  ScrollText,
-  Settings2,
-  ShieldCheck,
-  Waypoints,
-} from 'lucide-react';
+import { BookOpenText, Settings2 } from 'lucide-react';
 
 import { searchResources } from './api/client';
 import { AccessPage } from './pages/AccessPage';
@@ -33,6 +18,7 @@ import { AuditPage } from './pages/AuditPage';
 import { CmsPage } from './pages/CmsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { HelpPage } from './pages/HelpPage';
+import { HomePage } from './pages/HomePage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
 import { MetadataPage } from './pages/MetadataPage';
 import { ModulesPage } from './pages/ModulesPage';
@@ -46,7 +32,6 @@ export type AdminAppContext = Record<string, never>;
 
 const frameAdminSurface = defineAdminExtension<AdminAppContext>({
   routes: [
-    { id: 'frame.dashboard', component: DashboardPage },
     { id: 'frame.system-info', component: DashboardPage },
     { id: 'frame.modules', component: ModulesPage },
     { id: 'frame.access', component: AccessPage },
@@ -62,21 +47,7 @@ const frameAdminSurface = defineAdminExtension<AdminAppContext>({
     { id: 'frame.settings', component: SettingsPage },
     { id: 'frame.help', component: HelpPage },
   ],
-  navigation: [
-    { id: 'frame.dashboard', icon: Gauge },
-    { id: 'frame.modules', icon: Waypoints },
-    { id: 'frame.access', icon: ShieldCheck },
-    { id: 'frame.integrations', icon: PlugZap },
-    { id: 'frame.assets', icon: Images },
-    { id: 'frame.operations', icon: ListChecks },
-    { id: 'frame.observability', icon: Activity },
-    { id: 'frame.notifications', icon: Bell },
-    { id: 'frame.metadata', icon: DatabaseZap },
-    { id: 'frame.audit', icon: ScrollText },
-    { id: 'frame.presentation', icon: Palette },
-    { id: 'frame.settings', icon: Settings2 },
-    { id: 'frame.help', icon: CircleHelp },
-  ],
+  navigation: [{ id: 'frame.settings', icon: Settings2 }],
   searchProviders: [
     {
       id: 'frame.resources',
@@ -117,10 +88,34 @@ const cmsAdminDefinition = defineExtension({
   }),
 });
 
+const referenceAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-reference-app',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame', version: `^${FRAME_VERSION}` }],
+    admin: {
+      routes: [
+        {
+          id: 'reference.home',
+          path: '/',
+          title: '参考应用',
+          description: 'Frame Reference App 的应用级起始页。',
+          permission: 'admin.access',
+        },
+      ],
+    },
+  },
+  admin: defineAdminExtension<AdminAppContext>({
+    routes: [{ id: 'reference.home', component: HomePage }],
+  }),
+});
+
 export const adminSystem = defineSystem({
   id: 'frame-reference-admin',
   version: FRAME_VERSION,
-  extensions: [frameAdminDefinition, cmsAdminDefinition],
+  extensions: [frameAdminDefinition, cmsAdminDefinition, referenceAdminDefinition],
 });
 
 export const adminRegistry = createAdminRegistry<AdminAppContext>(adminSystem);

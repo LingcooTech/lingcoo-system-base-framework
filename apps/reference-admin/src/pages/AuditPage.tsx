@@ -172,7 +172,7 @@ export function AuditPage() {
       {error ? <p className="integration-notice error">{error}</p> : null}
       <ResourceSection
         title="操作记录"
-        description="统一追踪身份、设置、集成、任务、通知和资产等基础能力的关键变更。"
+        description="统一追踪身份、设置、连接、任务、通知和资产等基础能力的关键变更。"
       >
         <FilterBar
           actions={

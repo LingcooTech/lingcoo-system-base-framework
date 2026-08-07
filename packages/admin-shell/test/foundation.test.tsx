@@ -8,6 +8,7 @@ import { defineExtension, defineSystem } from '@lingcoo/frame-extension-sdk';
 import { AdminShell, createAdminRegistry, defineAdminExtension } from '../src/index.js';
 import { AdminAuthProvider, type AdminAccount, type AdminAuthClient } from '../src/auth.js';
 import { AdminApplicationShell } from '../src/layout.js';
+import { frameAdminManifest } from '../src/manifest.js';
 import { AdminRouterProvider } from '../src/router.js';
 import { DataTable, PageFrame } from '../src/shared.js';
 
@@ -111,6 +112,33 @@ test('application shell keeps business navigation primary and Frame identity in 
   assert.match(markup, /Owner的账号菜单/);
   assert.match(markup, /本系统基于 Lingcoo Frame 构建 · v0\.6\.0/);
   assert.doesNotMatch(markup, /模块扩展/);
+});
+
+test('Frame keeps technical routes hidden and contributes one application settings entry', () => {
+  assert.equal(
+    frameAdminManifest.routes.some((route) => route.path === '/'),
+    false,
+  );
+  assert.deepEqual(
+    frameAdminManifest.navigation.map((item) => ({ id: item.id, label: item.label })),
+    [{ id: 'frame.settings', label: '应用设置' }],
+  );
+
+  const hiddenRouteIds = [
+    'frame.system-info',
+    'frame.modules',
+    'frame.assets',
+    'frame.operations',
+    'frame.observability',
+    'frame.notifications',
+    'frame.audit',
+  ];
+  const routeIds = new Set(frameAdminManifest.routes.map((route) => route.id));
+  const navigationRouteIds = new Set(frameAdminManifest.navigation.map((item) => item.routeId));
+  for (const routeId of hiddenRouteIds) {
+    assert.equal(routeIds.has(routeId), true);
+    assert.equal(navigationRouteIds.has(routeId), false);
+  }
 });
 
 test('shared page and table composites carry structure without application APIs', () => {

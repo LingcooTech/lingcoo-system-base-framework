@@ -57,11 +57,11 @@ export interface SectionMeta {
 export const sections: Record<SectionKey, SectionMeta> = {
   dashboard: {
     id: 'dashboard',
-    group: '总览',
-    title: '基础框架控制台',
-    navLabel: '系统概览',
-    description: '查看运行面、基础服务和框架扩展状态。',
-    href: '/',
+    group: 'Frame',
+    title: '系统信息',
+    navLabel: '系统信息',
+    description: '查看 Frame 版本、运行面、已安装扩展和受保护的管理入口。',
+    href: '/system',
     icon: Gauge,
     permission: 'system.runtime.read',
     context: [
@@ -100,9 +100,9 @@ export const sections: Record<SectionKey, SectionMeta> = {
   integrations: {
     id: 'integrations',
     group: '系统',
-    title: '外部集成',
-    navLabel: '外部集成',
-    description: '通过统一 Provider 契约管理服务配置、加密凭据、连通性和调用记录。',
+    title: '连接',
+    navLabel: '连接',
+    description: '通过统一 Provider 契约管理外部服务连接、加密凭据、连通性和调用记录。',
     href: '/integrations',
     icon: PlugZap,
     permission: 'integrations.read',
@@ -244,12 +244,12 @@ export const sections: Record<SectionKey, SectionMeta> = {
   settings: {
     id: 'settings',
     group: '系统',
-    title: '框架设置',
-    navLabel: '系统设置',
-    description: '查看基础运行配置和后续系统能力的接入位置。',
+    title: '应用设置',
+    navLabel: '应用设置',
+    description: '集中管理成员权限、连接、品牌、数据基础、审计和应用配置。',
     href: '/settings',
     icon: Settings2,
-    permission: 'system.settings.read',
+    permission: 'admin.access',
     context: [
       { label: '配置方式', value: 'Typed registry', note: '只允许登记过的非敏感设置' },
       { label: '变更历史', value: 'Versioned', note: '每次保存保留操作者与原因' },

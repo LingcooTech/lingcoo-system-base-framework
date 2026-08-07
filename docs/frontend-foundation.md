@@ -25,6 +25,10 @@ Shell 的左侧导航只读取扩展 Registry 明确声明的 Navigation Contrib
 安全和退出固定进入 Topbar/账户菜单。内容区底部显示 Frame 名称与版本，具备权限时才提供系统信息链接。
 Consumer 注入认证、品牌、通知和资产加载函数，公共包不依赖 Reference App API Client。
 
+Frame 默认 Admin Manifest 不占用 `/`，业务首页必须由 Consumer 或领域扩展注册。Frame 自身只贡献一个
+“应用设置”导航；Reference Admin 安装 CMS 后，侧栏由“内容管理”和“应用设置”组成。账号、通知、资产、
+任务、运行状态和扩展管理都不会因为安装 Frame 自动进入业务侧栏。
+
 公共 Web 的统一站点壳已经产品化到 `@lingcoo/frame-web`：SiteShell 组合 Header、Footer 和
 MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语义的页面结构；SeoHead、
 404/500、Error Boundary 和账号安全流程也由包提供。Reference Web 只从公开子入口使用这些实现，不再
@@ -61,7 +65,17 @@ MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语�
 账号安全页面保持轻量独立布局，通过 `@lingcoo/frame-web/account` 提供找回密码、重置密码、接受邀请
 和邮箱验证。请求函数可由 Consumer 注入，但默认使用 Frame Core 的同源 Auth API。
 
-管理后台提供“框架帮助”导航与顶栏入口，集中说明稳定能力、领域边界、常用控制面和扩展约束。该页面
-只描述框架已经具备的能力，不替代领域模块自己的业务帮助。
+管理后台从 Topbar 帮助按钮或受保护的系统信息页进入“框架帮助”，集中说明稳定能力、领域边界、常用
+控制面和扩展约束。该页面不占业务导航，也不替代领域模块自己的业务帮助。
+
+## 应用设置与系统信息
+
+`/settings` 是应用级公共管理入口，按权限聚合成员与权限、Connections、品牌与站点、数据字典与分类、
+审计记录和类型化非敏感设置。Connections 是前台产品名称；后端继续使用 integrations API 与
+Provider/Connection/Credential 契约，避免无价值的协议迁移。
+
+通知固定在 Topbar，个人资料和账号安全固定在账户菜单，媒体资产优先通过 AssetPicker 进入业务流程。
+Footer 的 Frame 名称和版本是默认系统信息入口；`/system` 及其技术子页面受权限保护且不声明 Navigation。
+Reference Admin 通过该入口测试扩展、任务、运行状态、资产和帮助，行业应用可以保持 Frame 完全在幕后。
 
 公共 Web 只共享展示和交互结构，不把课程卡片、商品卡片、购物车或报名表等行业组件放进 Frame。

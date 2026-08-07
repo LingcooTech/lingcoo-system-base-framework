@@ -113,6 +113,24 @@ test('CMS can be enabled or disabled without changing Admin or Web shell routes'
   );
   assert.equal(coreAdminRegistry.matchRoute('/cms'), undefined);
   assert.equal(cmsAdminRegistry.matchRoute('/cms')?.route.id, 'frame-cms.content');
+  assert.deepEqual(
+    coreAdminRegistry.navigation.map((item) => item.label),
+    ['应用设置'],
+  );
+  assert.deepEqual(
+    cmsAdminRegistry.navigation.map((item) => item.label),
+    ['内容管理', '应用设置'],
+  );
+  assert.equal(coreAdminRegistry.matchRoute('/system')?.route.id, 'frame.system-info');
+  assert.equal(coreAdminRegistry.matchRoute('/operations')?.route.id, 'frame.operations');
+  assert.equal(
+    coreAdminRegistry.navigation.some((item) => item.href === '/system'),
+    false,
+  );
+  assert.equal(
+    coreAdminRegistry.navigation.some((item) => item.href === '/operations'),
+    false,
+  );
 
   const webCore = defineExtension({
     manifest: {

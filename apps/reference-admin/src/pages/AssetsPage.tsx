@@ -253,7 +253,7 @@ export function AssetsPage() {
             </Button>
           </form>
           {connections.length === 0 ? (
-            <p className="auth-error">请先在外部集成中配置、测试并启用七牛云连接。</p>
+            <p className="auth-error">请先在连接中心配置、测试并启用七牛云连接。</p>
           ) : null}
         </ResourceSection>
       ) : null}

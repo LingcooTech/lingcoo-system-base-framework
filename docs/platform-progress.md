@@ -545,3 +545,44 @@ R3 输入：
 - 将成员与权限、Connections、品牌、数据字典和审计收敛到一个应用设置入口及上下文组件。
 - 让通知继续停留在 Topbar；资产选择器、Connection Picker 和审计时间线嵌入具体工作流。
 - 为 R4 的集中式系统信息页准备浏览器安全运行摘要契约，但本阶段不把技术页面重新暴露到主导航。
+
+## Reference Experience：R3 应用公共能力
+
+### 范围
+
+- 让 Frame 公共能力进入应用设置、Topbar、账户菜单和具体业务工作流，不挤占业务主导航。
+- 解除 Frame Manifest 对应用根路由的占用，由 Consumer 明确拥有默认 Dashboard。
+- 保留全部受保护的 Frame 管理 Route，并为 Reference 环境提供隐藏式验证入口。
+
+### 完成记录
+
+- Completed: 2026-08-07
+- Starting commit: `680faa5`
+
+已交付：
+
+- `frameAdminManifest` 删除 `frame.dashboard` 根路由，只保留 `/system` 等受保护的公共能力路由；Frame
+  默认导航只贡献一项“应用设置”。
+- Reference Admin 新增应用级 `frame-reference-app` 扩展，自行拥有 `/`，证明行业 Consumer 可以自由
+  安装或替换业务 Dashboard。
+- 应用设置总览按权限聚合成员与权限、连接、品牌与站点、数据字典与分类、审计记录和类型化基础设置。
+- Connections 产品语言在 Manifest、页面元数据和上下文提示中统一为“连接”，后端 integrations API、
+  权限码和持久化模型保持兼容。
+- 通知保留在 Topbar，个人中心与账号安全保留在账户菜单；资产、任务、运行状态和扩展页面从侧栏移除，
+  但仍可从授权用户的 `/system` 页面进入。
+- 新增 Manifest 信息架构测试和 CMS 组合测试，防止技术 Route 重新产生 Navigation Contribution。
+
+验证结果：
+
+- Admin 包 3/3 测试、Reference Admin 类型检查、Lint 和生产构建通过；生产 JS 约 529 kB，只有既有的
+  Vite 分包建议。
+- `npm run packages:verify`：所有可发布包完成构建、打包、隔离安装、Consumer TypeScript 与运行时验收。
+- `npm run check`：全仓类型检查、14 项跨包集成测试、52 项 Frame 测试、Admin/Web/UI 测试及全部
+  Workspace Lint 通过；PostgreSQL 相关测试在本地按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R4 输入：
+
+- 产品化集中式系统信息页与浏览器安全摘要契约。
+- 集成扩展、运行面、Worker、Job/Outbox、Migration、指标和异常状态，并按权限分区展示。
+- 将 R3 的 Reference 系统信息实现迁入 Admin 包，同时保持 Footer 为唯一默认入口。
