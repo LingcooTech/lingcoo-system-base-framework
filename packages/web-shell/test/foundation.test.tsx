@@ -3,9 +3,12 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Hero, PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SiteShell } from '@lingcoo/frame-web/site';
+
+import { publicAuthModeFromRoute } from '../src/account.js';
+import { Hero, PageHeader, Section } from '../src/layout.js';
+import type { PublicPresentation } from '../src/presentation.js';
+import { breadcrumbStructuredData } from '../src/seo.js';
+import { SiteShell } from '../src/site.js';
 
 Object.assign(globalThis, { React });
 
@@ -34,7 +37,7 @@ const presentation: PublicPresentation = {
   assets: {},
 };
 
-test('site shell renders brand-driven desktop, mobile and footer navigation', () => {
+test('site shell renders brand-driven navigation and footer content', () => {
   const markup = renderToStaticMarkup(
     <SiteShell headerOverlay headerTone="dark" presentation={presentation}>
       <section>Page body</section>
@@ -53,6 +56,15 @@ test('site shell renders brand-driven desktop, mobile and footer navigation', ()
   assert.match(markup, /id="main-content"/);
 });
 
+test('site shell can omit its application admin entry', () => {
+  const markup = renderToStaticMarkup(
+    <SiteShell adminHref={null} presentation={presentation}>
+      Content
+    </SiteShell>,
+  );
+  assert.doesNotMatch(markup, /管理后台/);
+});
+
 test('layout primitives compose page structure without business semantics', () => {
   const markup = renderToStaticMarkup(
     <>
@@ -64,8 +76,22 @@ test('layout primitives compose page structure without business semantics', () =
   );
 
   assert.match(markup, /class="public-hero"/);
-  assert.match(markup, /class="public-container public-container--wide public-hero__layout"/);
+  assert.match(markup, /public-container--wide public-hero__layout/);
   assert.match(markup, /public-section--raised/);
   assert.match(markup, /public-container--content/);
   assert.match(markup, /class="public-page-header/);
+});
+
+test('SEO helpers and public account routes are application-independent', () => {
+  const data = breadcrumbStructuredData('https://example.test', [
+    { href: '/', label: '首页' },
+    { href: '/articles', label: '文章' },
+    { label: '详情' },
+  ]);
+  const items = data.itemListElement as Record<string, unknown>[];
+  assert.equal(items[1]?.item, 'https://example.test/articles');
+  assert.equal(items[2]?.position, 3);
+  assert.equal(publicAuthModeFromRoute('forgot-password'), 'forgot');
+  assert.equal(publicAuthModeFromRoute('accept-invitation'), 'invitation');
+  assert.equal(publicAuthModeFromRoute('unknown'), null);
 });

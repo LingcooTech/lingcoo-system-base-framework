@@ -3,46 +3,13 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTrigger } from '@lingcoo/fra
 import { ExternalLink, Menu } from 'lucide-react';
 import { type ReactNode } from 'react';
 
-import { Container } from './Layout';
-
-interface NavigationItem {
-  label: string;
-  href: string;
-}
-
-export interface PublicPresentation {
-  displayName: string;
-  shortName: string | null;
-  slogan: string | null;
-  fullLogoAssetId: string | null;
-  squareLogoAssetId: string | null;
-  darkLogoAssetId: string | null;
-  faviconAssetId: string | null;
-  socialImageAssetId: string | null;
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  contactAddress: string | null;
-  publicUrl: string | null;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  headerNavigation: NavigationItem[];
-  footerLinks: NavigationItem[];
-  footerCopyright: string | null;
-  filingInfo: string | null;
-  assets: Record<string, { publicUrl: string | null }>;
-}
-
-const fallbackNavigation: NavigationItem[] = [
-  { label: '基础架构', href: '#architecture' },
-  { label: '运行状态', href: '/health' },
-];
+import { Container } from './layout.js';
+import type { PublicNavigationItem, PublicPresentation } from './presentation.js';
 
 function navigationHref(href: string): string {
-  if (href.startsWith('#') && typeof window !== 'undefined' && window.location.pathname !== '/')
+  if (href.startsWith('#') && typeof window !== 'undefined' && window.location.pathname !== '/') {
     return `/${href}`;
+  }
   return href;
 }
 
@@ -64,16 +31,18 @@ function logoUrl(presentation: PublicPresentation | null, tone: 'dark' | 'light'
 }
 
 export function SiteBrand({
+  homeHref = '/',
   presentation,
   tone = 'dark',
 }: {
+  homeHref?: string;
   presentation: PublicPresentation | null;
   tone?: 'dark' | 'light';
 }) {
   const displayName = presentation?.displayName ?? 'Lingcoo Frame';
   const imageUrl = logoUrl(presentation, tone);
   return (
-    <a className="site-brand" href="/" aria-label={`${displayName} 首页`}>
+    <a className="site-brand" href={homeHref} aria-label={`${displayName} 首页`}>
       <span className="site-brand__mark">
         {imageUrl ? (
           <img alt="" src={imageUrl} />
@@ -90,10 +59,14 @@ export function SiteBrand({
 }
 
 export function MobileNavigation({
+  adminHref = '/admin/',
+  adminLabel = '进入管理后台',
   navigation,
   presentation,
 }: {
-  navigation: NavigationItem[];
+  adminHref?: string | null;
+  adminLabel?: string;
+  navigation: readonly PublicNavigationItem[];
   presentation: PublicPresentation | null;
 }) {
   return (
@@ -120,26 +93,32 @@ export function MobileNavigation({
             </a>
           ))}
         </nav>
-        <Button asChild block trailingIcon={<ExternalLink size={14} />}>
-          <a href="/admin/">进入管理后台</a>
-        </Button>
+        {adminHref ? (
+          <Button asChild block trailingIcon={<ExternalLink size={14} />}>
+            <a href={adminHref}>{adminLabel}</a>
+          </Button>
+        ) : null}
       </DrawerContent>
     </Drawer>
   );
 }
 
 export function SiteHeader({
+  adminHref = '/admin/',
+  adminLabel = '管理后台',
+  navigation,
   overlay = false,
   presentation,
   tone = 'light',
 }: {
+  adminHref?: string | null;
+  adminLabel?: string;
+  navigation?: readonly PublicNavigationItem[];
   overlay?: boolean;
   presentation: PublicPresentation | null;
   tone?: 'dark' | 'light';
 }) {
-  const navigation = presentation?.headerNavigation.length
-    ? presentation.headerNavigation
-    : fallbackNavigation;
+  const resolvedNavigation = navigation ?? presentation?.headerNavigation ?? [];
   return (
     <header
       className={`public-site-header public-site-header--${tone}${overlay ? ' public-site-header--overlay' : ''}`}
@@ -147,7 +126,7 @@ export function SiteHeader({
       <Container className="public-site-header__inner">
         <SiteBrand presentation={presentation} tone={tone} />
         <nav aria-label="主要导航" className="site-desktop-nav">
-          {navigation.map((item) => (
+          {resolvedNavigation.map((item) => (
             <a
               aria-current={isCurrentNavigation(item.href) ? 'page' : undefined}
               href={navigationHref(item.href)}
@@ -156,12 +135,19 @@ export function SiteHeader({
               {item.label}
             </a>
           ))}
-          <a className="site-admin-link" href="/admin/">
-            管理后台
-            <ExternalLink size={14} />
-          </a>
+          {adminHref ? (
+            <a className="site-admin-link" href={adminHref}>
+              {adminLabel}
+              <ExternalLink size={14} />
+            </a>
+          ) : null}
         </nav>
-        <MobileNavigation navigation={navigation} presentation={presentation} />
+        <MobileNavigation
+          adminHref={adminHref}
+          adminLabel={adminLabel === '管理后台' ? '进入管理后台' : adminLabel}
+          navigation={resolvedNavigation}
+          presentation={presentation}
+        />
       </Container>
     </header>
   );
@@ -214,12 +200,18 @@ export function SiteFooter({ presentation }: { presentation: PublicPresentation 
 }
 
 export function SiteShell({
+  adminHref,
+  adminLabel,
   children,
+  headerNavigation,
   headerOverlay = false,
   headerTone = 'light',
   presentation,
 }: {
+  adminHref?: string | null;
+  adminLabel?: string;
   children: ReactNode;
+  headerNavigation?: readonly PublicNavigationItem[];
   headerOverlay?: boolean;
   headerTone?: 'dark' | 'light';
   presentation: PublicPresentation | null;
@@ -229,7 +221,14 @@ export function SiteShell({
       <a className="site-skip-link" href="#main-content">
         跳至主要内容
       </a>
-      <SiteHeader overlay={headerOverlay} presentation={presentation} tone={headerTone} />
+      <SiteHeader
+        adminHref={adminHref}
+        adminLabel={adminLabel}
+        navigation={headerNavigation}
+        overlay={headerOverlay}
+        presentation={presentation}
+        tone={headerTone}
+      />
       <main id="main-content">{children}</main>
       <SiteFooter presentation={presentation} />
     </div>

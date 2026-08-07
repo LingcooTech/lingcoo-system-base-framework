@@ -3,11 +3,11 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { breadcrumbStructuredData } from '@lingcoo/frame-web/seo';
 
 import { ArticleCard } from '../src/components/cms/ArticleCard';
 import { ContentDetail } from '../src/components/cms/ContentDetail';
 import { ContentRenderer } from '../src/components/cms/ContentRenderer';
-import { breadcrumbStructuredData } from '../src/components/site/seo-data';
 import type { CmsContent } from '../src/types';
 
 Object.assign(globalThis, { React });

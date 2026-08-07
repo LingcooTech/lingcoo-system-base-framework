@@ -20,9 +20,10 @@ Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考
 AssetPicker 和全局搜索。这些组件带有管理场景语义，不应直接搬到公共 Web。资源列表统一组合
 FilterBar、AdminPagination、BulkActionBar 和 DetailDrawer，DataTable 支持受控的行选择状态与加载骨架。
 
-公共 Web 已拥有统一站点壳：SiteShell 组合 Header、Footer 和 MobileNavigation；Container、Section、
-Hero 与 PageHeader 负责无业务语义的页面结构。首页和 CMS 页面均使用同一套壳层，账号安全流程保留
-独立、聚焦的 Auth 布局。
+公共 Web 的统一站点壳已经产品化到 `@lingcoo/frame-web`：SiteShell 组合 Header、Footer 和
+MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语义的页面结构；SeoHead、
+404/500、Error Boundary 和账号安全流程也由包提供。Reference Web 只从公开子入口使用这些实现，不再
+拥有 `components/site` 源码副本。
 
 ## 共享 UI 使用边界
 
@@ -52,8 +53,8 @@ Hero 与 PageHeader 负责无业务语义的页面结构。首页和 CMS 页面�
 - CMS 前台已经拆分为 `ContentRenderer`、`ArticleCard`、`ArticleList`、`EmptyContent`、详情布局和
   分页页面；公共文章 API 返回 `page`、`pageSize`、`total` 与 `pageCount`。
 
-账号安全页面当前保持轻量独立布局。后续只有在增加更多公共账号流程时，再提炼 `AuthShell` 与
-`FormResult`，避免为单一页面提前增加抽象。
+账号安全页面保持轻量独立布局，通过 `@lingcoo/frame-web/account` 提供找回密码、重置密码、接受邀请
+和邮箱验证。请求函数可由 Consumer 注入，但默认使用 Frame Core 的同源 Auth API。
 
 管理后台提供“框架帮助”导航与顶栏入口，集中说明稳定能力、领域边界、常用控制面和扩展约束。该页面
 只描述框架已经具备的能力，不替代领域模块自己的业务帮助。

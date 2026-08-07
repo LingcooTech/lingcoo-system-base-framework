@@ -4,9 +4,10 @@ import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
 import { FileQuestion, RefreshCw, ServerCrash } from 'lucide-react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-import { Section } from './Layout';
-import { SeoHead } from './SeoHead';
-import { SiteShell, type PublicPresentation } from './SiteShell';
+import { Section } from './layout.js';
+import type { PublicPresentation } from './presentation.js';
+import { SeoHead } from './seo.js';
+import { SiteShell } from './site.js';
 
 export function PageLoading({
   label = '正在加载页面',
@@ -91,8 +92,9 @@ export class PublicErrorBoundary extends Component<
   }
 
   render() {
-    if (this.state.failed)
+    if (this.state.failed) {
       return <SystemPage kind="500" presentation={this.props.presentation ?? null} />;
+    }
     return this.props.children;
   }
 }

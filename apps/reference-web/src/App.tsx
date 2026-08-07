@@ -1,17 +1,5 @@
-import {
-  ArrowRight,
-  Boxes,
-  Braces,
-  Database,
-  Layers3,
-  ShieldCheck,
-  KeyRound,
-  Mail,
-} from 'lucide-react';
+import { ArrowRight, Boxes, Braces, Database, Layers3, ShieldCheck } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
-import { Alert } from '@lingcoo/frame-ui/alert';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
 import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
 import { createCmsWebExtension } from '@lingcoo/frame-cms/web';
 import { cmsManifest } from '@lingcoo/frame-cms/contracts';
@@ -23,170 +11,15 @@ import {
   WebShell,
   type WebRouteContext,
 } from '@lingcoo/frame-web';
+import { PublicAuthFlow, publicAuthModeFromRoute } from '@lingcoo/frame-web/account';
+import { Hero, Section } from '@lingcoo/frame-web/layout';
 import { frameWebManifest } from '@lingcoo/frame-web/manifest';
-import { useEffect, useState, type FormEvent } from 'react';
+import { type PublicPresentation, usePublicPresentation } from '@lingcoo/frame-web/presentation';
+import { SeoHead } from '@lingcoo/frame-web/seo';
+import { SiteShell } from '@lingcoo/frame-web/site';
+import { SystemPage } from '@lingcoo/frame-web/system-states';
 
 import { ArticleIndexPage, CmsContentPage } from './components/cms/CmsPages';
-import { Hero, Section } from './components/site/Layout';
-import { SeoHead } from './components/site/SeoHead';
-import { SiteShell, type PublicPresentation } from './components/site/SiteShell';
-import { SystemPage } from './components/site/SystemStates';
-
-async function authRequest(path: string, body: Record<string, unknown>) {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(payload?.message ?? '安全操作失败，请稍后重试');
-  }
-}
-
-function PublicAuthFlow({
-  mode,
-  presentation,
-}: {
-  mode: 'forgot' | 'reset' | 'invitation' | 'verify';
-  presentation: PublicPresentation | null;
-}) {
-  const token = new URLSearchParams(window.location.search).get('token') ?? '';
-  const invalidVerification = mode === 'verify' && !token;
-  const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [busy, setBusy] = useState(mode === 'verify' && Boolean(token));
-  const [message, setMessage] = useState(invalidVerification ? '验证链接缺少安全凭证。' : '');
-  const [completed, setCompleted] = useState(false);
-
-  useEffect(() => {
-    if (mode !== 'verify' || !token) return;
-    authRequest('/api/auth/email/verify', { token })
-      .then(() => {
-        setCompleted(true);
-        setMessage('邮箱验证已完成。');
-      })
-      .catch((error) => setMessage(error instanceof Error ? error.message : '邮箱验证失败'))
-      .finally(() => setBusy(false));
-  }, [mode, token]);
-
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setMessage('');
-    try {
-      if (mode === 'forgot') {
-        await authRequest('/api/auth/password-reset/request', { email });
-        setMessage('如果该邮箱对应可用账号，重置邮件将很快送达。');
-      } else {
-        await authRequest(
-          mode === 'invitation'
-            ? '/api/auth/invitations/accept'
-            : '/api/auth/password-reset/complete',
-          { token, newPassword, confirmPassword },
-        );
-        setCompleted(true);
-        setMessage(mode === 'invitation' ? '账号已启用，可以登录管理后台。' : '密码已重置。');
-      }
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : '安全操作失败');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const title =
-    mode === 'forgot'
-      ? '找回账号密码'
-      : mode === 'invitation'
-        ? '接受账号邀请'
-        : mode === 'verify'
-          ? '验证账号邮箱'
-          : '设置新的密码';
-  const authLogoId = presentation?.squareLogoAssetId ?? presentation?.fullLogoAssetId;
-  const authLogoUrl = authLogoId ? presentation?.assets[authLogoId]?.publicUrl : null;
-  return (
-    <main className="public-auth-screen">
-      <SeoHead noIndex presentation={presentation} title={title} />
-      <section className="public-auth-card">
-        <a className="public-auth-brand" href="/">
-          <span>{authLogoUrl ? <img alt="" src={authLogoUrl} /> : 'F'}</span>
-          {presentation?.displayName ?? 'Lingcoo Frame'}
-        </a>
-        <div className="public-auth-icon">
-          {mode === 'forgot' ? <Mail size={20} /> : <KeyRound size={20} />}
-        </div>
-        <p className="cms-public-type">Account security</p>
-        <h1>{title}</h1>
-        <p className="public-auth-copy">
-          {mode === 'forgot'
-            ? '输入账号邮箱。为保护账号隐私，无论邮箱是否存在都会返回相同结果。'
-            : mode === 'verify'
-              ? '正在校验一次性邮箱验证链接。'
-              : '安全链接只能使用一次；新密码至少需要 12 个字符。'}
-        </p>
-        {mode !== 'verify' && !completed ? (
-          <form onSubmit={submit}>
-            {mode === 'forgot' ? (
-              <FormField label="账号邮箱" required>
-                {({ controlId }) => (
-                  <Input
-                    autoComplete="email"
-                    id={controlId}
-                    onChange={(event) => setEmail(event.target.value)}
-                    prefix={<Mail size={15} />}
-                    required
-                    type="email"
-                    value={email}
-                  />
-                )}
-              </FormField>
-            ) : (
-              <>
-                <FormField label="新密码" required>
-                  {({ controlId }) => (
-                    <Input
-                      autoComplete="new-password"
-                      id={controlId}
-                      minLength={12}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                      required
-                      type="password"
-                      value={newPassword}
-                    />
-                  )}
-                </FormField>
-                <FormField label="确认新密码" required>
-                  {({ controlId }) => (
-                    <Input
-                      autoComplete="new-password"
-                      id={controlId}
-                      minLength={12}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
-                      required
-                      type="password"
-                      value={confirmPassword}
-                    />
-                  )}
-                </FormField>
-              </>
-            )}
-            <Button block loading={busy} size="lg" type="submit">
-              {mode === 'forgot' ? '发送重置邮件' : '确认并继续'}
-            </Button>
-          </form>
-        ) : null}
-        {message ? (
-          <Alert tone={completed || mode === 'forgot' ? 'success' : 'danger'}>{message}</Alert>
-        ) : null}
-        <a className="public-auth-login" href="/admin/">
-          返回管理后台登录
-        </a>
-      </section>
-    </main>
-  );
-}
 
 const layers = [
   {
@@ -317,16 +150,7 @@ function HomeRoute({ context }: WebRouteContext<PublicWebContext>) {
 }
 
 function AuthRoute({ context, params }: WebRouteContext<PublicWebContext>) {
-  const mode =
-    params.mode === 'forgot-password'
-      ? 'forgot'
-      : params.mode === 'reset-password'
-        ? 'reset'
-        : params.mode === 'accept-invitation'
-          ? 'invitation'
-          : params.mode === 'verify-email'
-            ? 'verify'
-            : null;
+  const mode = publicAuthModeFromRoute(params.mode);
   return mode ? (
     <PublicAuthFlow mode={mode} presentation={context.presentation} />
   ) : (
@@ -421,31 +245,7 @@ const publicWebSystem = defineSystem({
 const webRegistry = createWebRegistry<PublicWebContext>(publicWebSystem);
 
 function App() {
-  const [presentation, setPresentation] = useState<PublicPresentation | null>(null);
-
-  useEffect(() => {
-    fetch('/api/public/presentation')
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
-      .then(({ presentation: result }: { presentation: PublicPresentation }) => {
-        setPresentation(result);
-        document.documentElement.style.setProperty('--site-primary', result.primaryColor);
-        document.documentElement.style.setProperty('--site-secondary', result.secondaryColor);
-        document.documentElement.style.setProperty('--site-accent', result.accentColor);
-        const faviconUrl = result.faviconAssetId
-          ? result.assets[result.faviconAssetId]?.publicUrl
-          : null;
-        if (faviconUrl) {
-          let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-          if (!favicon) {
-            favicon = document.createElement('link');
-            favicon.rel = 'icon';
-            document.head.append(favicon);
-          }
-          favicon.href = faviconUrl;
-        }
-      })
-      .catch(() => undefined);
-  }, []);
+  const { presentation } = usePublicPresentation();
 
   return (
     <WebShell registry={webRegistry}>

@@ -152,6 +152,7 @@ Server、Worker 或数据库实现。
 - [身份与访问控制](docs/identity-access.md)
 - [账号自服务与安全中心](docs/account-security.md)
 - [双 Web 前端与共享组件规划](docs/frontend-foundation.md)
+- [Frame 官方站与参考控制台改造路线](docs/reference-experience-roadmap.md)
 - [外部集成基础](docs/integration-foundation.md)
 - [SMTP Provider](docs/smtp-provider.md)
 - [七牛云、支付与 OpenRouter Provider](docs/shared-providers.md)

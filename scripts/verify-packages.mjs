@@ -91,6 +91,13 @@ try {
     'dist/index.d.ts',
     'dist/manifest.js',
     'dist/manifest.d.ts',
+    'dist/account.js',
+    'dist/layout.js',
+    'dist/presentation.js',
+    'dist/seo.js',
+    'dist/site.js',
+    'dist/system-states.js',
+    'dist/styles.css',
   ]);
   assertPackageFiles('@lingcoo/frame-design-tokens', designTokens.files, [
     'dist/base.css',

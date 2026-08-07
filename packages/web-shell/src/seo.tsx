@@ -1,7 +1,32 @@
 import { useEffect } from 'react';
 
-import type { PublicPresentation } from './SiteShell';
-import { absoluteUrl, type StructuredData } from './seo-data';
+import type { PublicPresentation } from './presentation.js';
+
+export type StructuredData = Record<string, unknown>;
+
+export function absoluteUrl(value: string, baseUrl: string) {
+  try {
+    return new URL(value, baseUrl).toString();
+  } catch {
+    return value;
+  }
+}
+
+export function breadcrumbStructuredData(
+  baseUrl: string,
+  items: readonly { label: string; href?: string }[],
+): StructuredData {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.label,
+      ...(item.href ? { item: absoluteUrl(item.href, baseUrl) } : {}),
+    })),
+  };
+}
 
 const noStructuredData: StructuredData[] = [];
 

@@ -417,3 +417,84 @@
   不中断，并记录从 0.5 升级的真实摩擦点。
 - 根据 Consumer 证据决定是否提取 CMS 默认前端页面、Admin 路由懒加载和 Landing Block 持久化 Port，
   不在试点前继续凭假设扩展公开 API。
+
+## Reference Experience：R0 边界盘点
+
+### 范围
+
+- 将 `frame.lingcoo.com` 固定为 Frame 官方产品站、在线参考实现和 Frame Console。
+- 从 Reference Apps 中识别官方专属内容、公共 Shell、Core 默认页面和 CMS 默认页面。
+- 明确 Public Web、Admin、Reference System 与可发布 Packages 的最终所有权。
+- 制定不复制 Reference 源码即可建立 Consumer Web/Admin 的后续产品化阶段。
+
+### 完成记录
+
+- Completed: 2026-08-07
+- Baseline commit: `f6615bc`
+
+已交付：
+
+- 新增 `reference-experience-roadmap.md`，记录目标域名结构、产品边界、目标所有权模型和 R0 至 R6 路线。
+- 完成 Reference Web 逐组件分类：Frame 首页与文档留在 App；Site Shell、布局、SEO、系统状态和账号流程
+  进入 Web 包；CMS 列表、详情和渲染进入 CMS 包。
+- 完成 Reference Admin 逐页面分类：App 只保留组合；布局与通用后台组件进入 Admin 包；Core 默认管理页
+  由 Admin 包提供；CMS 管理页进入 CMS 包。
+- 固定文档随源码版本化、Console 读取真实 API、公开体验不泄露所有者凭据的内容和安全原则。
+
+验证结果：
+
+- 文档中的包依赖、页面名称、扩展入口与当前 `package.json`、Reference App 源码和公开 `exports` 一致。
+- 本阶段只修改文档，没有改变运行时代码、数据库迁移或线上行为。
+- `npm run format:check` 与 `git diff --check` 作为文档质量门槛执行。
+
+已知事项：
+
+- `frame-admin` 和 `frame-web` 当前主要是 Registry，尚不包含矩阵中规划的完整默认 Shell 和页面。
+- CMS 前端工厂仍要求 Consumer 提供页面组件，R5 完成前仍需使用 Reference 实现。
+- 平台路线原阶段 5 Consumer 试点尚未执行；本路线属于阶段 6 参考应用工作的前置产品边界整理。
+
+R1 输入：
+
+- 从 `reference-web` 提取无业务语义的布局与 Site Shell，建立稳定公共导出和样式入口。
+- 提取 SEO、系统状态和公共账号流程，同时保持当前 Reference Web 页面行为。
+- 将新入口加入 tarball Consumer，验证业务应用无需导入 Reference App 源码。
+
+## Reference Experience：R1 Web 基础产品化
+
+### 范围
+
+- 将公共 Site Shell、布局、Presentation、SEO、系统状态与账号安全流程从 Reference App 移入 Web 包。
+- 为每类能力建立稳定子路径和随包发布的样式入口。
+- 保持 Frame 官方首页与 CMS 内容仍由 Reference App/扩展拥有。
+- 使用真实 tarball Consumer 证明业务应用不需要复制 `components/site`。
+
+### 完成记录
+
+- Completed: 2026-08-07
+- Starting baseline: `f6615bc`
+
+已交付：
+
+- `@lingcoo/frame-web` 新增 `layout`、`site`、`presentation`、`seo`、`system-states`、`account` 与
+  `styles.css` 七类公开入口，并在构建时复制样式到 `dist`。
+- 公共 Presentation Hook 负责同源 API、品牌 Token 与 Favicon；SiteShell 读取导航、Logo、联系信息和
+  备案信息，管理后台入口可以由 Consumer 改名或关闭。
+- SEO、404/500、Loading、Error Boundary、找回密码、密码重置、邀请和邮箱验证不再由 Reference 实现。
+- Reference Web 删除 `src/components/site`，首页和 CMS 页面全部改为消费公开包。
+- Web 包新增 4 项基础测试；tarball 内容检查和 Consumer TypeScript Fixture 纳入全部新入口与样式。
+
+验证结果：
+
+- `@lingcoo/frame-web` 构建、类型检查、Lint 与 4/4 测试通过。
+- Reference Web 生产构建、Lint 与 4/4 测试通过。
+- `npm run packages:verify`：所有 Frame 包完成 tarball 打包，隔离 Consumer 安装成功，Consumer TypeScript
+  校验和运行时导入验证通过。
+- `npm run check`：类型检查、集成测试、Frame/Web/UI 测试和全仓 Lint 通过；需要 PostgreSQL 的测试在
+  无数据库环境按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R2 输入：
+
+- 产品化 Admin Shell、响应式导航、Topbar、账户菜单、认证上下文和通用后台组合组件。
+- 业务导航保持主体；搜索、通知和个人能力进入 Shell 固定位置。
+- 增加内容区底部 Frame 版本入口和不占主导航的系统信息 Route。

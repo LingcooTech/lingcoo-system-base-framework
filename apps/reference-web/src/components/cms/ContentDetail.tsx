@@ -1,11 +1,10 @@
 import { Breadcrumb } from '@lingcoo/frame-ui/breadcrumb';
 import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
+import { PageHeader, Section } from '@lingcoo/frame-web/layout';
+import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
+import { breadcrumbStructuredData, type StructuredData, SeoHead } from '@lingcoo/frame-web/seo';
 
 import type { CmsContent } from '../../types';
-import { PageHeader, Section } from '../site/Layout';
-import { SeoHead } from '../site/SeoHead';
-import type { PublicPresentation } from '../site/SiteShell';
-import { breadcrumbStructuredData, type StructuredData } from '../site/seo-data';
 import { ContentRenderer } from './ContentRenderer';
 
 export function ContentDetail({

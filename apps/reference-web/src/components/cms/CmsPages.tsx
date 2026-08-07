@@ -1,12 +1,13 @@
 import { Pagination } from '@lingcoo/frame-ui/pagination';
 import { Skeleton } from '@lingcoo/frame-ui/skeleton';
+import { PageHeader, Section } from '@lingcoo/frame-web/layout';
+import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
+import { SeoHead } from '@lingcoo/frame-web/seo';
+import { SiteShell } from '@lingcoo/frame-web/site';
+import { PageLoading, SystemPage } from '@lingcoo/frame-web/system-states';
 import { useEffect, useState } from 'react';
 
 import type { ArticleListResponse, CmsContent } from '../../types';
-import { PageHeader, Section } from '../site/Layout';
-import { SeoHead } from '../site/SeoHead';
-import { SiteShell, type PublicPresentation } from '../site/SiteShell';
-import { PageLoading, SystemPage } from '../site/SystemStates';
 import { ArticleList } from './ArticleList';
 import { ContentDetail } from './ContentDetail';
 
