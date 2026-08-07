@@ -18,11 +18,14 @@ import {
   type AccessPermission,
   type AccessRole,
 } from '../api/client';
-import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
-import { useAuth } from '../lib/auth';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import {
+  DataTable,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  type DataTableColumn,
+} from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 export function AccessPage() {

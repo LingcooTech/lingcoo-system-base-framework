@@ -12,10 +12,8 @@ import {
   type SystemSetting,
   type SystemSettingVersion,
 } from '../api/client';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
-import { useAuth } from '../lib/auth';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { PageFrame, ResourceSection, StatusPill } from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 export function SettingsPage() {

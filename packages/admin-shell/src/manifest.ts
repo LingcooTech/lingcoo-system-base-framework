@@ -10,6 +10,13 @@ export const frameAdminManifest = {
       permission: 'system.runtime.read',
     },
     {
+      id: 'frame.system-info',
+      path: '/system/*',
+      title: '系统信息',
+      description: '查看 Frame 版本、运行面和已安装扩展。',
+      permission: 'system.runtime.read',
+    },
+    {
       id: 'frame.modules',
       path: '/modules/*',
       title: '领域模块',

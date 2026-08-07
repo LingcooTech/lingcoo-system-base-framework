@@ -498,3 +498,50 @@ R2 输入：
 - 产品化 Admin Shell、响应式导航、Topbar、账户菜单、认证上下文和通用后台组合组件。
 - 业务导航保持主体；搜索、通知和个人能力进入 Shell 固定位置。
 - 增加内容区底部 Frame 版本入口和不占主导航的系统信息 Route。
+
+## Reference Experience：R2 Admin Shell 产品化
+
+### 范围
+
+- 将后台布局、认证上下文、浏览器路由和通用管理组件从 Reference Admin 移入 Admin 包。
+- 让 Shell 只渲染业务 Registry 导航，并把搜索、通知和账户能力放在固定 Topbar 位置。
+- 通过 Consumer 注入 API Client，保持公共包浏览器安全且不依赖 Reference App。
+- 建立底部 Frame 版本入口和无 Navigation Contribution 的系统信息 Route。
+
+### 完成记录
+
+- Completed: 2026-08-07
+- Starting commit: `1d71645`
+
+已交付：
+
+- `@lingcoo/frame-admin` 新增 Auth、Router、Application Shell、共享工作流组件与包内样式公开入口。
+- Admin Auth 接受 `AdminAuthClient`；账号、角色和权限使用最小公共契约，Consumer 保留实际请求实现。
+- Admin Router 支持自定义 Base Path、Search Params、Hash 和 SPA History，修复账号安全锚点导航边界。
+- Application Shell 组合响应式 Sidebar、Topbar、权限过滤导航、Search Provider、通知计数、账户菜单、
+  Presentation 品牌和 Frame 页脚。
+- 账户菜单已移动到 Topbar；通知紧邻账户入口；个人中心、账号安全、应用设置和退出不占左侧导航。
+- 共享包提供 PageFrame、ResourceSection、DataTable、StatusPill、AssetPicker、筛选、分页、批量操作、
+  详情抽屉和 Promise Confirm；AssetPicker 使用 Consumer Loader，不导入 Reference API。
+- Frame Manifest 新增 `/system/*` Route，但没有 Navigation Contribution；当前 Reference 环境复用真实
+  Dashboard 数据作为初始系统信息视图，完整集中式系统信息在 R4 继续产品化。
+- Reference Admin 删除 19 个布局、共享、认证、路由和认证页面文件，App 只保留 API 适配、权限门禁、
+  Registry Route Slot 与具体 Core/CMS 页面组合。
+- Consumer Fixture 和 tarball 内容检查覆盖新子路径、声明文件及 `styles.css`。
+
+验证结果：
+
+- `@lingcoo/frame-admin` 构建、类型检查、Lint 与 2/2 Shell/共享组件测试通过。
+- Reference Admin 类型检查、Lint 和生产构建通过；主 Chunk 约 527 kB，仍为既有懒加载优化项。
+- `npm run packages:verify`：9 个公开包与示例扩展完成 tarball 打包；临时 Consumer 安装 251 个包，
+  新 Admin Auth/Layout/Router/Shared/CSS 入口的 TypeScript 与运行时验收通过。
+- `npm run check`：全仓类型检查、14 项跨包集成测试、52 项 Frame 测试、Admin/Web/UI 包测试和全部
+  Workspace Lint 通过；无 PostgreSQL 环境下相关集成测试按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R3 输入：
+
+- 重组 Frame Core 的默认 Admin 信息架构，让业务工作区成为左侧导航主体。
+- 将成员与权限、Connections、品牌、数据字典和审计收敛到一个应用设置入口及上下文组件。
+- 让通知继续停留在 Topbar；资产选择器、Connection Picker 和审计时间线嵌入具体工作流。
+- 为 R4 的集中式系统信息页准备浏览器安全运行摘要契约，但本阶段不把技术页面重新暴露到主导航。

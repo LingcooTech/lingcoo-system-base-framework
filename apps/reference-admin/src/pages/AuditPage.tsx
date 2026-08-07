@@ -4,13 +4,16 @@ import { useToast } from '@lingcoo/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { fetchAuditItems, type AuditItem } from '../api/client';
-import { AdminPagination } from '../components/shared/AdminPagination';
-import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
-import { DetailDrawer } from '../components/shared/DetailDrawer';
-import { FilterBar } from '../components/shared/FilterBar';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
+import {
+  AdminPagination,
+  DataTable,
+  DetailDrawer,
+  FilterBar,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  type DataTableColumn,
+} from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 function actionLabel(action: string): string {

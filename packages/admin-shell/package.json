@@ -15,15 +15,38 @@
     "./manifest": {
       "types": "./dist/manifest.d.ts",
       "import": "./dist/manifest.js"
-    }
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./layout": {
+      "types": "./dist/layout.d.ts",
+      "import": "./dist/layout.js"
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js"
+    },
+    "./shared": {
+      "types": "./dist/shared.d.ts",
+      "import": "./dist/shared.js"
+    },
+    "./styles.css": "./dist/styles.css"
   },
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/copy-styles.mjs",
+    "test": "node --import tsx --test test/**/*.test.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-extension-sdk": "^0.6.0"
+    "@lingcoo/frame-extension-sdk": "^0.6.0",
+    "@lingcoo/frame-ui": "^0.2.0",
+    "lucide-react": "^0.503.0"
   },
   "peerDependencies": {
     "react": ">=19.0.0 <20.0.0",
@@ -47,6 +70,7 @@
     "globals": "^16.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.65.0"
   },

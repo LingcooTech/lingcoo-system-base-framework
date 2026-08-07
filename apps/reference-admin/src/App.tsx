@@ -1,15 +1,53 @@
 import { AdminRouteSlot, AdminShell } from '@lingcoo/frame-admin';
+import {
+  AdminAuthProvider,
+  AdminChangePasswordPage,
+  AdminLoginPage,
+  useAdminAuth,
+  type AdminAuthClient,
+} from '@lingcoo/frame-admin/auth';
+import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
+import { AdminRouterProvider, useAdminRouter } from '@lingcoo/frame-admin/router';
+import { FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
 
-import { Shell } from './components/layout/Shell';
-import { AuthProvider, useAuth } from './lib/auth';
-import { RouterProvider, useRouter } from './lib/router';
-import { ChangePasswordPage } from './pages/ChangePasswordPage';
-import { LoginPage } from './pages/LoginPage';
+import {
+  ApiError,
+  changePassword,
+  fetchCurrentAccount,
+  fetchPresentation,
+  fetchUnreadNotificationCount,
+  login,
+  logout,
+  type AuthAccount,
+} from './api/client';
 import { adminRegistry, type AdminAppContext } from './extensions';
 
+const authClient: AdminAuthClient<AuthAccount> = {
+  async getCurrentAccount() {
+    try {
+      return await fetchCurrentAccount();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) return null;
+      throw error;
+    }
+  },
+  login,
+  logout,
+  changePassword,
+};
+
+async function loadShellPresentation() {
+  const presentation = await fetchPresentation();
+  const logoId = presentation.squareLogoAssetId ?? presentation.fullLogoAssetId;
+  return {
+    displayName: presentation.displayName,
+    logoUrl: logoId ? (presentation.assets[logoId]?.publicUrl ?? null) : null,
+  };
+}
+
 function RoutedApp() {
-  const { account, hasPermission, loading, logout } = useAuth();
-  const { pathname } = useRouter();
+  const { account, hasPermission, loading, logout: endSession } = useAdminAuth<AuthAccount>();
+  const { pathname, searchParams } = useAdminRouter();
   if (loading) {
     return (
       <main className="auth-loading">
@@ -18,8 +56,8 @@ function RoutedApp() {
       </main>
     );
   }
-  if (!account) return <LoginPage />;
-  if (account.mustChangePassword) return <ChangePasswordPage />;
+  if (!account) return <AdminLoginPage brandName="Lingcoo Frame" />;
+  if (account.mustChangePassword) return <AdminChangePasswordPage />;
   if (!hasPermission('admin.access')) {
     return (
       <main className="password-screen">
@@ -29,7 +67,7 @@ function RoutedApp() {
           <p className="password-copy">该账号可以继续用于未来的公共用户侧或领域应用。</p>
           <button
             className="lc-button lc-button--secondary lc-button--lg"
-            onClick={() => void logout()}
+            onClick={() => void endSession()}
           >
             退出登录
           </button>
@@ -54,7 +92,19 @@ function RoutedApp() {
   }
 
   return (
-    <Shell>
+    <AdminApplicationShell<AdminAppContext>
+      context={{}}
+      defaultBrandName="Lingcoo Frame"
+      frame={{
+        name: 'Lingcoo Frame',
+        version: FRAME_VERSION,
+        systemInfoHref: '/system',
+        systemInfoPermission: 'system.runtime.read',
+      }}
+      helpHref="/help"
+      loadPresentation={loadShellPresentation}
+      loadUnreadNotificationCount={fetchUnreadNotificationCount}
+    >
       <AdminRouteSlot<AdminAppContext>
         context={{}}
         hasPermission={hasPermission}
@@ -68,19 +118,20 @@ function RoutedApp() {
           </section>
         }
         pathname={pathname}
+        searchParams={searchParams}
       />
-    </Shell>
+    </AdminApplicationShell>
   );
 }
 
 export function App() {
   return (
     <AdminShell registry={adminRegistry}>
-      <AuthProvider>
-        <RouterProvider>
+      <AdminAuthProvider client={authClient}>
+        <AdminRouterProvider>
           <RoutedApp />
-        </RouterProvider>
-      </AuthProvider>
+        </AdminRouterProvider>
+      </AdminAuthProvider>
     </AdminShell>
   );
 }

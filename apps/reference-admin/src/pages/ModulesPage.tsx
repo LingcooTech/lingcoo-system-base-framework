@@ -1,7 +1,10 @@
-import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
+import {
+  DataTable,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  type DataTableColumn,
+} from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 type ModuleRow = {

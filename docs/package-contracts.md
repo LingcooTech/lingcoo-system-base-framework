@@ -13,7 +13,7 @@ Consumer 应锁定同一 `0.6.x` Backend、Database、Extension SDK、Admin、We
 | `@lingcoo/frame`               | Fastify 宿主、核心扩展、Worker、系统迁移和一方适配  | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                           |
 | `@lingcoo/frame-database`      | PostgreSQL/Drizzle、Schema、Migration V2 和历史 SQL | `.`, `./schema`, `./migrations`                                                                                    |
 | `@lingcoo/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
-| `@lingcoo/frame-admin`         | Admin Shell、路由、导航、Widget、搜索与编辑器注册表 | `.`, `./manifest`                                                                                                  |
+| `@lingcoo/frame-admin`         | Admin Shell、认证、路由、共享后台组件与扩展注册表   | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./styles.css`                                    |
 | `@lingcoo/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
 | `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`                                     |
 | `@lingcoo/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
@@ -56,7 +56,9 @@ CMS。
 - `./worker`：通过受限上下文注册声明过的 Job Handler 与 Outbox Subscriber。
 - `./migrations`：Migration Source 定义及数据库迁移类型，不进入浏览器入口。
 - `@lingcoo/frame-admin`：Admin Route、Navigation、Dashboard Widget、Search Provider 和 Landing
-  Block Editor；声明与实现逐项匹配，权限由宿主账号上下文执行。
+  Block Editor；同时提供可注入 Client 的认证上下文、可配置基路径的浏览器路由、响应式应用 Shell、Topbar
+  搜索/通知/账户入口、Frame 版本页脚，以及表格、筛选、分页、批量操作、详情抽屉、确认操作和 Asset
+  Picker。React 与具体 API Client 由 Consumer 提供，并显式引入 `./styles.css`。
 - `@lingcoo/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。

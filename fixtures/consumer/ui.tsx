@@ -1,10 +1,14 @@
 import '@lingcoo/frame-design-tokens/base.css';
 import '@lingcoo/frame-ui/styles.css';
+import '@lingcoo/frame-admin/styles.css';
 import '@lingcoo/frame-web/styles.css';
 
 import { frameCoreManifest } from '@lingcoo/frame/manifest';
 import { Button } from '@lingcoo/frame-ui/button';
+import { AdminAuthProvider, type AdminAuthClient } from '@lingcoo/frame-admin/auth';
+import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
 import { createAdminRegistry } from '@lingcoo/frame-admin';
+import { AdminRouterProvider } from '@lingcoo/frame-admin/router';
 import { createWebRegistry } from '@lingcoo/frame-web';
 import { PageHeader, Section } from '@lingcoo/frame-web/layout';
 import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
@@ -52,6 +56,24 @@ export const consumerWebRegistry = createWebRegistry(
 
 export function ConsumerButton() {
   return <Button>Consumer action</Button>;
+}
+
+export function ConsumerAdminShell({
+  authClient,
+  children,
+}: {
+  authClient: AdminAuthClient;
+  children: React.ReactNode;
+}) {
+  return (
+    <AdminAuthProvider client={authClient}>
+      <AdminRouterProvider>
+        <AdminApplicationShell context={{}} frame={{ name: 'Lingcoo Frame', version: '0.6.0' }}>
+          {children}
+        </AdminApplicationShell>
+      </AdminRouterProvider>
+    </AdminAuthProvider>
+  );
 }
 
 const presentation: PublicPresentation = {

@@ -7,11 +7,14 @@ import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
 import { useToast } from '@lingcoo/frame-ui/toast';
 import { CheckCircle2, KeyRound, Laptop, MailCheck, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { AssetPicker, PageFrame, ResourceSection, StatusPill } from '@lingcoo/frame-admin/shared';
 
 import {
   fetchAccountProfile,
   fetchAccountSecurityEvents,
   fetchAccountSessions,
+  fetchAssets,
   requestEmailVerification,
   revokeAccountSession,
   revokeOtherAccountSessions,
@@ -21,11 +24,6 @@ import {
   type AccountSession,
   type StorageAsset,
 } from '../api/client';
-import { AssetPicker } from '../components/shared/AssetPicker';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
-import { useAuth } from '../lib/auth';
 import { sections } from '../lib/foundation';
 
 const eventLabels: Record<string, string> = {
@@ -244,6 +242,7 @@ export function AccountPage() {
             <AssetPicker
               asset={avatarAsset}
               label="账号头像"
+              loadAssets={fetchAssets}
               onChange={(id, asset) => {
                 setAvatarAssetId(id);
                 setAvatarAsset(asset);

@@ -47,6 +47,7 @@ export type AdminAppContext = Record<string, never>;
 const frameAdminSurface = defineAdminExtension<AdminAppContext>({
   routes: [
     { id: 'frame.dashboard', component: DashboardPage },
+    { id: 'frame.system-info', component: DashboardPage },
     { id: 'frame.modules', component: ModulesPage },
     { id: 'frame.access', component: AccessPage },
     { id: 'frame.integrations', component: IntegrationsPage },

@@ -301,3 +301,35 @@ R2 输入：
 - 提取 Admin Shell、响应式 Sidebar、Topbar、账户菜单、认证上下文和通用后台组合组件。
 - 左侧 Registry 导航只呈现应用明确贡献的工作页面；Frame 搜索、通知和账户能力进入固定 Shell 位置。
 - 在内容区底部加入 Frame 名称、版本和系统信息入口，但 R2 暂不迁移全部 Core 管理页面。
+
+## 11. R2 完成记录
+
+- Completed: 2026-08-07
+- Starting commit: `1d71645`
+
+已完成：
+
+- `@lingcoo/frame-admin` 新增 `./auth`、`./layout`、`./router`、`./shared` 和 `./styles.css` 公开入口。
+- 认证状态通过 `AdminAuthClient` 注入；浏览器路由支持 Consumer 自定义后台基路径，不绑定 Reference API。
+- `AdminApplicationShell` 统一响应式 Sidebar、Topbar、全局搜索、通知、账户菜单、品牌读取和移动导航。
+- 个人中心、账号安全、应用设置和退出进入账户菜单；通知显示在账户入口旁，不再依赖侧栏账号区。
+- 左侧导航只渲染 Registry 中当前账号有权限的 Navigation Contribution，Shell 不添加 Frame 技术菜单。
+- 内容区底部显示“本系统基于 Lingcoo Frame 构建 · vX”，授权账号可进入不占主导航的 `/system` Route。
+- PageFrame、DataTable、FilterBar、Pagination、BulkAction、DetailDrawer、ConfirmProvider 和 AssetPicker
+  进入公共包；AssetPicker 通过加载器读取 Consumer 资产 API。
+- Reference Admin 删除 `components/layout`、`components/shared`、`lib/auth`、`lib/router` 及登录/首次改密
+  页面源码，改为消费公共入口。
+- Admin 包增加 Shell 与共享组件测试；tarball Consumer 编译完整 Admin Shell 和样式入口。
+
+验证结果：
+
+- `@lingcoo/frame-admin` 构建、类型检查、Lint 与 2/2 测试通过。
+- Reference Admin 类型检查、Lint 与生产构建通过；既有约 527 kB 主 Chunk 警告不影响构建。
+- `npm run packages:verify`、`npm run check`、`npm run format:check` 与 `git diff --check` 全部通过。
+
+R3 输入：
+
+- 将 Frame Core 当前导航按“业务工作区 / 应用设置 / 隐藏系统信息”重新归类，避免技术模块占据主侧栏。
+- 将“外部集成”产品化为 Connections，并在应用设置与具体业务配置中提供上下文入口。
+- 统一成员与权限、品牌、通知和设置的应用级入口；通知继续由 Topbar 承载，不新增独立能力导航区域。
+- 保持 Reference Admin 能验证全部 Frame 能力，但通过隐藏 Route 和权限控制访问开发/运维信息。

@@ -4,11 +4,26 @@ import { Textarea } from '@lingcoo/frame-ui/textarea';
 import { useToast } from '@lingcoo/frame-ui/toast';
 import { Archive, CalendarClock, ExternalLink, FilePlus2, Plus, Send } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { AdminLink as Link, useAdminRouter as useRouter } from '@lingcoo/frame-admin/router';
+import {
+  AdminPagination,
+  AssetPicker,
+  BulkActionBar,
+  DataTable,
+  FilterBar,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  useConfirm,
+  type DataTableColumn,
+} from '@lingcoo/frame-admin/shared';
 
 import {
   createCmsContent,
   createCmsRedirect,
   deleteCmsRedirect,
+  fetchAssets,
   fetchCmsContent,
   fetchCmsContents,
   fetchCmsRedirects,
@@ -30,18 +45,7 @@ import {
   type StorageAsset,
   type TaxonomyTerm,
 } from '../api/client';
-import { AssetPicker } from '../components/shared/AssetPicker';
-import { AdminPagination } from '../components/shared/AdminPagination';
-import { BulkActionBar } from '../components/shared/BulkActionBar';
-import { useConfirm } from '../components/shared/ConfirmProvider';
-import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
-import { FilterBar } from '../components/shared/FilterBar';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
-import { useAuth } from '../lib/auth';
 import { sections } from '../lib/foundation';
-import { Link, useRouter } from '../lib/router';
 
 const emptyDraft = (type: 'article' | 'page'): CmsContentInput => ({
   type,
@@ -787,6 +791,7 @@ function CmsEditor({
               asset={draft.coverAssetId ? assets[draft.coverAssetId] : undefined}
               disabled={!canWrite}
               label="封面图"
+              loadAssets={fetchAssets}
               onChange={(id, asset) => setAsset('coverAssetId', id, asset)}
               value={draft.coverAssetId}
             />
@@ -794,6 +799,7 @@ function CmsEditor({
               asset={draft.socialImageAssetId ? assets[draft.socialImageAssetId] : undefined}
               disabled={!canWrite}
               label="分享图"
+              loadAssets={fetchAssets}
               onChange={(id, asset) => setAsset('socialImageAssetId', id, asset)}
               value={draft.socialImageAssetId}
             />

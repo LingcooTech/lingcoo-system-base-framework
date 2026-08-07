@@ -3,12 +3,16 @@ import { AdminDashboardWidgets } from '@lingcoo/frame-admin';
 import { useEffect, useState } from 'react';
 
 import { fetchRuntime, type RuntimeInfo } from '../api/client';
-import { DataTable, type DataTableColumn } from '../components/shared/DataTable';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill, type StatusTone } from '../components/shared/StatusPill';
+import {
+  DataTable,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  type DataTableColumn,
+  type StatusTone,
+} from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
-import { useAuth } from '../lib/auth';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
 import type { AdminAppContext } from '../extensions';
 
 interface Surface {

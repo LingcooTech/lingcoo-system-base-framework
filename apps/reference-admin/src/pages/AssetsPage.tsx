@@ -20,11 +20,8 @@ import {
   type IntegrationConnection,
   type StorageAsset,
 } from '../api/client';
-import { PageFrame } from '../components/shared/PageFrame';
-import { useConfirm } from '../components/shared/ConfirmProvider';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { StatusPill } from '../components/shared/StatusPill';
-import { useAuth } from '../lib/auth';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { PageFrame, ResourceSection, StatusPill, useConfirm } from '@lingcoo/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 function formatBytes(value: number) {

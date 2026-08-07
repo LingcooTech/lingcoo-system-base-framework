@@ -72,8 +72,17 @@ try {
   assertPackageFiles('@lingcoo/frame-admin', admin.files, [
     'dist/index.js',
     'dist/index.d.ts',
+    'dist/auth.js',
+    'dist/auth.d.ts',
+    'dist/layout.js',
+    'dist/layout.d.ts',
     'dist/manifest.js',
     'dist/manifest.d.ts',
+    'dist/router.js',
+    'dist/router.d.ts',
+    'dist/shared.js',
+    'dist/shared.d.ts',
+    'dist/styles.css',
   ]);
   assertPackageFiles('@lingcoo/frame-cms', cms.files, [
     'dist/index.js',

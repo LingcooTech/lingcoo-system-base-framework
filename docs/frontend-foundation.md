@@ -16,9 +16,14 @@ Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考
 后台和公共 Web 都直接使用同一个包。后台账号中心已经接入全局 Toast 与 Skeleton；公共 Web 的
 账号流程接入 Alert，CMS 页面接入 Breadcrumb、ResponsiveImage、Skeleton 和 EmptyState。
 
-后台另外拥有 Shell、Sidebar、Topbar、PageFrame、ResourceSection、DataTable、StatusPill、
-AssetPicker 和全局搜索。这些组件带有管理场景语义，不应直接搬到公共 Web。资源列表统一组合
-FilterBar、AdminPagination、BulkActionBar 和 DetailDrawer，DataTable 支持受控的行选择状态与加载骨架。
+后台管理基础已经产品化到 `@lingcoo/frame-admin`。`./layout` 提供响应式 Sidebar、Topbar、全局搜索、
+通知与账户菜单，`./auth` 和 `./router` 分别提供可注入认证 Client 与可配置后台基路径；`./shared`
+提供 PageFrame、ResourceSection、DataTable、StatusPill、AssetPicker、FilterBar、AdminPagination、
+BulkActionBar、DetailDrawer 和 ConfirmProvider。它们带有管理场景语义，不进入公共 Web。
+
+Shell 的左侧导航只读取扩展 Registry 明确声明的 Navigation Contribution；搜索、通知、个人中心、账号
+安全和退出固定进入 Topbar/账户菜单。内容区底部显示 Frame 名称与版本，具备权限时才提供系统信息链接。
+Consumer 注入认证、品牌、通知和资产加载函数，公共包不依赖 Reference App API Client。
 
 公共 Web 的统一站点壳已经产品化到 `@lingcoo/frame-web`：SiteShell 组合 Header、Footer 和
 MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语义的页面结构；SeoHead、

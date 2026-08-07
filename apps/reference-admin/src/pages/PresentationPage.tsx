@@ -4,8 +4,11 @@ import { Input } from '@lingcoo/frame-ui/input';
 import { Textarea } from '@lingcoo/frame-ui/textarea';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
+import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { AssetPicker, PageFrame, ResourceSection } from '@lingcoo/frame-admin/shared';
 
 import {
+  fetchAssets,
   fetchPresentation,
   updatePresentation,
   type PresentationAsset,
@@ -13,10 +16,6 @@ import {
   type PresentationUpdate,
   type StorageAsset,
 } from '../api/client';
-import { AssetPicker } from '../components/shared/AssetPicker';
-import { PageFrame } from '../components/shared/PageFrame';
-import { ResourceSection } from '../components/shared/ResourceSection';
-import { useAuth } from '../lib/auth';
 import { sections } from '../lib/foundation';
 
 const assetFields = [
@@ -244,6 +243,7 @@ export function PresentationPage() {
                 disabled={!canWrite}
                 key={field}
                 label={label}
+                loadAssets={fetchAssets}
                 onChange={(id, asset) => setAsset(field, id, asset)}
                 value={draft[field]}
               />

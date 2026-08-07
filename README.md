@@ -14,7 +14,7 @@ Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。Frame 仍同
 ## 当前包含什么
 
 - 公共 Web：React、TypeScript、Vite、Tailwind CSS
-- 管理后台：独立 React 应用，包含导航、筛选、分页、批量操作、详情抽屉和统一反馈
+- 管理后台：可消费的 Admin Shell、认证/路由上下文、Topbar 账户与通知入口，以及共享后台工作流组件
 - 共享 UI：npm workspace 管理 Design Tokens 与无业务含义的 React 组件
 - 应用 API：Fastify、TypeScript、Zod、统一错误处理、CORS、安全响应头和限流
 - 身份权限：统一账号、HttpOnly JWT Cookie、可撤销会话和多角色 RBAC
