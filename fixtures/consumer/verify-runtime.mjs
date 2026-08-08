@@ -14,9 +14,9 @@ import { exampleAdminExtension } from '@lingcoo/frame-example-extension/admin';
 import { exampleManifest } from '@lingcoo/frame-example-extension/contracts';
 import { exampleWebExtension } from '@lingcoo/frame-example-extension/web';
 import { createAdminRegistry } from '@lingcoo/frame-admin';
-import { createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
 import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { createCmsWebExtension } from '@lingcoo/frame-cms/web';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
 import { createWebRegistry } from '@lingcoo/frame-web';
 import {
   defineExtension,
@@ -37,10 +37,13 @@ const system = defineSystem({
 const frameDependency = defineExtension({
   manifest: projectExtensionManifest(frameCoreManifest, []),
 });
-const EmptyPage = () => null;
 const cmsAdminDefinition = defineExtension({
   manifest: projectExtensionManifest(cmsManifest, ['admin']),
-  admin: createCmsAdminExtension({ component: EmptyPage }),
+  admin: createCmsAdminExtension({
+    client: createCmsAdminClient(async () => {
+      throw new Error('Packed Consumer must connect its authenticated Admin API transport');
+    }),
+  }),
 });
 const adminRegistry = createAdminRegistry(
   defineSystem({
@@ -77,10 +80,10 @@ const webRegistry = createWebRegistry(
       defineExtension({
         manifest: projectExtensionManifest(cmsManifest, ['web']),
         web: createCmsWebExtension({
-          preview: EmptyPage,
-          articleIndex: EmptyPage,
-          article: EmptyPage,
-          page: EmptyPage,
+          client: createCmsWebClient(async () => {
+            throw new Error('Packed Consumer must connect its Public Web fetch transport');
+          }),
+          resolvePresentation: () => null,
         }),
       }),
       defineExtension({

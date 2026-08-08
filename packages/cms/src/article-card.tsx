@@ -1,8 +1,8 @@
 import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
 
-import type { CmsContent } from '../../types';
+import type { CmsPublicContent } from './web-client.js';
 
-export function ArticleCard({ article }: { article: CmsContent }) {
+export function ArticleCard({ article }: { article: CmsPublicContent }) {
   const coverUrl = article.coverAssetId ? article.assets[article.coverAssetId]?.publicUrl : null;
   return (
     <article className="cms-article-card">

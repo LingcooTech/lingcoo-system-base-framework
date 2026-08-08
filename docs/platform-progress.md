@@ -13,7 +13,7 @@
 | 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成    |
 | 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成    |
 | 5. Consumer 试点  | Not started | -                                                  |
-| 6. 文档与参考应用 | Not started | -                                                  |
+| 6. 文档与参考应用 | In progress | R0-R5 产品化完成，R6 官方站与发布验收待完成        |
 | 7. 开源 Beta      | Not started | -                                                  |
 | 8. 1.0 稳定       | Not started | -                                                  |
 
@@ -627,3 +627,19 @@ R5 输入：
 - 产品化 CMS Admin/Web 默认页面、内容工作流与公共渲染组件。
 - 进一步缩薄 Reference Admin/Web，安装 CMS 时不再要求 Consumer 提供页面组件。
 - 补齐 CMS 的 tarball Consumer、浏览器交互和部署环境验收。
+
+### Reference Experience R5 已交付（2026-08-08）
+
+- CMS Admin/Web 默认页面已迁入 `@lingcoo/frame-cms`，包括内容列表、编辑器、版本、发布、重定向、SEO、
+  预览、文章列表、详情、分页、Markdown 渲染和公共状态页。
+- Consumer 通过 `CmsAdminClient`/`CmsWebClient` 注入请求 Transport 与品牌 Presentation；Reference Apps
+  不再拥有 CMS 页面、CMS-specific API 方法或 CMS 专属样式副本。
+- `@lingcoo/frame-cms/styles.css`、新增浏览器安全 Client 类型和默认页面均纳入 tarball 验收；隔离 Consumer
+  真实安装后通过 TypeScript 和运行时验证。
+- CMS 包测试覆盖 Client 路径、404 语义、默认 Admin 页面静态渲染、Markdown 渲染与详情结构化数据。
+
+验证：CMS 5/5 测试、Reference Admin/Web 类型检查和生产构建、`npm run packages:verify`、`git diff --check`
+均通过。Admin 主 Chunk 约 533 kB、Web 主 Chunk 约 492 kB，仅有既有分包建议。
+
+遗留与下一阶段：R6 负责 `frame.lingcoo.com` 官方首页/文档、真实部署配置、登录与 CMS 流程 E2E、发布回滚
+验收及路由懒加载评估；平台阶段 5 Consumer 试点仍需用官网系统完成真实迁移。

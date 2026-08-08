@@ -408,3 +408,45 @@ R5 输入：
 - 将 CMS Admin/Web 默认页面和工作流从 Reference Apps 迁入 `@lingcoo/frame-cms`。
 - 让 Consumer 安装 CMS 后只需注入 API/路由环境，不再复制 `CmsPage`、文章列表、详情、预览和编辑实现。
 - 保持内容类型、发布、版本、重定向、SEO 和定时发布契约稳定，并补齐 tarball Consumer 与 E2E 验收。
+
+## 14. R5 完成记录
+
+- Completed: 2026-08-08
+- Starting commit: `0146791`
+
+已完成：
+
+- `@lingcoo/frame-cms/admin` 默认提供内容列表、批量状态操作、页面/文章编辑器、媒体选择、分类标签、
+  版本历史、SEO/社交预览、计划发布和 URL 重定向；`createCmsAdminExtension()` 只需要 Consumer 注入
+  `CmsAdminClient` 即可安装，仍允许按页面覆盖组件。
+- `@lingcoo/frame-cms/web` 默认提供公共文章列表、分页、文章/页面详情、预览、面包屑、响应式封面图、
+  Markdown 渲染和空/加载/404/500 状态；`createCmsWebExtension()` 只需要注入 `CmsWebClient` 和
+  `resolvePresentation()`，保留公共 SEO Resolver 和 Sitemap Collector。
+- CMS Admin/Web 的浏览器安全类型、请求路径和 JSON 映射分别集中在 `admin-client.ts`、`web-client.ts`；
+  Consumer 只提供认证 API Transport、公共 `fetch` 和品牌环境，不再复制 Reference 页面或 CMS CSS。
+- Reference Admin 删除 `CmsPage` 和 CMS-specific API 类型/请求函数；Reference Web 删除 `components/cms`
+  和 `types.ts`，改为直接安装 CMS 默认页面。CMS 样式随 `@lingcoo/frame-cms/styles.css` tarball 发布。
+- Consumer Fixture 已按默认页面方式组合 CMS Admin/Web，并验证公开导出、端点映射、404 状态、服务端渲染的
+  列表/编辑器、Markdown 渲染和完整 tarball 隔离安装。
+
+验证结果：
+
+- `@lingcoo/frame-cms` 类型检查、Lint、构建与 5/5 测试通过；新增测试覆盖默认 Admin 页面静态渲染、
+  Client 端点映射、Web 404 语义和文章详情结构化数据。
+- Reference Admin/Web 类型检查与生产构建通过；Admin 主 Chunk 约 533 kB，只有既有 Vite 分包建议，
+  Web 主 Chunk 约 492 kB。
+- `npm run packages:verify` 通过：全部包完成 tarball 构建，隔离 Consumer 安装 350 个包后完成 TypeScript
+  和运行时验证，并实际确认 `@lingcoo/frame-cms/styles.css` 与默认 CMS 页面声明文件存在。
+- `git diff --check` 通过；完整 `npm run check` 将在本阶段提交前再次执行，作为跨包回归门槛。
+
+已知事项：
+
+- R5 产品化的是默认 CMS 页面与工作流，Reference Web 首页/文档内容仍属于应用层；真实官网 Consumer 迁移、
+  在线域名验收和路由级懒加载留到 R6。
+
+R6 输入：
+
+- 将 Reference Admin/Web 进一步缩减为官方站点和 Frame 能力的组合根，补齐 Frame 首页、文档、Packages、
+  扩展和部署说明。
+- 为 `frame.lingcoo.com` 建立真实生产配置、API/Worker/数据库部署验收、登录/内容流程 E2E 和发布回滚检查。
+- 根据真实官网 Consumer 证据决定是否引入路由懒加载、Changesets/Registry 发布和独立版本兼容矩阵。

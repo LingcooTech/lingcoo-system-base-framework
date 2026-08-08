@@ -1,7 +1,7 @@
 import { ArrowRight, Boxes, Braces, Database, Layers3, ShieldCheck } from 'lucide-react';
 import { Button } from '@lingcoo/frame-ui/button';
 import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
-import { createCmsWebExtension } from '@lingcoo/frame-cms/web';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
 import { cmsManifest } from '@lingcoo/frame-cms/contracts';
 import { projectExtensionManifest } from '@lingcoo/frame-extension-sdk';
 import {
@@ -18,8 +18,6 @@ import { type PublicPresentation, usePublicPresentation } from '@lingcoo/frame-w
 import { SeoHead } from '@lingcoo/frame-web/seo';
 import { SiteShell } from '@lingcoo/frame-web/site';
 import { SystemPage } from '@lingcoo/frame-web/system-states';
-
-import { ArticleIndexPage, CmsContentPage } from './components/cms/CmsPages';
 
 const layers = [
   {
@@ -158,40 +156,6 @@ function AuthRoute({ context, params }: WebRouteContext<PublicWebContext>) {
   );
 }
 
-function PreviewContentRoute({ context, params }: WebRouteContext<PublicWebContext>) {
-  return (
-    <CmsContentPage
-      endpoint={`/api/cms/entries/${encodeURIComponent(params.id!)}/preview`}
-      presentation={context.presentation}
-      preview
-    />
-  );
-}
-
-function ArticleIndexRoute({ context, searchParams }: WebRouteContext<PublicWebContext>) {
-  const requestedPage = Number(searchParams.get('page') || '1');
-  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  return <ArticleIndexPage page={page} presentation={context.presentation} />;
-}
-
-function ArticleRoute({ context, params }: WebRouteContext<PublicWebContext>) {
-  return (
-    <CmsContentPage
-      endpoint={`/api/public/cms/articles/${encodeURIComponent(params.slug!)}`}
-      presentation={context.presentation}
-    />
-  );
-}
-
-function PageRoute({ context, params }: WebRouteContext<PublicWebContext>) {
-  return (
-    <CmsContentPage
-      endpoint={`/api/public/cms/pages/${encodeURIComponent(params.slug!)}`}
-      presentation={context.presentation}
-    />
-  );
-}
-
 const frameWebSurface = defineWebExtension<PublicWebContext>({
   routes: [
     { id: 'frame.auth', component: AuthRoute },
@@ -229,10 +193,8 @@ const frameWebDefinition = defineExtension({
 const cmsWebDefinition = defineExtension({
   manifest: projectExtensionManifest(cmsManifest, ['web']),
   web: createCmsWebExtension<PublicWebContext>({
-    preview: PreviewContentRoute,
-    articleIndex: ArticleIndexRoute,
-    article: ArticleRoute,
-    page: PageRoute,
+    client: createCmsWebClient((path, init) => fetch(path, init)),
+    resolvePresentation: (context) => context.presentation,
   }),
 });
 

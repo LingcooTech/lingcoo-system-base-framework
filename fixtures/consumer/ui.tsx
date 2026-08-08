@@ -2,6 +2,7 @@ import '@lingcoo/frame-design-tokens/base.css';
 import '@lingcoo/frame-ui/styles.css';
 import '@lingcoo/frame-admin/styles.css';
 import '@lingcoo/frame-web/styles.css';
+import '@lingcoo/frame-cms/styles.css';
 
 import { frameCoreManifest } from '@lingcoo/frame/manifest';
 import { Button } from '@lingcoo/frame-ui/button';
@@ -10,6 +11,9 @@ import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
 import { createAdminRegistry } from '@lingcoo/frame-admin';
 import { AdminRouterProvider } from '@lingcoo/frame-admin/router';
 import { AdminSystemInfoPage, type AdminSystemInfoClient } from '@lingcoo/frame-admin/system-info';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
+import { cmsManifest } from '@lingcoo/frame-cms/contracts';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
 import { createWebRegistry } from '@lingcoo/frame-web';
 import { PageHeader, Section } from '@lingcoo/frame-web/layout';
 import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
@@ -27,12 +31,22 @@ const frameDependency = defineExtension({
   manifest: projectExtensionManifest(frameCoreManifest, []),
 });
 
+const cmsAdminClient = createCmsAdminClient(async () => {
+  throw new Error('Consumer must connect its authenticated Admin API transport');
+});
+
+const cmsWebClient = createCmsWebClient((path, init) => fetch(path, init));
+
 export const consumerAdminRegistry = createAdminRegistry(
   defineSystem({
     id: 'consumer-admin',
     version: '0.1.0',
     extensions: [
       frameDependency,
+      defineExtension({
+        manifest: projectExtensionManifest(cmsManifest, ['admin']),
+        admin: createCmsAdminExtension({ client: cmsAdminClient }),
+      }),
       defineExtension({
         manifest: projectExtensionManifest(exampleManifest, ['admin']),
         admin: exampleAdminExtension,
@@ -47,6 +61,13 @@ export const consumerWebRegistry = createWebRegistry(
     version: '0.1.0',
     extensions: [
       frameDependency,
+      defineExtension({
+        manifest: projectExtensionManifest(cmsManifest, ['web']),
+        web: createCmsWebExtension({
+          client: cmsWebClient,
+          resolvePresentation: () => null,
+        }),
+      }),
       defineExtension({
         manifest: projectExtensionManifest(exampleManifest, ['web']),
         web: exampleWebExtension,

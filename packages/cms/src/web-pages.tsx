@@ -7,9 +7,14 @@ import { SiteShell } from '@lingcoo/frame-web/site';
 import { PageLoading, SystemPage } from '@lingcoo/frame-web/system-states';
 import { useEffect, useState } from 'react';
 
-import type { ArticleListResponse, CmsContent } from '../../types';
-import { ArticleList } from './ArticleList';
-import { ContentDetail } from './ContentDetail';
+import { ArticleList } from './article-list.js';
+import { ContentDetail } from './content-detail.js';
+import {
+  CmsWebRequestError,
+  type CmsArticleListResponse,
+  type CmsPublicContent,
+  type CmsWebClient,
+} from './web-client.js';
 
 type RequestState<T> =
   | { status: 'loading' }
@@ -17,36 +22,39 @@ type RequestState<T> =
   | { status: 'not-found' }
   | { status: 'error' };
 
-async function requestJson<T>(endpoint: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(endpoint, { signal });
-  if (response.status === 404) throw new Error('not-found');
-  if (!response.ok) throw new Error('request-failed');
-  return (await response.json()) as T;
-}
-
 export function CmsContentPage({
-  endpoint,
+  client,
+  contentId,
+  contentType,
   presentation,
   preview = false,
 }: {
-  endpoint: string;
+  client: CmsWebClient;
+  contentId: string;
+  contentType: 'article' | 'page';
   presentation: PublicPresentation | null;
   preview?: boolean;
 }) {
-  const [state, setState] = useState<RequestState<CmsContent>>({ status: 'loading' });
+  const [state, setState] = useState<RequestState<CmsPublicContent>>({ status: 'loading' });
 
   useEffect(() => {
     const controller = new AbortController();
-    requestJson<{ content: CmsContent }>(endpoint, controller.signal)
-      .then((result) => setState({ status: 'ready', data: result.content }))
+    const request = preview
+      ? client.getPreview(contentId, controller.signal)
+      : contentType === 'article'
+        ? client.getArticle(contentId, controller.signal)
+        : client.getPage(contentId, controller.signal);
+    request
+      .then((content) => setState({ status: 'ready', data: content }))
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
         setState({
-          status: error instanceof Error && error.message === 'not-found' ? 'not-found' : 'error',
+          status:
+            error instanceof CmsWebRequestError && error.status === 404 ? 'not-found' : 'error',
         });
       });
     return () => controller.abort();
-  }, [endpoint]);
+  }, [client, contentId, contentType, preview]);
 
   if (state.status === 'loading')
     return <PageLoading label="正在加载内容" presentation={presentation} />;
@@ -60,25 +68,27 @@ export function CmsContentPage({
 }
 
 export function ArticleIndexPage({
+  client,
   page,
+  pageSize = 12,
   presentation,
 }: {
+  client: CmsWebClient;
   page: number;
+  pageSize?: number;
   presentation: PublicPresentation | null;
 }) {
-  const [state, setState] = useState<RequestState<ArticleListResponse>>({ status: 'loading' });
+  const [state, setState] = useState<RequestState<CmsArticleListResponse>>({ status: 'loading' });
   useEffect(() => {
     const controller = new AbortController();
-    requestJson<ArticleListResponse>(
-      `/api/public/cms/articles?page=${page}&pageSize=12`,
-      controller.signal,
-    )
+    client
+      .listArticles(page, pageSize, controller.signal)
       .then((result) => setState({ status: 'ready', data: result }))
       .catch(() => {
         if (!controller.signal.aborted) setState({ status: 'error' });
       });
     return () => controller.abort();
-  }, [page]);
+  }, [client, page, pageSize]);
 
   if (state.status === 'error') return <SystemPage kind="500" presentation={presentation} />;
   if (state.status === 'not-found') return <SystemPage kind="404" presentation={presentation} />;

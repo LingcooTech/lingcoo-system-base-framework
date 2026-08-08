@@ -1,6 +1,6 @@
 import { createAdminRegistry, defineAdminExtension } from '@lingcoo/frame-admin';
 import { frameAdminManifest } from '@lingcoo/frame-admin/manifest';
-import { createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
 import { cmsManifest } from '@lingcoo/frame-cms/contracts';
 import {
   defineExtension,
@@ -8,14 +8,13 @@ import {
   FRAME_VERSION,
   projectExtensionManifest,
 } from '@lingcoo/frame-extension-sdk';
-import { BookOpenText, Settings2 } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
 
-import { searchResources } from './api/client';
+import { apiRequest, searchResources } from './api/client';
 import { AccessPage } from './pages/AccessPage';
 import { AccountPage } from './pages/AccountPage';
 import { AssetsPage } from './pages/AssetsPage';
 import { AuditPage } from './pages/AuditPage';
-import { CmsPage } from './pages/CmsPage';
 import { HelpPage } from './pages/HelpPage';
 import { HomePage } from './pages/HomePage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
@@ -81,8 +80,7 @@ const frameAdminDefinition = defineExtension({
 const cmsAdminDefinition = defineExtension({
   manifest: projectExtensionManifest(cmsManifest, ['admin']),
   admin: createCmsAdminExtension<AdminAppContext>({
-    component: CmsPage,
-    icon: BookOpenText,
+    client: createCmsAdminClient(apiRequest),
   }),
 });
 

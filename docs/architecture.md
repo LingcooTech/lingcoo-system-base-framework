@@ -89,6 +89,13 @@ Backend 的 `/api/system/runtime` 从当前 `DefinedSystem` Manifest 与 `framew
 
 `@lingcoo/frame-design-tokens` 定义语义颜色、间距、排版、圆角、阴影、动效和层级；`@lingcoo/frame-ui` 实现 Button、Badge、Card、Input、Textarea、FormField、Dialog、Spinner 和 EmptyState 等无业务含义的组件。两套前端只能通过语义 Token 定制品牌外观，不复制组件实现。
 
+### CMS 前端运行面
+
+`@lingcoo/frame-cms` 在 Server、Worker 和 Migration 之外拥有可选的 Admin/Web 默认体验。Admin 页面使用
+`CmsAdminClient` 读取 Consumer 的认证 API，Web 页面使用 `CmsWebClient` 读取公共内容 API；品牌由
+Consumer 通过 Presentation Resolver 注入，路由仍由 Admin/Web Registry 管理。这样 CMS 的内容类型、版本、
+发布、重定向、SEO 和计划发布只有一份默认实现，官网、教育和零售系统可以覆盖视觉而不复制工作流代码。
+
 ### API
 
 Fastify 宿主统一提供：

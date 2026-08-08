@@ -84,3 +84,16 @@ Footer 的 Frame 名称和版本是默认系统信息入口；`/system` 及其�
 账本，任务和运行状态按独立权限加载。行业应用可以保持 Frame 完全在幕后，同时不复制运维页面源码。
 
 公共 Web 只共享展示和交互结构，不把课程卡片、商品卡片、购物车或报名表等行业组件放进 Frame。
+
+## CMS 默认体验
+
+`@lingcoo/frame-cms` 是可选的业务能力包。安装后，`createCmsAdminExtension({ client })` 会直接提供
+内容列表、编辑器、版本历史、SEO/社交预览、计划发布和 URL 重定向；`createCmsWebExtension({ client,
+resolvePresentation })` 会直接提供文章列表、分页、预览、文章/页面详情、面包屑、封面图和 Markdown
+渲染。Consumer 只需要把自己的认证 API 请求器、公共 `fetch` 和品牌 Presentation 传入 Client；Admin
+路由由 `AdminRouterProvider` 提供，Web 路由由 Web Registry 提供，不需要复制 `CmsPage` 或
+`components/cms`。
+
+领域系统可以覆盖单个 Admin/Web 路由组件，但仍应复用 `CmsAdminClient`、`CmsWebClient` 和内容契约，确保
+发布、版本、重定向、SEO 和定时发布行为保持一致。CMS 专属 CSS 从 `@lingcoo/frame-cms/styles.css`
+显式引入，和 UI、Admin、Web Shell 样式分开管理。

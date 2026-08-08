@@ -4,15 +4,15 @@ import { PageHeader, Section } from '@lingcoo/frame-web/layout';
 import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
 import { breadcrumbStructuredData, type StructuredData, SeoHead } from '@lingcoo/frame-web/seo';
 
-import type { CmsContent } from '../../types';
-import { ContentRenderer } from './ContentRenderer';
+import type { CmsPublicContent } from './web-client.js';
+import { ContentRenderer } from './content-renderer.js';
 
 export function ContentDetail({
   content,
   presentation,
   preview = false,
 }: {
-  content: CmsContent;
+  content: CmsPublicContent;
   presentation: PublicPresentation | null;
   preview?: boolean;
 }) {

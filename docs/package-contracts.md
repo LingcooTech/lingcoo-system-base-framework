@@ -15,7 +15,7 @@ Consumer 应锁定同一 `0.6.x` Backend、Database、Extension SDK、Admin、We
 | `@lingcoo/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
 | `@lingcoo/frame-admin`         | Admin Shell、认证、路由、系统信息与扩展注册表       | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                   |
 | `@lingcoo/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
-| `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`                                     |
+| `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`, `./styles.css`                     |
 | `@lingcoo/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
 | `@lingcoo/frame-design-tokens` | 基础、后台和公共站点语义 Token                      | `./base.css`, `./admin.css`, `./public.css`                                                                        |
 
@@ -64,6 +64,11 @@ CMS。
 - `@lingcoo/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。
+- `@lingcoo/frame-cms`：在独立运行面之外提供可直接安装的 CMS Admin/Web 默认页面。`./admin` 暴露内容列表、
+  编辑器、版本、SEO 预览、计划发布和重定向工作流，以及 `CmsAdminClient`/请求工厂；`./web` 暴露文章
+  列表、文章/页面详情、预览、Markdown 渲染、分页和空状态，以及 `CmsWebClient`/请求工厂。两者都由
+  Consumer 注入 API Transport 和品牌上下文，Consumer 不复制 Reference App 页面；`./styles.css` 随包
+  发布 CMS Admin/Web 的专属样式。
 
 Frame Admin Manifest 不注册 `/`，Consumer 必须为自己的应用首页声明 Route。Frame 技术 Route 会注册到
 Registry 并继续执行权限控制，但不产生侧栏 Navigation；默认只贡献一个 `/settings` 应用设置入口。
@@ -107,7 +112,7 @@ await runSystemMigrations({
 
 `npm run packages:verify` 构建并打包 Frame、Database、Extension SDK、Admin、Web、CMS、UI、Design
 Tokens 与完整示例扩展，再在临时目录隔离安装。Consumer Fixture 会进行 TypeScript 公共入口编译，组合
-API/Worker/Admin/Web，验证示例页面、搜索、SEO、Sitemap、Landing Block 和 13 条系统迁移。CI 提供
+API/Worker/Admin/Web/CMS 默认页面，验证示例页面、搜索、SEO、Sitemap、Landing Block 和 13 条系统迁移。CI 提供
 PostgreSQL 17，并真实执行全部迁移。
 
 完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见

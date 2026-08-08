@@ -3,7 +3,7 @@ import { Input } from '@lingcoo/frame-ui/input';
 import { Textarea } from '@lingcoo/frame-ui/textarea';
 import { useToast } from '@lingcoo/frame-ui/toast';
 import { Archive, CalendarClock, ExternalLink, FilePlus2, Plus, Send } from 'lucide-react';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
 import { AdminLink as Link, useAdminRouter as useRouter } from '@lingcoo/frame-admin/router';
 import {
@@ -16,36 +16,46 @@ import {
   ResourceSection,
   StatusPill,
   useConfirm,
+  type AdminPageSection,
   type DataTableColumn,
 } from '@lingcoo/frame-admin/shared';
 
-import {
-  createCmsContent,
-  createCmsRedirect,
-  deleteCmsRedirect,
-  fetchAssets,
-  fetchCmsContent,
-  fetchCmsContents,
-  fetchCmsRedirects,
-  fetchPresentation,
-  fetchCmsVersions,
-  fetchTaxonomies,
-  fetchTaxonomyTerms,
-  scheduleCmsContent,
-  updateCmsContent,
-  updateCmsRedirect,
-  updateCmsStatus,
-  type CmsContent,
-  type CmsContentInput,
-  type CmsRedirect,
-  type CmsRedirectInput,
-  type CmsVersion,
-  type PresentationAsset,
-  type PresentationProfile,
-  type StorageAsset,
-  type TaxonomyTerm,
-} from '../api/client';
-import { sections } from '../lib/foundation';
+import type {
+  CmsAdminClient,
+  CmsContent,
+  CmsContentInput,
+  CmsRedirect,
+  CmsRedirectInput,
+  CmsVersion,
+  CmsPresentationAsset,
+  CmsPresentationProfile,
+  CmsAdminAsset,
+  CmsTaxonomyTerm,
+} from './admin-client.js';
+
+export const defaultCmsAdminSection: AdminPageSection = {
+  group: '站点',
+  title: '轻量内容中心',
+  description: '管理通用页面与文章的草稿、发布、版本、SEO 和重定向。',
+  context: [
+    { label: '内容类型', value: 'Page + Article', note: '领域内容由业务扩展独立注册' },
+    { label: '发布流程', value: 'Draft to Publish', note: '支持版本、预览与计划发布' },
+  ],
+};
+
+interface CmsAdminEnvironment {
+  client: CmsAdminClient;
+  previewHref(contentId: string): string;
+  section: AdminPageSection;
+}
+
+const CmsAdminEnvironmentContext = createContext<CmsAdminEnvironment | null>(null);
+
+function useCmsAdminEnvironment() {
+  const environment = useContext(CmsAdminEnvironmentContext);
+  if (!environment) throw new Error('CmsAdminPage requires a CMS Admin environment');
+  return environment;
+}
 
 const emptyDraft = (type: 'article' | 'page'): CmsContentInput => ({
   type,
@@ -64,6 +74,13 @@ const emptyDraft = (type: 'article' | 'page'): CmsContentInput => ({
 const cmsPageSize = 20;
 
 function RedirectManager({ canWrite }: { canWrite: boolean }) {
+  const { client } = useCmsAdminEnvironment();
+  const {
+    createRedirect: createCmsRedirect,
+    deleteRedirect: deleteCmsRedirect,
+    listRedirects: fetchCmsRedirects,
+    updateRedirect: updateCmsRedirect,
+  } = client;
   const confirm = useConfirm();
   const { toast } = useToast();
   const [items, setItems] = useState<CmsRedirect[]>([]);
@@ -186,7 +203,7 @@ function RedirectManager({ canWrite }: { canWrite: boolean }) {
       align: 'right',
       cell: (item) =>
         canWrite ? (
-          <div className="integration-actions">
+          <div className="cms-admin-actions">
             <Button
               onClick={() => {
                 setEditingId(item.id);
@@ -240,7 +257,7 @@ function RedirectManager({ canWrite }: { canWrite: boolean }) {
           />
           <select
             aria-label="重定向状态码"
-            className="integration-select"
+            className="cms-admin-select"
             onChange={(event) =>
               setDraft((current) => ({
                 ...current,
@@ -274,6 +291,8 @@ function RedirectManager({ canWrite }: { canWrite: boolean }) {
 }
 
 function CmsList() {
+  const { client, section } = useCmsAdminEnvironment();
+  const { listContents: fetchCmsContents, updateStatus: updateCmsStatus } = client;
   const { hasPermission } = useAuth();
   const confirm = useConfirm();
   const { toast } = useToast();
@@ -340,7 +359,7 @@ function CmsList() {
       key: 'title',
       header: '内容',
       cell: (row) => (
-        <div className="table-primary">
+        <div className="cms-admin-primary">
           <Link href={'/cms/' + row.id}>
             <strong>{row.title}</strong>
           </Link>
@@ -375,7 +394,7 @@ function CmsList() {
   ];
 
   return (
-    <PageFrame section={sections.cms}>
+    <PageFrame section={section}>
       <ResourceSection
         title="页面与文章"
         description="只管理通用内容；行业内容类型由对应领域模块注册。"
@@ -405,7 +424,7 @@ function CmsList() {
             value={searchInput}
           />
           <select
-            className="integration-select"
+            className="cms-admin-select"
             onChange={(event) => setType(event.target.value)}
             value={type}
           >
@@ -414,7 +433,7 @@ function CmsList() {
             <option value="article">文章</option>
           </select>
           <select
-            className="integration-select"
+            className="cms-admin-select"
             onChange={(event) => setStatus(event.target.value)}
             value={status}
           >
@@ -474,9 +493,9 @@ function SeoPreview({
   draft,
   presentation,
 }: {
-  assets: Record<string, PresentationAsset>;
+  assets: Record<string, CmsPresentationAsset>;
   draft: CmsContentInput;
-  presentation: PresentationProfile | null;
+  presentation: CmsPresentationProfile | null;
 }) {
   const title = draft.seoTitle || draft.title || '页面标题';
   const description = draft.seoDescription || draft.excerpt || '页面描述会显示在这里。';
@@ -521,16 +540,29 @@ function CmsEditor({
   contentId?: string;
   initialType: 'article' | 'page';
 }) {
+  const { client, previewHref, section } = useCmsAdminEnvironment();
+  const {
+    createContent: createCmsContent,
+    getContent: fetchCmsContent,
+    getPresentation: fetchPresentation,
+    listAssets: fetchAssets,
+    listTaxonomies: fetchTaxonomies,
+    listTaxonomyTerms: fetchTaxonomyTerms,
+    listVersions: fetchCmsVersions,
+    scheduleContent: scheduleCmsContent,
+    updateContent: updateCmsContent,
+    updateStatus: updateCmsStatus,
+  } = client;
   const { hasPermission } = useAuth();
   const { navigate } = useRouter();
   const confirm = useConfirm();
   const { toast } = useToast();
   const [content, setContent] = useState<CmsContent | null>(null);
   const [draft, setDraft] = useState<CmsContentInput>(emptyDraft(initialType));
-  const [assets, setAssets] = useState<Record<string, PresentationAsset>>({});
-  const [terms, setTerms] = useState<(TaxonomyTerm & { taxonomyName: string })[]>([]);
+  const [assets, setAssets] = useState<Record<string, CmsPresentationAsset>>({});
+  const [terms, setTerms] = useState<(CmsTaxonomyTerm & { taxonomyName: string })[]>([]);
   const [versions, setVersions] = useState<CmsVersion[]>([]);
-  const [presentation, setPresentation] = useState<PresentationProfile | null>(null);
+  const [presentation, setPresentation] = useState<CmsPresentationProfile | null>(null);
   const [scheduleAt, setScheduleAt] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
@@ -591,7 +623,7 @@ function CmsEditor({
   function setAsset(
     field: 'coverAssetId' | 'socialImageAssetId',
     id: string | null,
-    selected?: StorageAsset,
+    selected?: CmsAdminAsset,
   ) {
     setField(field, id);
     if (selected)
@@ -695,7 +727,7 @@ function CmsEditor({
   const termGroups = useMemo(
     () =>
       Object.entries(
-        terms.reduce<Record<string, (TaxonomyTerm & { taxonomyName: string })[]>>(
+        terms.reduce<Record<string, (CmsTaxonomyTerm & { taxonomyName: string })[]>>(
           (groups, term) => {
             (groups[term.taxonomyName] ??= []).push(term);
             return groups;
@@ -707,7 +739,7 @@ function CmsEditor({
   );
 
   return (
-    <PageFrame section={sections.cms}>
+    <PageFrame section={section}>
       <form className="cms-editor" onSubmit={save}>
         <div className="cms-editor-heading">
           <div>
@@ -723,7 +755,7 @@ function CmsEditor({
             {content ? (
               <a
                 className="lc-button lc-button--secondary lc-button--sm"
-                href={'/preview/content/' + content.id}
+                href={previewHref(content.id)}
                 rel="noreferrer"
                 target="_blank"
               >
@@ -747,7 +779,7 @@ function CmsEditor({
               <label>
                 类型
                 <select
-                  className="integration-select"
+                  className="cms-admin-select"
                   disabled={!canWrite || Boolean(content)}
                   onChange={(event) => setField('type', event.target.value as CmsContent['type'])}
                   value={draft.type}
@@ -917,7 +949,7 @@ function CmsEditor({
             ))}
           </section>
         ) : null}
-        <div className="presentation-savebar">
+        <div className="cms-admin-savebar">
           <span>
             {message || (content ? '当前版本 v' + content.currentVersion : '内容将以草稿创建')}
           </span>
@@ -957,10 +989,30 @@ function CmsEditor({
   );
 }
 
-export function CmsPage() {
+function CmsAdminRoute() {
   const { pathname } = useRouter();
   if (pathname === '/cms' || pathname === '/cms/') return <CmsList />;
   if (pathname === '/cms/new/page') return <CmsEditor initialType="page" />;
   if (pathname === '/cms/new/article') return <CmsEditor initialType="article" />;
   return <CmsEditor contentId={pathname.slice('/cms/'.length)} initialType="article" />;
+}
+
+export function CmsAdminPage({
+  client,
+  previewHref = (contentId) => `/preview/content/${contentId}`,
+  section = defaultCmsAdminSection,
+}: {
+  client: CmsAdminClient;
+  previewHref?: (contentId: string) => string;
+  section?: AdminPageSection;
+}) {
+  const environment = useMemo(
+    () => ({ client, previewHref, section }),
+    [client, previewHref, section],
+  );
+  return (
+    <CmsAdminEnvironmentContext.Provider value={environment}>
+      <CmsAdminRoute />
+    </CmsAdminEnvironmentContext.Provider>
+  );
 }

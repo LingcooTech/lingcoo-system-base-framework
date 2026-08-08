@@ -5,14 +5,11 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { breadcrumbStructuredData } from '@lingcoo/frame-web/seo';
 
-import { ArticleCard } from '../src/components/cms/ArticleCard';
-import { ContentDetail } from '../src/components/cms/ContentDetail';
-import { ContentRenderer } from '../src/components/cms/ContentRenderer';
-import type { CmsContent } from '../src/types';
+import { ArticleCard, ContentDetail, ContentRenderer, type CmsPublicContent } from '../src/web.js';
 
 Object.assign(globalThis, { React });
 
-const article: CmsContent = {
+const article: CmsPublicContent = {
   id: 'article-1',
   type: 'article',
   slug: 'foundation-update',
