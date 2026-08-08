@@ -36,8 +36,8 @@ assert_header() {
   expected="$3"
   headers="$(curl -fsSI "${base_url}${path}" | tr -d '\r')"
   normalized="$(printf '%s\n' "${headers}" | awk -v name="${header_name}" '
-    BEGIN { IGNORECASE = 1 }
-    index($0, name ":") == 1 { sub(/^[^:]+:[[:space:]]*/, ""); print; exit }
+    BEGIN { prefix = tolower(name) ":" }
+    index(tolower($0), prefix) == 1 { sub(/^[^:]+:[[:space:]]*/, ""); print; exit }
   ')"
   case "${normalized}" in
     *"${expected}"*) echo "header check passed: ${path} ${header_name}" ;;
