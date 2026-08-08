@@ -245,7 +245,10 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
   }
 
   app.setNotFoundHandler(async (request, reply) => {
-    if (request.method !== 'GET') {
+    // HEAD must resolve like GET so browsers, health probes, and link
+    // previews that issue HEAD against SPA routes receive the page headers
+    // instead of a 404 JSON body.
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
       return reply.code(404).send({ error: 'NotFound', message: '接口不存在' });
     }
     if (request.url.startsWith('/api/') || request.url === '/health' || request.url === '/ready') {

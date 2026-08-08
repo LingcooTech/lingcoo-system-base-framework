@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildApp } from '../src/host/app.js';
@@ -130,4 +133,26 @@ test('metadata, search and data exchange routes require authentication', async (
   assert.equal(search.statusCode, 401);
   assert.equal(datasets.statusCode, 401);
   await app.close();
+});
+
+test('HEAD on SPA routes resolves the public shell like GET with security headers', async () => {
+  const publicDir = mkdtempSync(join(tmpdir(), 'frame-public-'));
+  writeFileSync(join(publicDir, 'index.html'), '<!doctype html><title>Frame</title>');
+  const app = await buildApp(testEnv(), { staticAssets: { publicDirectory: publicDir } });
+  try {
+    for (const method of ['GET', 'HEAD'] as const) {
+      const response = await app.inject({ method, url: '/framework' });
+      assert.equal(response.statusCode, 200, `${method} /framework should serve the shell`);
+      assert.match(response.headers['content-type'] as string, /text\/html/);
+      assert.equal(response.headers['x-content-type-options'], 'nosniff');
+      assert.equal(response.headers['referrer-policy'], 'strict-origin-when-cross-origin');
+    }
+    // Non-GET/HEAD verbs still receive the API-style not-found envelope.
+    const post = await app.inject({ method: 'POST', url: '/framework' });
+    assert.equal(post.statusCode, 404);
+    assert.deepEqual(post.json(), { error: 'NotFound', message: '接口不存在' });
+  } finally {
+    await app.close();
+    rmSync(publicDir, { recursive: true, force: true });
+  }
 });
