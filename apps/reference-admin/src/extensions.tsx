@@ -16,24 +16,22 @@ import { AccountPage } from './pages/AccountPage';
 import { AssetsPage } from './pages/AssetsPage';
 import { AuditPage } from './pages/AuditPage';
 import { CmsPage } from './pages/CmsPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { HelpPage } from './pages/HelpPage';
 import { HomePage } from './pages/HomePage';
 import { IntegrationsPage } from './pages/IntegrationsPage';
 import { MetadataPage } from './pages/MetadataPage';
-import { ModulesPage } from './pages/ModulesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { ObservabilityPage } from './pages/ObservabilityPage';
 import { OperationsPage } from './pages/OperationsPage';
 import { PresentationPage } from './pages/PresentationPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SystemInfoPage } from './pages/SystemInfoPage';
 
 export type AdminAppContext = Record<string, never>;
 
 const frameAdminSurface = defineAdminExtension<AdminAppContext>({
   routes: [
-    { id: 'frame.system-info', component: DashboardPage },
-    { id: 'frame.modules', component: ModulesPage },
+    { id: 'frame.system-info', component: SystemInfoPage },
     { id: 'frame.access', component: AccessPage },
     { id: 'frame.integrations', component: IntegrationsPage },
     { id: 'frame.assets', component: AssetsPage },

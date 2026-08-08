@@ -21,6 +21,10 @@ Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考
 提供 PageFrame、ResourceSection、DataTable、StatusPill、AssetPicker、FilterBar、AdminPagination、
 BulkActionBar、DetailDrawer 和 ConfirmProvider。它们带有管理场景语义，不进入公共 Web。
 
+`./system-info` 提供集中式系统信息产品面。Consumer 注入 Runtime、Observability 和 Operations 加载器；
+页面根据权限独立请求并展示应用/System/Frame 版本、扩展、运行面、Migration、Job/Outbox、指标和异常。
+Reference Admin 不再维护自己的系统信息布局或静态模块清单。
+
 Shell 的左侧导航只读取扩展 Registry 明确声明的 Navigation Contribution；搜索、通知、个人中心、账号
 安全和退出固定进入 Topbar/账户菜单。内容区底部显示 Frame 名称与版本，具备权限时才提供系统信息链接。
 Consumer 注入认证、品牌、通知和资产加载函数，公共包不依赖 Reference App API Client。
@@ -76,6 +80,7 @@ Provider/Connection/Credential 契约，避免无价值的协议迁移。
 
 通知固定在 Topbar，个人资料和账号安全固定在账户菜单，媒体资产优先通过 AssetPicker 进入业务流程。
 Footer 的 Frame 名称和版本是默认系统信息入口；`/system` 及其技术子页面受权限保护且不声明 Navigation。
-Reference Admin 通过该入口测试扩展、任务、运行状态、资产和帮助，行业应用可以保持 Frame 完全在幕后。
+`/system` 的页面实现来自 `@lingcoo/frame-admin/system-info`；扩展和迁移直接读取 Defined System 与数据库
+账本，任务和运行状态按独立权限加载。行业应用可以保持 Frame 完全在幕后，同时不复制运维页面源码。
 
 公共 Web 只共享展示和交互结构，不把课程卡片、商品卡片、购物车或报名表等行业组件放进 Frame。

@@ -32,6 +32,10 @@
       "types": "./dist/shared.d.ts",
       "import": "./dist/shared.js"
     },
+    "./system-info": {
+      "types": "./dist/system-info.d.ts",
+      "import": "./dist/system-info.js"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "sideEffects": [

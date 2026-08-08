@@ -3,7 +3,6 @@ import {
   Bell,
   BookOpenText,
   DatabaseZap,
-  Gauge,
   Images,
   ListChecks,
   PlugZap,
@@ -13,18 +12,10 @@ import {
   ShieldCheck,
   UserRound,
   CircleHelp,
-  Waypoints,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
-import type {
-  AdminRegistry,
-  RegisteredAdminNavigation,
-  RegisteredAdminRoute,
-} from '@lingcoo/frame-admin';
 
 export type SectionKey =
-  | 'dashboard'
-  | 'modules'
   | 'access'
   | 'integrations'
   | 'assets'
@@ -55,34 +46,6 @@ export interface SectionMeta {
 }
 
 export const sections: Record<SectionKey, SectionMeta> = {
-  dashboard: {
-    id: 'dashboard',
-    group: 'Frame',
-    title: '系统信息',
-    navLabel: '系统信息',
-    description: '查看 Frame 版本、运行面、已安装扩展和受保护的管理入口。',
-    href: '/system',
-    icon: Gauge,
-    permission: 'system.runtime.read',
-    context: [
-      { label: '框架阶段', value: 'Foundation', note: '尚未装载行业业务模块' },
-      { label: '运行模式', value: 'Single image', note: 'API 同时托管双 Web 产物' },
-    ],
-  },
-  modules: {
-    id: 'modules',
-    group: '架构',
-    title: '领域模块',
-    navLabel: '模块扩展',
-    description: '所有具体业务都通过明确的领域模块进入系统。',
-    href: '/modules',
-    icon: Waypoints,
-    permission: 'admin.access',
-    context: [
-      { label: 'Core 模块', value: '15', note: 'CMS 作为可选一方扩展安装' },
-      { label: '扩展目录', value: 'packages/*-extension', note: '业务扩展由 System 显式组合' },
-    ],
-  },
   access: {
     id: 'access',
     group: '系统',
@@ -270,54 +233,3 @@ export const sections: Record<SectionKey, SectionMeta> = {
     ],
   },
 };
-
-export const sectionList = Object.values(sections);
-
-function coreSectionForRoute(routeId: string): SectionMeta | undefined {
-  const key = routeId.startsWith('frame.') ? routeId.slice('frame.'.length) : '';
-  return sections[key as SectionKey];
-}
-
-export function sectionFromNavigation(navigation: RegisteredAdminNavigation<unknown>): SectionMeta {
-  const core = coreSectionForRoute(navigation.route.id);
-  return {
-    id: navigation.id,
-    group: navigation.group,
-    title: navigation.route.title,
-    navLabel: navigation.label,
-    description: navigation.route.description ?? '',
-    href: navigation.href,
-    icon: navigation.icon ?? Waypoints,
-    permission: navigation.route.permission,
-    context: core?.context ?? [
-      { label: '扩展', value: navigation.extensionId, note: 'Build-time extension' },
-      { label: '路由', value: navigation.route.path, note: 'Registry managed' },
-    ],
-  };
-}
-
-function sectionFromRoute(route: RegisteredAdminRoute<unknown>): SectionMeta {
-  const core = coreSectionForRoute(route.id);
-  if (core) return core;
-  return {
-    id: route.id,
-    group: '扩展',
-    title: route.title,
-    navLabel: route.title,
-    description: route.description ?? '',
-    href: route.path.replace(/\/\*$/, ''),
-    icon: Waypoints,
-    permission: route.permission,
-    context: [
-      { label: '扩展', value: route.extensionId, note: 'Build-time extension' },
-      { label: '路由', value: route.path, note: 'Registry managed' },
-    ],
-  };
-}
-
-export function getSectionByPath(pathname: string, registry: AdminRegistry<unknown>): SectionMeta {
-  const match = registry.matchRoute(pathname);
-  if (!match) return sections.dashboard;
-  const navigation = registry.navigation.find((item) => item.route.id === match.route.id);
-  return navigation ? sectionFromNavigation(navigation) : sectionFromRoute(match.route);
-}

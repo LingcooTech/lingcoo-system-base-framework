@@ -586,3 +586,44 @@ R4 输入：
 - 产品化集中式系统信息页与浏览器安全摘要契约。
 - 集成扩展、运行面、Worker、Job/Outbox、Migration、指标和异常状态，并按权限分区展示。
 - 将 R3 的 Reference 系统信息实现迁入 Admin 包，同时保持 Footer 为唯一默认入口。
+
+## Reference Experience：R4 系统信息产品化
+
+### 范围
+
+- 建立可发布、可注入、权限感知的集中式系统信息页面。
+- 让 Backend 从实际 Defined System 和 Migration 账本提供浏览器安全摘要。
+- 删除 Reference 中重复、静态或会形成第二真相源的扩展展示代码。
+
+### 完成记录
+
+- Completed: 2026-08-08
+- Starting commit: `0f729c6`
+
+已交付：
+
+- `@lingcoo/frame-admin/system-info` 提供完整类型、Client 契约和 System Info 页面；样式随 Admin 包发布。
+- `/api/system/runtime` 新增 System/Frame/API 版本、扩展运行面与贡献计数、Migration Source、账本条数、
+  已应用和待执行统计；旧 `name/version/environment/surfaces` 字段保持兼容。
+- Fastify Host 保存当前 `DefinedSystem` 只读引用，摘要不依赖进程全局变量，也不返回环境变量或 Secret。
+- 系统信息页组合真实 Runtime、Observability、Job Summary 和 Outbox Total；各数据区按原权限独立加载并
+  支持局部失败，不因一个受保护接口失败而隐藏全部系统身份信息。
+- Reference Admin 只保留 Runtime、Observability/Operations Adapter 和权限过滤；静态 `ModulesPage`、
+  对应 Route、模块数组及遗留 Section Resolver 已删除。
+- Admin 包新增完整渲染与无权限分区测试；Backend 新增 Manifest/Ledger 摘要和账本不可用降级测试；
+  Consumer Fixture 与 tarball 文件检查覆盖 `./system-info`。
+- `@lingcoo/frame` 补齐对 Admin/Web Manifest 包的直接依赖，独立安装契约与源码 import 保持一致。
+
+验证结果：
+
+- Admin 包 5/5 测试、Backend 新增 2/2 摘要测试、Reference Admin 类型检查、Lint 和生产构建通过。
+- `npm run packages:verify`：全部可发布包完成构建、打包、隔离安装、Consumer TypeScript 与运行时验收。
+- `npm run check`：全仓类型检查、14 项跨包集成测试、54 项 Frame 测试、Admin/Web/UI 测试及全部
+  Workspace Lint 通过；PostgreSQL 相关测试在本地按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R5 输入：
+
+- 产品化 CMS Admin/Web 默认页面、内容工作流与公共渲染组件。
+- 进一步缩薄 Reference Admin/Web，安装 CMS 时不再要求 Consumer 提供页面组件。
+- 补齐 CMS 的 tarball Consumer、浏览器交互和部署环境验收。

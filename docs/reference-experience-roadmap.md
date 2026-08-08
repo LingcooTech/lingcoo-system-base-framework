@@ -160,23 +160,22 @@ Presentation 和扩展 Registry。
 
 ### 5.3 应进入 `@lingcoo/frame-admin` 的 Core 页面
 
-| 当前页面                            | Frame 能力                       | Console 分组 |
-| ----------------------------------- | -------------------------------- | ------------ |
-| `LoginPage`                         | 管理后台登录                     | 认证入口     |
-| `AccountPage`、`ChangePasswordPage` | 个人资料、密码、会话和安全记录   | 账户菜单     |
-| `DashboardPage`                     | API、Worker、Database 与扩展总览 | 总览         |
-| `ModulesPage`                       | Defined System 和已安装扩展      | Frame        |
-| `AccessPage`                        | 账号、角色和权限                 | 账号与访问   |
-| `SettingsPage`                      | 类型化非敏感设置                 | 系统管理     |
-| `PresentationPage`                  | 品牌、导航和站点呈现             | 站点管理     |
-| `IntegrationsPage`                  | Provider、加密连接和调用记录     | 系统管理     |
-| `AssetsPage`                        | 媒体资产和引用                   | 资源管理     |
-| `OperationsPage`                    | Job 与 Outbox                    | 运行管理     |
-| `NotificationsPage`                 | 站内通知、公告和邮件投递         | 运行管理     |
-| `MetadataPage`                      | 字典、分类、标签和数据交换       | 数据管理     |
-| `AuditPage`                         | 结构化审计                       | 系统管理     |
-| `ObservabilityPage`                 | 心跳、指标和异常                 | 运行管理     |
-| `HelpPage`                          | 能力边界和开发入口               | Frame        |
+| 当前页面                            | Frame 能力                            | Console 分组 |
+| ----------------------------------- | ------------------------------------- | ------------ |
+| `LoginPage`                         | 管理后台登录                          | 认证入口     |
+| `AccountPage`、`ChangePasswordPage` | 个人资料、密码、会话和安全记录        | 账户菜单     |
+| `SystemInfoPage`                    | API、Worker、Database、扩展与迁移总览 | Frame        |
+| `AccessPage`                        | 账号、角色和权限                      | 账号与访问   |
+| `SettingsPage`                      | 类型化非敏感设置                      | 系统管理     |
+| `PresentationPage`                  | 品牌、导航和站点呈现                  | 站点管理     |
+| `IntegrationsPage`                  | Provider、加密连接和调用记录          | 系统管理     |
+| `AssetsPage`                        | 媒体资产和引用                        | 资源管理     |
+| `OperationsPage`                    | Job 与 Outbox                         | 运行管理     |
+| `NotificationsPage`                 | 站内通知、公告和邮件投递              | 运行管理     |
+| `MetadataPage`                      | 字典、分类、标签和数据交换            | 数据管理     |
+| `AuditPage`                         | 结构化审计                            | 系统管理     |
+| `ObservabilityPage`                 | 心跳、指标和异常                      | 运行管理     |
+| `HelpPage`                          | 能力边界和开发入口                    | Frame        |
 
 这些页面是 Core 后端能力的默认管理界面，不是 Lingcoo Frame 官方网站专属内容。它们必须能被官网、
 教育或零售 Consumer 直接安装和按品牌配置。
@@ -371,3 +370,41 @@ R4 输入：
 - 建立浏览器安全的系统摘要契约，统一展示 Frame/应用版本、扩展、API/Worker/Database、Migration、
   Job/Outbox、指标和异常状态。
 - 把分散的技术详情按权限组合到一个系统信息路由，继续保持零技术主导航贡献。
+
+## 13. R4 完成记录
+
+- Completed: 2026-08-08
+- Starting commit: `0f729c6`
+
+已完成：
+
+- `@lingcoo/frame-admin` 新增 `./system-info` 公开入口，提供浏览器安全的 Runtime、Extension、Migration、
+  Observability 和 Operations 类型、`AdminSystemInfoClient` 以及完整的 `AdminSystemInfoPage`。
+- 系统信息页通过 Consumer 注入加载器读取真实 API，不依赖 Reference App；统一展示应用/System/Frame
+  版本、Extension API、已安装扩展、运行面、迁移来源、Job/Outbox、进程指标和异常摘要。
+- `buildApp()` 将当前 `DefinedSystem` 作为只读运行上下文挂入 Fastify；`/api/system/runtime` 在保留原有
+  顶层字段的同时，从真实 Manifest 与 `framework_migrations` 账本生成扩展贡献和迁移状态。
+- Observability 与 Operations 按 `observability.read`、`jobs.read` 独立加载；无权限时既不请求对应 API，
+  也不误报 Worker、Database、Metrics、Job 或 Outbox 状态。
+- Reference Admin 的系统页缩减为 Client 和权限组合层；旧 `ModulesPage`、`frame.modules` Route、15 条
+  静态模块数组及未使用的 Section 路由辅助函数已删除，扩展信息只保留一个真实来源。
+- Frame Footer 仍是 `/system` 唯一默认入口；任务、运行诊断、资产和帮助详情页继续受权限保护且不进入
+  业务主导航。
+- 补正 `@lingcoo/frame` 对 `@lingcoo/frame-admin`、`@lingcoo/frame-web` 的实际运行时依赖声明，避免
+  Monorepo Hoist 掩盖独立安装缺包。
+
+验证结果：
+
+- Admin 包构建、类型检查、Lint 与 5/5 测试通过；新增测试覆盖完整系统信息和无权限诊断隐藏。
+- Reference Admin 类型检查、Lint 与生产构建通过；生产 JS 约 532 kB，仅保留既有 Vite 分包建议。
+- `npm run packages:verify`：9 个公开包与示例扩展完成 tarball 构建，隔离 Consumer 安装 251 个包后
+  `./system-info` TypeScript 和运行时验证通过。
+- `npm run check`：14 项跨包集成测试、54 项 Frame 测试及 Admin/Web/UI 测试全部通过；其中依赖
+  PostgreSQL 的 11 项测试在无数据库环境按设计跳过。
+- `npm run format:check` 与 `git diff --check`：通过。
+
+R5 输入：
+
+- 将 CMS Admin/Web 默认页面和工作流从 Reference Apps 迁入 `@lingcoo/frame-cms`。
+- 让 Consumer 安装 CMS 后只需注入 API/路由环境，不再复制 `CmsPage`、文章列表、详情、预览和编辑实现。
+- 保持内容类型、发布、版本、重定向、SEO 和定时发布契约稳定，并补齐 tarball Consumer 与 E2E 验收。

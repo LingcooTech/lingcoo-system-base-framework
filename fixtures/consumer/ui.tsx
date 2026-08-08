@@ -9,6 +9,7 @@ import { AdminAuthProvider, type AdminAuthClient } from '@lingcoo/frame-admin/au
 import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
 import { createAdminRegistry } from '@lingcoo/frame-admin';
 import { AdminRouterProvider } from '@lingcoo/frame-admin/router';
+import { AdminSystemInfoPage, type AdminSystemInfoClient } from '@lingcoo/frame-admin/system-info';
 import { createWebRegistry } from '@lingcoo/frame-web';
 import { PageHeader, Section } from '@lingcoo/frame-web/layout';
 import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
@@ -74,6 +75,16 @@ export function ConsumerAdminShell({
       </AdminRouterProvider>
     </AdminAuthProvider>
   );
+}
+
+const systemInfoClient: AdminSystemInfoClient = {
+  async loadRuntime() {
+    throw new Error('Consumer must connect its system runtime API');
+  },
+};
+
+export function ConsumerSystemInfo() {
+  return <AdminSystemInfoPage client={systemInfoClient} />;
 }
 
 const presentation: PublicPresentation = {

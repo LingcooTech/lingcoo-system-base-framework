@@ -11,6 +11,11 @@ import { AdminApplicationShell } from '../src/layout.js';
 import { frameAdminManifest } from '../src/manifest.js';
 import { AdminRouterProvider } from '../src/router.js';
 import { DataTable, PageFrame } from '../src/shared.js';
+import {
+  AdminSystemInfoPage,
+  type AdminSystemInfoClient,
+  type AdminSystemRuntimeSummary,
+} from '../src/system-info.js';
 
 const account: AdminAccount = {
   id: 'account-1',
@@ -126,7 +131,6 @@ test('Frame keeps technical routes hidden and contributes one application settin
 
   const hiddenRouteIds = [
     'frame.system-info',
-    'frame.modules',
     'frame.assets',
     'frame.operations',
     'frame.observability',
@@ -157,4 +161,113 @@ test('shared page and table composites carry structure without application APIs'
   assert.match(markup, /客户资料/);
   assert.match(markup, /Acme/);
   assert.doesNotMatch(markup, /NO DOMAIN MODULES/);
+});
+
+const runtimeSummary: AdminSystemRuntimeSummary = {
+  name: 'Reference System',
+  version: '0.1.0',
+  environment: 'test',
+  surfaces: ['api', 'worker', 'admin-ui', 'public-web'],
+  system: { id: 'reference-system', version: '0.1.0' },
+  frame: { version: '0.6.0', apiVersion: '1' },
+  extensions: [
+    {
+      id: 'frame',
+      version: '0.6.0',
+      surfaces: ['server', 'worker', 'migrations', 'admin', 'web'],
+      contributions: {
+        permissions: 20,
+        settings: 5,
+        serverRoutes: 0,
+        jobs: 3,
+        subscriptions: 1,
+        migrations: 10,
+        adminRoutes: 14,
+        webRoutes: 9,
+      },
+    },
+  ],
+  migrations: {
+    status: 'current',
+    declaredCount: 10,
+    appliedCount: 10,
+    pendingCount: 0,
+    ledgerCount: 10,
+    sources: [
+      {
+        id: 'frame',
+        extensionId: 'frame',
+        declaredCount: 10,
+        appliedCount: 10,
+        pendingCount: 0,
+      },
+    ],
+  },
+};
+
+const systemInfoClient: AdminSystemInfoClient = {
+  async loadRuntime() {
+    return runtimeSummary;
+  },
+};
+
+test('system information product renders installed extensions, migrations and protected areas', () => {
+  installWindow();
+  const markup = renderToStaticMarkup(
+    <AdminRouterProvider>
+      <AdminSystemInfoPage
+        canReadObservability
+        canReadOperations
+        client={systemInfoClient}
+        initialObservability={{
+          runtime: {
+            startedAt: new Date(0).toISOString(),
+            uptimeSeconds: 3600,
+            activeRequests: 0,
+            requestCount: 12,
+            errorCount: 0,
+            errorRate: 0,
+            averageDurationMs: 4,
+            p95DurationMs: 8,
+            memoryRssBytes: 64 * 1024 * 1024,
+            heapUsedBytes: 32 * 1024 * 1024,
+          },
+          incidents: { open: 0, resolved: 1 },
+          services: [],
+          database: { status: 'healthy', latencyMs: 2 },
+          metricsEndpointEnabled: true,
+        }}
+        initialOperations={{ jobs: { pending: 2, dead: 0 }, outboxTotal: 7 }}
+        initialRuntime={runtimeSummary}
+        managementLinks={[
+          {
+            href: '/observability',
+            title: '运行诊断',
+            description: '查看运行详情',
+          },
+        ]}
+      />
+    </AdminRouterProvider>,
+  );
+
+  assert.match(markup, /reference-system/);
+  assert.match(markup, /Extension API 1/);
+  assert.match(markup, /数据库迁移/);
+  assert.match(markup, /10\/10/);
+  assert.match(markup, /任务与事件/);
+  assert.match(markup, /Outbox 事件/);
+  assert.match(markup, /运行诊断/);
+});
+
+test('system information product hides protected diagnostics without permission', () => {
+  installWindow();
+  const markup = renderToStaticMarkup(
+    <AdminRouterProvider>
+      <AdminSystemInfoPage client={systemInfoClient} initialRuntime={runtimeSummary} />
+    </AdminRouterProvider>,
+  );
+
+  assert.match(markup, /受权限保护/);
+  assert.doesNotMatch(markup, /运行诊断/);
+  assert.doesNotMatch(markup, /Outbox 事件/);
 });

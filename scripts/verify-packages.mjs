@@ -82,6 +82,8 @@ try {
     'dist/router.d.ts',
     'dist/shared.js',
     'dist/shared.d.ts',
+    'dist/system-info.js',
+    'dist/system-info.d.ts',
     'dist/styles.css',
   ]);
   assertPackageFiles('@lingcoo/frame-cms', cms.files, [

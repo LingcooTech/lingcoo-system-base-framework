@@ -1,9 +1,11 @@
-export interface RuntimeInfo {
-  name: string;
-  version: string;
-  environment: string;
-  surfaces: string[];
-}
+import type {
+  AdminSystemObservabilitySummary,
+  AdminSystemOperationsSummary,
+  AdminSystemRuntimeSummary,
+  AdminSystemServiceSummary,
+} from '@lingcoo/frame-admin/system-info';
+
+export type RuntimeInfo = AdminSystemRuntimeSummary;
 
 export interface AuthRole {
   code: string;
@@ -107,36 +109,8 @@ export interface AuditItem {
   actor: { id: string; email: string; displayName: string } | null;
 }
 
-export interface ObservabilitySummary {
-  runtime: {
-    startedAt: string;
-    uptimeSeconds: number;
-    activeRequests: number;
-    requestCount: number;
-    errorCount: number;
-    errorRate: number;
-    averageDurationMs: number;
-    p95DurationMs: number;
-    memoryRssBytes: number;
-    heapUsedBytes: number;
-  };
-  incidents: { open: number; resolved: number };
-  services: ObservabilityServiceStatus[];
-  database: { status: 'healthy' | 'unavailable'; latencyMs: number };
-  metricsEndpointEnabled: boolean;
-}
-
-export interface ObservabilityServiceStatus {
-  id: string;
-  serviceType: 'api' | 'worker';
-  instanceId: string;
-  version: string;
-  status: 'healthy' | 'stopping' | 'degraded';
-  metadata: Record<string, unknown>;
-  startedAt: string;
-  lastSeenAt: string;
-  fresh: boolean;
-}
+export type ObservabilitySummary = AdminSystemObservabilitySummary;
+export type ObservabilityServiceStatus = AdminSystemServiceSummary;
 
 export interface RequestMetric {
   method: string;
@@ -550,6 +524,14 @@ export function fetchRuntime(): Promise<RuntimeInfo> {
 
 export function fetchObservabilitySummary(): Promise<ObservabilitySummary> {
   return apiRequest('/api/observability/summary');
+}
+
+export async function fetchSystemOperationsSummary(): Promise<AdminSystemOperationsSummary> {
+  const [jobs, outbox] = await Promise.all([
+    fetchJobSummary(),
+    apiRequest<{ total: number }>('/api/jobs/outbox?limit=1'),
+  ]);
+  return { jobs, outboxTotal: outbox.total };
 }
 
 export async function fetchRequestMetrics(): Promise<RequestMetric[]> {

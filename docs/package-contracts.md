@@ -13,7 +13,7 @@ Consumer 应锁定同一 `0.6.x` Backend、Database、Extension SDK、Admin、We
 | `@lingcoo/frame`               | Fastify 宿主、核心扩展、Worker、系统迁移和一方适配  | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                           |
 | `@lingcoo/frame-database`      | PostgreSQL/Drizzle、Schema、Migration V2 和历史 SQL | `.`, `./schema`, `./migrations`                                                                                    |
 | `@lingcoo/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
-| `@lingcoo/frame-admin`         | Admin Shell、认证、路由、共享后台组件与扩展注册表   | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./styles.css`                                    |
+| `@lingcoo/frame-admin`         | Admin Shell、认证、路由、系统信息与扩展注册表       | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                   |
 | `@lingcoo/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
 | `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`                                     |
 | `@lingcoo/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
@@ -58,7 +58,9 @@ CMS。
 - `@lingcoo/frame-admin`：Admin Route、Navigation、Dashboard Widget、Search Provider 和 Landing
   Block Editor；同时提供可注入 Client 的认证上下文、可配置基路径的浏览器路由、响应式应用 Shell、Topbar
   搜索/通知/账户入口、Frame 版本页脚，以及表格、筛选、分页、批量操作、详情抽屉、确认操作和 Asset
-  Picker。React 与具体 API Client 由 Consumer 提供，并显式引入 `./styles.css`。
+  Picker。`./system-info` 提供 Runtime/Extension/Migration/Observability/Operations 浏览器安全类型、
+  可注入 Client 和集中式系统信息页。React 与具体 API Client 由 Consumer 提供，并显式引入
+  `./styles.css`。
 - `@lingcoo/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。
@@ -67,6 +69,11 @@ Frame Admin Manifest 不注册 `/`，Consumer 必须为自己的应用首页声�
 Registry 并继续执行权限控制，但不产生侧栏 Navigation；默认只贡献一个 `/settings` 应用设置入口。
 安装 CMS 或领域扩展时，业务导航由对应扩展 Manifest 独立贡献。Footer 的 `/system` 是 Frame 系统信息的
 默认入口，不应由 Consumer 再复制一组技术导航。
+
+`/api/system/runtime` 保留 `name`、`version`、`environment` 和 `surfaces`，并增加当前 Defined System、
+Frame/Extension API 版本、已安装扩展贡献与 Migration V2 账本摘要。该接口只返回 Manifest 和迁移状态
+元数据，不返回环境变量、数据库连接、Provider Credential 或其他 Secret。Observability 和 Job/Outbox
+摘要继续使用各自权限与 API，由 `AdminSystemInfoClient` 按权限组合。
 
 设置 Registry 归属于每个 Defined System，不再由业务扩展修改进程级全局数组。Worker 注册器同样按
 Worker 实例创建；扩展只能注册 Manifest 已声明的 Job 和 Topic。

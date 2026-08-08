@@ -21,10 +21,10 @@ const capabilityGroups = [
 
 const workflows = [
   {
-    href: '/modules',
+    href: '/system',
     icon: Braces,
-    title: '接入领域模块',
-    description: '从模块目录、权限、路由和搜索注册点检查扩展边界。',
+    title: '查看已安装扩展',
+    description: '从系统信息检查扩展版本、运行面、贡献与迁移状态。',
   },
   {
     href: '/presentation',

@@ -1,4 +1,5 @@
 import type { Database } from '@lingcoo/frame-database';
+import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
 import type { PermissionCode } from '../core/modules/access/rbac.js';
 import type { DatasetRegistry } from '../core/modules/data-exchange/registry.js';
 import type { ObservabilityService } from '../core/modules/observability/service.js';
@@ -10,6 +11,7 @@ import type { AppEnv } from './env.js';
 declare module 'fastify' {
   interface FastifyInstance {
     appEnv: AppEnv;
+    frameSystem: DefinedSystem;
     db: Database;
     searchRegistry: SearchProviderRegistry;
     datasetRegistry: DatasetRegistry;

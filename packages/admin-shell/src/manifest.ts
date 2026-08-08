@@ -10,13 +10,6 @@ export const frameAdminManifest = {
       permission: 'system.runtime.read',
     },
     {
-      id: 'frame.modules',
-      path: '/modules/*',
-      title: '领域模块',
-      description: '所有具体业务都通过明确的领域模块进入系统。',
-      permission: 'admin.access',
-    },
-    {
       id: 'frame.access',
       path: '/access/*',
       title: '身份与访问',

@@ -81,6 +81,10 @@ Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。完�
 Landing Block Editor Registry。参考后台的响应式导航直接读取该注册表；当前数据只表达框架状态，
 不伪造业务仪表盘。
 
+集中式系统信息页由 `@lingcoo/frame-admin/system-info` 提供，Footer 是默认入口且不产生技术导航。
+Backend 的 `/api/system/runtime` 从当前 `DefinedSystem` Manifest 与 `framework_migrations` 账本生成安全
+摘要；Worker/Database、指标、异常、Job 与 Outbox 继续通过各自权限接口组合，避免形成万能运维接口。
+
 ### 共享 UI
 
 `@lingcoo/frame-design-tokens` 定义语义颜色、间距、排版、圆角、阴影、动效和层级；`@lingcoo/frame-ui` 实现 Button、Badge、Card、Input、Textarea、FormField、Dialog、Spinner 和 EmptyState 等无业务含义的组件。两套前端只能通过语义 Token 定制品牌外观，不复制组件实现。

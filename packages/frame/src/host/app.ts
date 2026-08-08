@@ -86,6 +86,7 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
   const { db, pool } = createDatabase(env.DATABASE_URL);
 
   app.decorate('appEnv', env);
+  app.decorate('frameSystem', system);
   app.decorate('db', db);
   app.decorate('settingsRegistry', createSystemSettingsRegistry(system));
   const searchRegistry = new SearchProviderRegistry();
