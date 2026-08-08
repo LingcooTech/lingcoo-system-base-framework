@@ -96,8 +96,8 @@ const referenceAdminDefinition = defineExtension({
         {
           id: 'reference.home',
           path: '/',
-          title: '参考应用',
-          description: 'Frame Reference App 的应用级起始页。',
+          title: 'Frame Console',
+          description: 'Frame 官方站和在线参考系统的应用级起始页。',
           permission: 'admin.access',
         },
       ],

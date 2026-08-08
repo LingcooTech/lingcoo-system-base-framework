@@ -2,8 +2,9 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.6` 已完成首个一方扩展闭环与目录架构对齐：后端宿主、Database、Extension SDK、Admin/Web Shell、共享 UI、
-Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。Frame 仍同时保留可运行参考系统；新的业务
+当前 `0.6` 已完成首个一方扩展闭环、目录架构对齐和官方 Reference Experience：后端宿主、Database、
+Extension SDK、Admin/Web Shell、共享 UI、Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。
+Frame 仍同时保留可运行参考系统；新的业务
 系统通过 `defineSystem()` 显式安装构建期扩展，而不是复制本仓库后长期维护底层源码副本。
 
 平台化路线见 [Frame 平台化改造路线](docs/platform-roadmap.md)，实际阶段记录见
@@ -91,6 +92,7 @@ npm run dev:admin
 访问：
 
 - 公共 Web：<http://localhost:5174>
+- Frame 文档：<http://localhost:5174/docs>
 - 管理后台：<http://localhost:5173/admin/>
 - API 健康检查：<http://localhost:8090/health>
 - 数据库就绪检查：<http://localhost:8090/ready>
@@ -105,6 +107,7 @@ npm start
 构建后，Fastify 在同一端口提供全部运行面：
 
 - `/`：公共 Web
+- `/framework`、`/architecture`、`/packages`、`/extensions`、`/docs`、`/releases`：Reference 官方站
 - `/admin/`：管理后台
 - `/api/*`：应用 API
 - `/health`：进程健康

@@ -142,8 +142,6 @@ test('CMS can be enabled or disabled without changing Admin or Web shell routes'
     },
     web: defineWebExtension({
       routes: frameWebManifest.routes.map((route) => ({ id: route.id, component: EmptyPage })),
-      seo: [{ id: 'frame.home', resolve: () => ({ canonicalPath: '/' }) }],
-      sitemap: [{ id: 'frame.home', collect: () => [{ path: '/' }] }],
     }),
   });
   const webCms = defineExtension({
@@ -165,6 +163,8 @@ test('CMS can be enabled or disabled without changing Admin or Web shell routes'
       extensions: [webCore, webCms],
     }),
   );
+  assert.equal(coreWebRegistry.matchRoute('/')?.route, undefined);
+  assert.equal(coreWebRegistry.matchRoute('/auth/login')?.route.id, 'frame.auth');
   assert.equal(coreWebRegistry.matchRoute('/articles'), undefined);
   assert.equal(cmsWebRegistry.matchRoute('/articles')?.route.id, 'frame-cms.articles');
 });

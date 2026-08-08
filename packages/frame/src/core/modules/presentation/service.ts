@@ -40,10 +40,7 @@ export const defaultPresentation = {
   publicUrl: null,
   seoTitle: null,
   seoDescription: null,
-  headerNavigation: [
-    { label: '基础架构', href: '#architecture' },
-    { label: '运行状态', href: '/health' },
-  ],
+  headerNavigation: [],
   footerLinks: [],
   footerCopyright: null,
   filingInfo: null,

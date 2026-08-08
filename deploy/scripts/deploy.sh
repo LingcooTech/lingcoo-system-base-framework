@@ -90,7 +90,7 @@ max_attempts=30
 while [ "${attempt}" -le "${max_attempts}" ]; do
   if curl -fsS "${DEPLOY_HEALTHCHECK_URL}" >/dev/null; then
     echo "health check passed on attempt ${attempt}"
-    exit 0
+    break
   fi
 
   echo "health check pending (${attempt}/${max_attempts})"
@@ -98,5 +98,10 @@ while [ "${attempt}" -le "${max_attempts}" ]; do
   sleep 5
 done
 
-echo "deployment health check failed"
-exit 1
+if [ "${attempt}" -gt "${max_attempts}" ]; then
+  echo "deployment health check failed"
+  exit 1
+fi
+
+deploy_base_url="${DEPLOY_HEALTHCHECK_URL%/ready}"
+sh ./deploy/scripts/verify-deployment.sh "${deploy_base_url}"

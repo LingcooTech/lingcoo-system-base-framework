@@ -153,8 +153,14 @@ export function SiteHeader({
   );
 }
 
-export function SiteFooter({ presentation }: { presentation: PublicPresentation | null }) {
-  const footerLinks = presentation?.footerLinks ?? [];
+export function SiteFooter({
+  footerLinks: footerLinksOverride,
+  presentation,
+}: {
+  footerLinks?: readonly PublicNavigationItem[];
+  presentation: PublicPresentation | null;
+}) {
+  const footerLinks = footerLinksOverride ?? presentation?.footerLinks ?? [];
   const hasContact = Boolean(
     presentation?.contactEmail || presentation?.contactPhone || presentation?.contactAddress,
   );
@@ -206,6 +212,7 @@ export function SiteShell({
   headerNavigation,
   headerOverlay = false,
   headerTone = 'light',
+  footerLinks,
   presentation,
 }: {
   adminHref?: string | null;
@@ -214,6 +221,7 @@ export function SiteShell({
   headerNavigation?: readonly PublicNavigationItem[];
   headerOverlay?: boolean;
   headerTone?: 'dark' | 'light';
+  footerLinks?: readonly PublicNavigationItem[];
   presentation: PublicPresentation | null;
 }) {
   return (
@@ -230,7 +238,7 @@ export function SiteShell({
         tone={headerTone}
       />
       <main id="main-content">{children}</main>
-      <SiteFooter presentation={presentation} />
+      <SiteFooter footerLinks={footerLinks} presentation={presentation} />
     </div>
   );
 }

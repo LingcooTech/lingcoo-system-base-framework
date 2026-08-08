@@ -450,3 +450,15 @@ R6 输入：
   扩展和部署说明。
 - 为 `frame.lingcoo.com` 建立真实生产配置、API/Worker/数据库部署验收、登录/内容流程 E2E 和发布回滚检查。
 - 根据真实官网 Consumer 证据决定是否引入路由懒加载、Changesets/Registry 发布和独立版本兼容矩阵。
+
+## 15. R6 官方站与发布验收（实施记录）
+
+- `frame.lingcoo.com` 首页和产品说明由 Reference Web 的应用级 Site Extension 拥有；Frame Web 包只提供
+  认证、站点壳、SEO 和系统状态等公共能力。
+- 官网覆盖 `/framework`、`/architecture`、`/packages`、`/extensions`、`/docs`、`/docs/:slug` 和
+  `/releases`，并保留 CMS `/articles`、内容详情、预览和 `/admin/` Console。
+- 应用导航优先读取 Presentation 配置，空配置才回退官方站导航；Core 默认导航为空，避免行业系统误显示
+  Frame 官网链接。
+- 文档 Markdown 按详情页懒加载，统一使用 `ContentRenderer`，并注册 Skeleton、404/500 状态；部署脚本
+  新增 route smoke，检查健康、认证、CMS、静态路由、Robots、Sitemap 与安全头。
+- 代码级验证已通过；真实域名烟雾、生产登录/CMS 生命周期和回滚由上线环境执行。

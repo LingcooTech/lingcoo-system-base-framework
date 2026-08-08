@@ -60,7 +60,7 @@ MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语�
 
 - `SeoHead` 统一管理页面标题、Description、Canonical、Open Graph、Twitter Card、Robots 与 JSON-LD；
   文章详情同时输出 Article 和 BreadcrumbList 结构化数据。
-- `/sitemap.xml` 根据品牌公开地址和已发布 CMS 内容动态生成，`/robots.txt` 明确排除管理、API 与
+- `/sitemap.xml` 根据品牌公开地址、已发布 CMS 内容和应用 Web 扩展的公开 Sitemap 动态生成，`/robots.txt` 明确排除管理、API 与
   草稿预览路径。
 - 公共 Web 对未知路由、内容不存在、接口失败和渲染异常分别提供 404、500、加载骨架与错误边界。
 - CMS 前台已经拆分为 `ContentRenderer`、`ArticleCard`、`ArticleList`、`EmptyContent`、详情布局和
@@ -71,6 +71,10 @@ MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语�
 
 管理后台从 Topbar 帮助按钮或受保护的系统信息页进入“框架帮助”，集中说明稳定能力、领域边界、常用
 控制面和扩展约束。该页面不占业务导航，也不替代领域模块自己的业务帮助。
+
+Reference Web 是一个 Consumer 组合根。Frame Web Core 只提供认证路由、SEO/站点壳和系统状态；它不拥有公共首页。
+官网首页、文档、Packages、扩展和发布页由应用自己的 Reference Site Extension 声明，CMS 文章路由由
+`@lingcoo/frame-cms` 声明。这样业务 Consumer 可以安装同一底座而不继承 Frame 官方站点导航。
 
 ## 应用设置与系统信息
 

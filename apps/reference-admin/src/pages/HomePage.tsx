@@ -5,8 +5,8 @@ import { PageFrame, ResourceSection } from '@lingcoo/frame-admin/shared';
 
 const homeSection = {
   group: '应用',
-  title: '参考应用',
-  description: '这是一个保持轻量的 Frame Consumer，用于验证应用组合、内容管理和公共设置。',
+  title: 'Frame Console',
+  description: '管理 Frame 官方站内容和应用设置，并验证可复用的后台工作流。',
 };
 
 const workspaces = [
@@ -14,7 +14,7 @@ const workspaces = [
     href: '/cms',
     icon: BookOpenText,
     title: '内容管理',
-    description: '管理参考站点的页面、文章、版本与发布状态。',
+    description: '管理 Frame 官方站的页面、文章、版本与发布状态。',
   },
   {
     href: '/settings',

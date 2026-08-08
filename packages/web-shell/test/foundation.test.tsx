@@ -65,6 +65,22 @@ test('site shell can omit its application admin entry', () => {
   assert.doesNotMatch(markup, /管理后台/);
 });
 
+test('site shell accepts application-owned navigation fallbacks', () => {
+  const markup = renderToStaticMarkup(
+    <SiteShell
+      footerLinks={[{ label: '版本', href: '/releases' }]}
+      headerNavigation={[{ label: '文档', href: '/docs' }]}
+      presentation={presentation}
+    >
+      Content
+    </SiteShell>,
+  );
+  assert.match(markup, /href="\/docs"/);
+  assert.match(markup, /href="\/releases"/);
+  assert.doesNotMatch(markup, /href="\/articles"/);
+  assert.doesNotMatch(markup, /href="\/pages\/privacy"/);
+});
+
 test('layout primitives compose page structure without business semantics', () => {
   const markup = renderToStaticMarkup(
     <>

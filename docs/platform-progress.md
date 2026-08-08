@@ -643,3 +643,26 @@ R5 输入：
 
 遗留与下一阶段：R6 负责 `frame.lingcoo.com` 官方首页/文档、真实部署配置、登录与 CMS 流程 E2E、发布回滚
 验收及路由懒加载评估；平台阶段 5 Consumer 试点仍需用官网系统完成真实迁移。
+
+## Reference Experience：R6 官方站与发布验收
+
+### 已交付
+
+- Reference Web 新增 `/framework`、`/architecture`、`/packages`、`/extensions`、`/docs`、`/docs/:slug`
+  和 `/releases`，首页明确解释 Frame 能力边界、四个运行面、扩展契约和 Console 入口。
+- Frame Web Core 只拥有应用无关的 `/auth/:mode`；官网路由由 Reference Site Extension 组合，CMS 文章
+  路由仍由 `@lingcoo/frame-cms` 贡献。通用 Presentation 默认导航为空，应用配置为空时才回退官方站导航。
+- 文档由仓库 Markdown 元数据驱动，详情正文按路由懒加载并使用 CMS `ContentRenderer`；加载、404、500
+  状态复用 Frame Web 的公共页面状态。
+- 真实 Reference Console 登录界面截图作为 `apps/reference-web/public/images/frame-console.png` 发布，
+  不包含账号凭据；官网布局通过桌面与 500px CSS 移动视口截图验收。
+- Reference Server 新增官方站 Sitemap Collector，部署在 `/ready` 通过后继续执行健康、官网路由、CMS、
+  Admin、认证保护、Robots、Sitemap 与安全响应头烟雾检查。
+- Reference Admin 首页改名为 Frame Console，技术运行面继续隐藏在系统信息和 Footer 入口之后。
+
+### 验证与遗留
+
+- Reference Web/Web Shell 测试各 5/5，Reference Web 类型检查与生产构建通过；文档懒加载后入口主包约
+  503 kB，详情文档按页拆分。
+- 本机未运行 Docker/PostgreSQL 且 `frame.lingcoo.com` DNS 不可达，真实线上烟雾、登录/CMS 生命周期和
+  回滚演练留给部署环境执行。

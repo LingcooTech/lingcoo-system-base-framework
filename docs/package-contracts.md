@@ -23,6 +23,9 @@ Consumer 应锁定同一 `0.6.x` Backend、Database、Extension SDK、Admin、We
 Admin/Web Registry 组合 Frame Core 页面。业务系统消费 Shell 包并安装自己的前端扩展入口，不复制
 参考应用的中心路由分支。
 
+Reference Web 的官方站点扩展属于应用层示例，不是 Frame 公共包。它拥有 `/`、`/framework`、`/architecture`、
+`/packages`、`/extensions`、`/docs` 和 `/releases`；通用 `@lingcoo/frame-web` 仅保留 `/auth/:mode`。
+
 ## 系统组合
 
 ```ts
