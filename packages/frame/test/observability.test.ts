@@ -67,6 +67,8 @@ test('request IDs are echoed and metrics stay hidden when no token is configured
     headers: { 'x-request-id': requestId },
   });
   assert.equal(health.headers['x-request-id'], requestId);
+  assert.equal(health.headers['x-content-type-options'], 'nosniff');
+  assert.equal(health.headers['referrer-policy'], 'strict-origin-when-cross-origin');
 
   const metrics = await app.inject({ method: 'GET', url: '/metrics' });
   assert.equal(metrics.statusCode, 404);

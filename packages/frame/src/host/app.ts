@@ -99,6 +99,8 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
   app.decorate('observability', new ObservabilityService(db, new MetricsRegistry()));
   app.addHook('onRequest', (request, reply, done) => {
     reply.header('x-request-id', request.id);
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('referrer-policy', 'strict-origin-when-cross-origin');
     runWithRequestContext({ requestId: request.id }, done);
   });
   installObservability(app);
