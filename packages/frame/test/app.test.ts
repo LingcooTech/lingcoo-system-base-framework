@@ -38,6 +38,16 @@ test('unknown API routes use the standard error envelope', async () => {
   await app.close();
 });
 
+test('extension route validation errors use the standard client error envelope', async () => {
+  const app = await buildApp(testEnv());
+  const response = await app.inject({ method: 'POST', url: '/api/auth/login' });
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(response.json().error, 'ValidationError');
+  assert.equal(response.json().message, '请求参数无效');
+  await app.close();
+});
+
 test('system runtime requires an authenticated permission-bearing session', async () => {
   const app = await buildApp(testEnv());
   const response = await app.inject({ method: 'GET', url: '/api/system/runtime' });

@@ -177,30 +177,8 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
     };
   });
 
-  try {
-    await registerSystemServerExtensions(app, system);
-  } catch (error) {
-    await app.close();
-    throw error;
-  }
-
-  const adminDist = options.staticAssets?.adminDirectory;
-  const publicDist = options.staticAssets?.publicDirectory;
-
-  if (adminDist && existsSync(adminDist)) {
-    await app.register(fastifyStatic, {
-      root: adminDist,
-      prefix: '/admin/',
-      decorateReply: false,
-    });
-  }
-  if (publicDist && existsSync(publicDist)) {
-    await app.register(fastifyStatic, {
-      root: publicDist,
-      prefix: '/',
-    });
-  }
-
+  // Register the root error handler before extension plugins so their
+  // encapsulated routes inherit the standard Frame error contract.
   app.setErrorHandler(async (error, request, reply) => {
     if (error instanceof ZodError) {
       return reply.code(400).send({
@@ -239,6 +217,30 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
       message: statusCode >= 500 ? '服务器开小差了，请稍后再试' : normalized.message,
     });
   });
+
+  try {
+    await registerSystemServerExtensions(app, system);
+  } catch (error) {
+    await app.close();
+    throw error;
+  }
+
+  const adminDist = options.staticAssets?.adminDirectory;
+  const publicDist = options.staticAssets?.publicDirectory;
+
+  if (adminDist && existsSync(adminDist)) {
+    await app.register(fastifyStatic, {
+      root: adminDist,
+      prefix: '/admin/',
+      decorateReply: false,
+    });
+  }
+  if (publicDist && existsSync(publicDist)) {
+    await app.register(fastifyStatic, {
+      root: publicDist,
+      prefix: '/',
+    });
+  }
 
   app.setNotFoundHandler(async (request, reply) => {
     if (request.method !== 'GET') {
