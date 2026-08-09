@@ -133,4 +133,5 @@ PostgreSQL 17，并真实执行全部迁移。
 不可变 Canary。发布脚本只读取明确列出的八个 `private: false` 包，不会发布 Reference App 或 Fixture。
 
 完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见
-[第一方扩展边界](first-party-extensions.md)。
+[第一方扩展边界](first-party-extensions.md)。独立业务仓库的安装、开发、CI、Docker 和生产部署顺序见
+[基于 Frame 的应用全生命周期](application-lifecycle.md)。

@@ -12,6 +12,10 @@ Frame 仍同时保留可运行参考系统；新的业务
 [0.7 Package Contracts](docs/package-contracts.md)，代码阅读入口见 [CODEMAP](CODEMAP.md)，长期决策见
 [ADR](docs/adr/README.md)。
 
+新业务仓库从初始化到生产部署的标准步骤见
+[基于 Frame 的应用全生命周期](docs/application-lifecycle.md)；脚手架、私有包接入和跨版本升级的下一步
+工作见 [Frame 应用接入产品化实施方案](docs/application-adoption-plan.md)。
+
 ## 当前包含什么
 
 - 公共 Web：React、TypeScript、Vite、Tailwind CSS
@@ -166,6 +170,8 @@ Server、Worker 或数据库实现。
 - [元数据、统一搜索与数据交换](docs/metadata-search-exchange.md)
 - [运行可观测性](docs/observability.md)
 - [领域扩展指南](docs/domain-extension.md)
+- [基于 Frame 的应用全生命周期](docs/application-lifecycle.md)
+- [Frame 应用接入产品化实施方案](docs/application-adoption-plan.md)
 
 ## 当前边界
 

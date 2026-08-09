@@ -5,17 +5,17 @@
 
 ## 总体状态
 
-| 阶段              | 状态        | 结果                                               |
-| ----------------- | ----------- | -------------------------------------------------- |
-| 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结       |
-| 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成 |
-| 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成   |
-| 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成    |
-| 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成    |
-| 5. Consumer 试点  | Not started | -                                                  |
-| 6. 文档与参考应用 | In progress | R0-R5 产品化完成，R6 官方站与发布验收待完成        |
-| 7. 开源 Beta      | Not started | -                                                  |
-| 8. 1.0 稳定       | Not started | -                                                  |
+| 阶段              | 状态        | 结果                                                     |
+| ----------------- | ----------- | -------------------------------------------------------- |
+| 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结             |
+| 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成       |
+| 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成         |
+| 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成          |
+| 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成          |
+| 5. Consumer 试点  | In progress | 官网已从零作为独立 Consumer 上线，跨版本保数据升级待验证 |
+| 6. 文档与参考应用 | In progress | R0-R5 产品化完成，R6 官方站与发布验收待完成              |
+| 7. 开源 Beta      | Not started | -                                                        |
+| 8. 1.0 稳定       | Not started | -                                                        |
 
 ## 阶段 0：架构冻结
 
@@ -642,7 +642,8 @@ R5 输入：
 均通过。Admin 主 Chunk 约 533 kB、Web 主 Chunk 约 492 kB，仅有既有分包建议。
 
 遗留与下一阶段：R6 负责 `frame.lingcoo.com` 官方首页/文档、真实部署配置、登录与 CMS 流程 E2E、发布回滚
-验收及路由懒加载评估；平台阶段 5 Consumer 试点仍需用官网系统完成真实迁移。
+验收及路由懒加载评估；平台阶段 5 使用官网完成从零独立 Consumer 验证后，仍需完成一次保留数据的
+Frame 跨版本升级。
 
 ## Reference Experience：R6 官方站与发布验收
 
@@ -666,3 +667,29 @@ R5 输入：
   503 kB，详情文档按页拆分。
 - 本机未运行 Docker/PostgreSQL 且 `frame.lingcoo.com` DNS 不可达，真实线上烟雾、登录/CMS 生命周期和
   回滚演练留给部署环境执行。
+
+## 阶段 5：Consumer 试点进展
+
+### 官网独立 Consumer 从零上线（2026-08-09）
+
+已交付：
+
+- `lingcoo-official-website-system` 已重建为独立 npm workspaces 仓库，只通过 `@lingcootech/frame*`
+  `0.7.1` 公开入口消费 Core、Database、Extension SDK、Admin/Web Shell、CMS、UI 和 Design Tokens。
+- 应用只维护 `apps/system`、`apps/admin`、`apps/web` 和 `packages/official-site-extension`；Frame 源码、
+  Schema、基础迁移和默认后台页面不再复制到业务仓库。
+- 官网领域扩展完成 Manifest、命名空间 Migration、Schema、Service、API、Permission、Event、Worker、
+  Admin/Web 和测试的垂直切片。
+- GitHub Packages 八个私有包、Consumer CI、BuildKit secret、Alpine 生产镜像、ACR/GHCR、服务器迁移、
+  API/Worker/Caddy 和公网 `/ready` 已在真实部署中通过。
+- 生产数据库在“无历史数据”的明确前提下从空卷重建，完整应用 Frame、CMS 和官网领域迁移；后续普通
+  部署再次通过，证明当前迁移和部署幂等。
+- macOS lockfile 遗漏 Linux Rollup、Lightning CSS 和 Tailwind Oxide 原生可选包的问题已在 Consumer
+  中显式覆盖 glibc/musl，并转化为后续生成模板的跨平台验收要求。
+
+未满足阶段退出条件：
+
+- 本次是从零重建，不是从已发布 Frame 版本原地升级，因此没有证明“保留生产数据”的跨版本升级能力。
+- 创建仓库、八包权限和版本升级仍依赖人工操作。实施方案见
+  [Frame 应用接入产品化实施方案](application-adoption-plan.md)。
+- 阶段 5 保持 `In progress`，直到官网完成至少一次 Frame Canary/Preview 到下一受支持版本的保数据升级。
