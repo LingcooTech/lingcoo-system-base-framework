@@ -1,6 +1,6 @@
 {
   "name": "@lingcootech/frame-admin",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": false,
   "type": "module",
   "description": "Composable Admin Shell and browser-safe extension registry for Lingcoo Frame.",
@@ -36,6 +36,10 @@
       "types": "./dist/system-info.d.ts",
       "import": "./dist/system-info.js"
     },
+    "./defaults": {
+      "types": "./dist/defaults.d.ts",
+      "import": "./dist/defaults.js"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "sideEffects": [
@@ -48,8 +52,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcootech/frame-extension-sdk": "^0.7.0",
-    "@lingcootech/frame-ui": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.1",
+    "@lingcootech/frame-ui": "^0.7.1",
     "lucide-react": "^0.503.0"
   },
   "peerDependencies": {

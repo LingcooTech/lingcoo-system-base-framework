@@ -84,6 +84,10 @@ try {
     'dist/shared.d.ts',
     'dist/system-info.js',
     'dist/system-info.d.ts',
+    'dist/defaults.js',
+    'dist/defaults.d.ts',
+    'dist/defaults/client.js',
+    'dist/defaults/pages/AccessPage.js',
     'dist/styles.css',
   ]);
   assertPackageFiles('@lingcootech/frame-cms', cms.files, [

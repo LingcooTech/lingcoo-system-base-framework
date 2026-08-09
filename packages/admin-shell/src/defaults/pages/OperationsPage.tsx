@@ -9,15 +9,15 @@ import {
   retryJob,
   type JobRun,
   type OutboxEvent,
-} from '../api/client';
+} from '../client.js';
 import {
   DataTable,
   PageFrame,
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../../shared.js';
+import { sections } from '../foundation.js';
 
 function jobTone(status: JobRun['status']) {
   return status === 'succeeded'

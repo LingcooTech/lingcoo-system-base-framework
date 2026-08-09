@@ -7,13 +7,8 @@ import { Skeleton, SkeletonText } from '@lingcootech/frame-ui/skeleton';
 import { useToast } from '@lingcootech/frame-ui/toast';
 import { CheckCircle2, KeyRound, Laptop, MailCheck, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
-import {
-  AssetPicker,
-  PageFrame,
-  ResourceSection,
-  StatusPill,
-} from '@lingcootech/frame-admin/shared';
+import { useAdminAuth as useAuth } from '../../auth.js';
+import { AssetPicker, PageFrame, ResourceSection, StatusPill } from '../../shared.js';
 
 import {
   fetchAccountProfile,
@@ -28,8 +23,8 @@ import {
   type AccountSecurityEvent,
   type AccountSession,
   type StorageAsset,
-} from '../api/client';
-import { sections } from '../lib/foundation';
+} from '../client.js';
+import { sections } from '../foundation.js';
 
 const eventLabels: Record<string, string> = {
   'auth.login': '账号登录',

@@ -9,7 +9,6 @@ import {
 import { AdminApplicationShell } from '@lingcootech/frame-admin/layout';
 import { AdminRouterProvider, useAdminRouter } from '@lingcootech/frame-admin/router';
 import { FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
-
 import {
   ApiError,
   changePassword,
@@ -19,7 +18,7 @@ import {
   login,
   logout,
   type AuthAccount,
-} from './api/client';
+} from '@lingcootech/frame-admin/defaults';
 import { adminRegistry, type AdminAppContext } from './extensions';
 
 const authClient: AdminAuthClient<AuthAccount> = {

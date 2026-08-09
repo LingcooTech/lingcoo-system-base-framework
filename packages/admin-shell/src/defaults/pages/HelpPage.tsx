@@ -1,8 +1,8 @@
 import { ArrowRight, Braces, Database, ExternalLink, ShieldCheck, Terminal } from 'lucide-react';
 
-import { AdminLink as Link } from '@lingcootech/frame-admin/router';
-import { PageFrame, ResourceSection } from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+import { AdminLink as Link } from '../../router.js';
+import { PageFrame, ResourceSection } from '../../shared.js';
+import { sections } from '../foundation.js';
 
 const capabilityGroups = [
   {

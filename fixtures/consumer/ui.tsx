@@ -93,7 +93,7 @@ export function ConsumerAdminShell({
   return (
     <AdminAuthProvider client={authClient}>
       <AdminRouterProvider>
-        <AdminApplicationShell context={{}} frame={{ name: 'Lingcoo Frame', version: '0.7.0' }}>
+        <AdminApplicationShell context={{}} frame={{ name: 'Lingcoo Frame', version: '0.7.1' }}>
           {children}
         </AdminApplicationShell>
       </AdminRouterProvider>

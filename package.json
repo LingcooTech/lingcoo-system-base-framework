@@ -30,7 +30,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "changeset": "changeset",
-    "version:packages": "changeset version",
+    "version:packages": "changeset version && node scripts/sync-frame-version.mjs && npm install --package-lock-only --ignore-scripts",
     "release:packages": "node scripts/publish-packages.mjs preview",
     "release:canary": "node scripts/prepare-canary.mjs && npm run build:packages && node scripts/publish-packages.mjs canary",
     "packages:verify": "npm run build:all && node scripts/verify-packages.mjs",

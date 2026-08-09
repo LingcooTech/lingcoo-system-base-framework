@@ -3,7 +3,7 @@ import type {
   AdminSystemOperationsSummary,
   AdminSystemRuntimeSummary,
   AdminSystemServiceSummary,
-} from '@lingcootech/frame-admin/system-info';
+} from '../system-info.js';
 
 export type RuntimeInfo = AdminSystemRuntimeSummary;
 

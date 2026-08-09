@@ -20,11 +20,11 @@ import {
   updateSystemSetting,
   type SystemSetting,
   type SystemSettingVersion,
-} from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
-import { AdminLink } from '@lingcootech/frame-admin/router';
-import { PageFrame, ResourceSection, StatusPill } from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../client.js';
+import { useAdminAuth as useAuth } from '../../auth.js';
+import { AdminLink } from '../../router.js';
+import { PageFrame, ResourceSection, StatusPill } from '../../shared.js';
+import { sections } from '../foundation.js';
 
 const settingAreas = [
   {

@@ -1,6 +1,6 @@
 {
   "name": "@lingcootech/frame-cms",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": false,
   "type": "module",
   "description": "First-party CMS extension for Lingcoo Frame.",
@@ -49,11 +49,11 @@
     "test": "node --import tsx --test test/**/*.test.tsx"
   },
   "dependencies": {
-    "@lingcootech/frame-admin": "^0.7.0",
-    "@lingcootech/frame-database": "^0.7.0",
-    "@lingcootech/frame-extension-sdk": "^0.7.0",
-    "@lingcootech/frame-ui": "^0.7.0",
-    "@lingcootech/frame-web": "^0.7.0",
+    "@lingcootech/frame-admin": "^0.7.1",
+    "@lingcootech/frame-database": "^0.7.1",
+    "@lingcootech/frame-extension-sdk": "^0.7.1",
+    "@lingcootech/frame-ui": "^0.7.1",
+    "@lingcootech/frame-web": "^0.7.1",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.503.0",
     "react-markdown": "^10.1.0",

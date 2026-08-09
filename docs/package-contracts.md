@@ -71,8 +71,9 @@ CMS。
   Block Editor；同时提供可注入 Client 的认证上下文、可配置基路径的浏览器路由、响应式应用 Shell、Topbar
   搜索/通知/账户入口、Frame 版本页脚，以及表格、筛选、分页、批量操作、详情抽屉、确认操作和 Asset
   Picker。`./system-info` 提供 Runtime/Extension/Migration/Observability/Operations 浏览器安全类型、
-  可注入 Client 和集中式系统信息页。React 与具体 API Client 由 Consumer 提供，并显式引入
-  `./styles.css`。
+  可注入 Client 和集中式系统信息页。`./defaults` 提供完整的 Frame 默认后台页面、同源 API Client 和
+  `createFrameAdminExtension()`；Consumer 只负责自己的首页和业务页面，不复制 Reference Admin。React 由
+  Consumer 提供，并显式引入 `./styles.css`。
 - `@lingcootech/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。

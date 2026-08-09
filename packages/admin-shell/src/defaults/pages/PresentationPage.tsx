@@ -4,8 +4,8 @@ import { Input } from '@lingcootech/frame-ui/input';
 import { Textarea } from '@lingcootech/frame-ui/textarea';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
-import { AssetPicker, PageFrame, ResourceSection } from '@lingcootech/frame-admin/shared';
+import { useAdminAuth as useAuth } from '../../auth.js';
+import { AssetPicker, PageFrame, ResourceSection } from '../../shared.js';
 
 import {
   fetchAssets,
@@ -15,8 +15,8 @@ import {
   type PresentationProfile,
   type PresentationUpdate,
   type StorageAsset,
-} from '../api/client';
-import { sections } from '../lib/foundation';
+} from '../client.js';
+import { sections } from '../foundation.js';
 
 const assetFields = [
   ['fullLogoAssetId', '完整 Logo'],

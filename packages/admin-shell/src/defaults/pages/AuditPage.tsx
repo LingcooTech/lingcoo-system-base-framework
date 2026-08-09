@@ -3,7 +3,7 @@ import { Input } from '@lingcootech/frame-ui/input';
 import { useToast } from '@lingcootech/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
-import { fetchAuditItems, type AuditItem } from '../api/client';
+import { fetchAuditItems, type AuditItem } from '../client.js';
 import {
   AdminPagination,
   DataTable,
@@ -13,8 +13,8 @@ import {
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../../shared.js';
+import { sections } from '../foundation.js';
 
 function actionLabel(action: string): string {
   const labels: Record<string, string> = {

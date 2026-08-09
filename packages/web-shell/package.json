@@ -1,6 +1,6 @@
 {
   "name": "@lingcootech/frame-web",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": false,
   "type": "module",
   "description": "Composable Public Web Shell, SEO and controlled Landing Block registry for Lingcoo Frame.",
@@ -52,8 +52,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcootech/frame-extension-sdk": "^0.7.0",
-    "@lingcootech/frame-ui": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.1",
+    "@lingcootech/frame-ui": "^0.7.1",
     "lucide-react": "^0.468.0",
     "zod": "^4.1.11"
   },

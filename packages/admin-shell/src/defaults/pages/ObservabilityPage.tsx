@@ -9,15 +9,15 @@ import {
   type ObservabilitySummary,
   type RequestMetric,
   type SystemIncident,
-} from '../api/client';
+} from '../client.js';
 import {
   DataTable,
   PageFrame,
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../../shared.js';
+import { sections } from '../foundation.js';
 
 function bytes(value: number): string {
   return `${(value / 1024 / 1024).toFixed(1)} MB`;

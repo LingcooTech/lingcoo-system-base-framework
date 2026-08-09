@@ -19,15 +19,10 @@ import {
   type AssetSummary,
   type IntegrationConnection,
   type StorageAsset,
-} from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
-import {
-  PageFrame,
-  ResourceSection,
-  StatusPill,
-  useConfirm,
-} from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../client.js';
+import { useAdminAuth as useAuth } from '../../auth.js';
+import { PageFrame, ResourceSection, StatusPill, useConfirm } from '../../shared.js';
+import { sections } from '../foundation.js';
 
 function formatBytes(value: number) {
   if (value < 1024) return `${value} B`;

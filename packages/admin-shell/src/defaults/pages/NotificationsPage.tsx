@@ -18,16 +18,16 @@ import {
   type IntegrationConnection,
   type NotificationItem,
   type NotificationDelivery,
-} from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+} from '../client.js';
+import { useAdminAuth as useAuth } from '../../auth.js';
 import {
   DataTable,
   PageFrame,
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcootech/frame-admin/shared';
-import { sections } from '../lib/foundation';
+} from '../../shared.js';
+import { sections } from '../foundation.js';
 
 export function NotificationsPage() {
   const { hasPermission } = useAuth();

@@ -1,17 +1,17 @@
 import { CircleHelp, Images, ListChecks, MonitorCog } from 'lucide-react';
 
-import { useAdminAuth } from '@lingcootech/frame-admin/auth';
+import { useAdminAuth } from '../../auth.js';
 import {
   AdminSystemInfoPage,
   type AdminSystemInfoClient,
   type AdminSystemManagementLink,
-} from '@lingcootech/frame-admin/system-info';
+} from '../../system-info.js';
 
 import {
   fetchObservabilitySummary,
   fetchRuntime,
   fetchSystemOperationsSummary,
-} from '../api/client';
+} from '../client.js';
 
 const systemInfoClient: AdminSystemInfoClient = {
   loadRuntime: fetchRuntime,

@@ -1,6 +1,6 @@
 import semver from 'semver';
 
-export const FRAME_VERSION = '0.7.0';
+export const FRAME_VERSION = '0.7.1';
 export const EXTENSION_API_VERSION = '1';
 
 const identifierPattern = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
