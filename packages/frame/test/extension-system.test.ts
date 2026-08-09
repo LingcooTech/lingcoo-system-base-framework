@@ -5,6 +5,7 @@ import { exampleExtension } from '@lingcootech/frame-example-extension';
 import {
   defineExtension,
   defineSystem,
+  FRAME_VERSION,
   type ExtensionManifest,
 } from '@lingcootech/frame-extension-sdk';
 import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
@@ -223,14 +224,13 @@ test('Server composition rejects extension routes that collide with Frame core',
 });
 
 test('runtime rejects a Defined System compiled for a different Frame version', async () => {
-  const system = defineSystem({
+  const compatibleSystem = defineSystem({
     id: 'version-mismatch-system',
     version: '1.0.0',
-    frameVersion: '0.7.1',
     extensions: [frameCoreExtension],
   });
-  await assert.rejects(
-    () => buildApp(testEnv(), { system }),
-    /targets Frame 0\.7\.1, but this runtime is 0\.7\.0/,
-  );
+  const system = { ...compatibleSystem, frameVersion: '999.0.0' };
+  await assert.rejects(() => buildApp(testEnv(), { system }), {
+    message: `Defined System targets Frame 999.0.0, but this runtime is ${FRAME_VERSION}`,
+  });
 });
