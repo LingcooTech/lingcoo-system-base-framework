@@ -1,4 +1,4 @@
-import { cx } from '@lingcoo/frame-ui';
+import { cx } from '@lingcootech/frame-ui';
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 
 export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {

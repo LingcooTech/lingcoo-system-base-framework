@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 
-import type { DefinedSystem, ExtensionManifest } from '@lingcoo/frame-extension-sdk';
+import type { DefinedSystem, ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
 import type { AppModule } from '../types.js';
 

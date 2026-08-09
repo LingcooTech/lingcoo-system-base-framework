@@ -1,11 +1,11 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Textarea } from '@lingcoo/frame-ui/textarea';
-import { useToast } from '@lingcoo/frame-ui/toast';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Textarea } from '@lingcootech/frame-ui/textarea';
+import { useToast } from '@lingcootech/frame-ui/toast';
 import { Archive, CalendarClock, ExternalLink, FilePlus2, Plus, Send } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
-import { AdminLink as Link, useAdminRouter as useRouter } from '@lingcoo/frame-admin/router';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+import { AdminLink as Link, useAdminRouter as useRouter } from '@lingcootech/frame-admin/router';
 import {
   AdminPagination,
   AssetPicker,
@@ -18,7 +18,7 @@ import {
   useConfirm,
   type AdminPageSection,
   type DataTableColumn,
-} from '@lingcoo/frame-admin/shared';
+} from '@lingcootech/frame-admin/shared';
 
 import type {
   CmsAdminClient,

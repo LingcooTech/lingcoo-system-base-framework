@@ -1,0 +1,35 @@
+name: Release Frame Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: npm dist-tag to publish
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - stable
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@lingcootech'
+      - run: npm ci
+      - run: npm run packages:verify
+      - run: node scripts/publish-packages.mjs "${{ inputs.channel }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

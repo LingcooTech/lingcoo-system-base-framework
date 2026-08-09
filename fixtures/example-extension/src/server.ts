@@ -1,4 +1,4 @@
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
 import { z } from 'zod';
 
 export const exampleServerExtension = defineServerExtension({

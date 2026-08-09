@@ -1,11 +1,11 @@
 import { CircleHelp, Images, ListChecks, MonitorCog } from 'lucide-react';
 
-import { useAdminAuth } from '@lingcoo/frame-admin/auth';
+import { useAdminAuth } from '@lingcootech/frame-admin/auth';
 import {
   AdminSystemInfoPage,
   type AdminSystemInfoClient,
   type AdminSystemManagementLink,
-} from '@lingcoo/frame-admin/system-info';
+} from '@lingcootech/frame-admin/system-info';
 
 import {
   fetchObservabilitySummary,

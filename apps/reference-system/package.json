@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame-reference-system",
-  "version": "0.1.0",
+  "name": "@lingcootech/frame-reference-system",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,9 +14,9 @@
     "migrate": "node --import tsx src/migrate.ts"
   },
   "dependencies": {
-    "@lingcoo/frame": "^0.6.0",
-    "@lingcoo/frame-cms": "^0.6.0",
-    "@lingcoo/frame-extension-sdk": "^0.6.0"
+    "@lingcootech/frame": "^0.7.0",
+    "@lingcootech/frame-cms": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

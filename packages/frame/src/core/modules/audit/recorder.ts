@@ -1,5 +1,5 @@
-import type { Database } from '@lingcoo/frame-database';
-import { auditLogs } from '@lingcoo/frame-database/schema';
+import type { Database } from '@lingcootech/frame-database';
+import { auditLogs } from '@lingcootech/frame-database/schema';
 import { getRequestContext } from '../../../host/request-context.js';
 
 export interface AuditEvent {

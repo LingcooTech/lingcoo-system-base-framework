@@ -6,7 +6,7 @@ import {
   metadataDictionaries,
   storageAssets,
   taxonomies,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import type { SearchProvider } from './registry.js';
 
 export const baseSearchProviders: SearchProvider[] = [

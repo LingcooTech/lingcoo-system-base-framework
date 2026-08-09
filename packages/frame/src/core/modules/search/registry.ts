@@ -1,4 +1,4 @@
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import type { PermissionCode } from '../access/rbac.js';
 
 export interface SearchResult {

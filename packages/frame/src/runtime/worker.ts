@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 
-import { createDatabase } from '@lingcoo/frame-database';
-import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
+import { createDatabase } from '@lingcootech/frame-database';
+import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
 
 import { frameCoreSystem } from '../core/extension.js';
 import { recordAuditEvent } from '../core/modules/audit/recorder.js';

@@ -1,6 +1,6 @@
 # 轻量内容中心
 
-`@lingcoo/frame-cms` 是 Frame 首个可选一方扩展，提供剔除行业业务后的页面与文章基础，正文第一阶段
+`@lingcootech/frame-cms` 是 Frame 首个可选一方扩展，提供剔除行业业务后的页面与文章基础，正文第一阶段
 固定使用 Markdown。参考系统默认安装它，Consumer 可以从 Defined System 中省略该扩展，同时移除其
 API、Worker Job、Admin/Web 路由和迁移。
 

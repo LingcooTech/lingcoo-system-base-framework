@@ -1,18 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createAdminRegistry } from '@lingcoo/frame-admin';
-import { exampleAdminExtension } from '@lingcoo/frame-example-extension/admin';
-import { exampleManifest } from '@lingcoo/frame-example-extension/contracts';
-import { exampleWebExtension } from '@lingcoo/frame-example-extension/web';
+import { createAdminRegistry } from '@lingcootech/frame-admin';
+import { exampleAdminExtension } from '@lingcootech/frame-example-extension/admin';
+import { exampleManifest } from '@lingcootech/frame-example-extension/contracts';
+import { exampleWebExtension } from '@lingcootech/frame-example-extension/web';
 import {
   defineExtension,
   defineSystem,
   FRAME_VERSION,
   projectExtensionManifest,
   type ExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
-import { createWebRegistry, type StoredLandingBlock } from '@lingcoo/frame-web';
+} from '@lingcootech/frame-extension-sdk';
+import { createWebRegistry, type StoredLandingBlock } from '@lingcootech/frame-web';
 
 function extension(id: string, contributions: Partial<ExtensionManifest> = {}) {
   return defineExtension({

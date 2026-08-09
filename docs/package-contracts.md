@@ -1,39 +1,48 @@
-# Frame 0.6 Package Contracts
+# Frame 0.7 Package Contracts
 
 ## 状态
 
-`0.6` 是内部预览包契约。仓库 CI 验证真实 npm tarball，但本阶段不向公共 npm Registry 发布。
-Consumer 应锁定同一 `0.6.x` Backend、Database、Extension SDK、Admin、Web 和一方扩展版本，不导入
-`exports` 之外的文件。
+`0.7` 是第一个通过 `@lingcootech` scope 分发的内部预览包契约。仓库 CI 验证真实 npm tarball，
+并通过 GitHub Packages 的私有 `preview` dist-tag 发布。Consumer 应锁定同一 `0.7.x` Backend、
+Database、Extension SDK、Admin、Web 和一方扩展版本，不导入 `exports` 之外的文件。
+
+应用仓库配置以下 scope 后，通过普通 npm 依赖消费 Frame，不拉取或复制 Frame 源码：
+
+```ini
+@lingcootech:registry=https://npm.pkg.github.com
+```
+
+开发中的跨仓库验证使用与 Git commit 绑定的 `canary` 版本；验证通过后再发布不可变 Preview 版本。
+应用必须提交 lockfile，生产环境禁止自动跟随 dist-tag。
 
 ## 包边界
 
-| 包                             | 职责                                                | 公开入口                                                                                                           |
-| ------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `@lingcoo/frame`               | Fastify 宿主、核心扩展、Worker、系统迁移和一方适配  | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                           |
-| `@lingcoo/frame-database`      | PostgreSQL/Drizzle、Schema、Migration V2 和历史 SQL | `.`, `./schema`, `./migrations`                                                                                    |
-| `@lingcoo/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
-| `@lingcoo/frame-admin`         | Admin Shell、认证、路由、系统信息与扩展注册表       | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                   |
-| `@lingcoo/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
-| `@lingcoo/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`, `./styles.css`                     |
-| `@lingcoo/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
-| `@lingcoo/frame-design-tokens` | 基础、后台和公共站点语义 Token                      | `./base.css`, `./admin.css`, `./public.css`                                                                        |
+| 包                                 | 职责                                                | 公开入口                                                                                                           |
+| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `@lingcootech/frame`               | Fastify 宿主、核心扩展、Worker、系统迁移和一方适配  | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                           |
+| `@lingcootech/frame-database`      | PostgreSQL/Drizzle、Schema、Migration V2 和历史 SQL | `.`, `./schema`, `./migrations`                                                                                    |
+| `@lingcootech/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
+| `@lingcootech/frame-admin`         | Admin Shell、认证、路由、系统信息与扩展注册表       | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                   |
+| `@lingcootech/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
+| `@lingcootech/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`, `./styles.css`                     |
+| `@lingcootech/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
+| `@lingcootech/frame-design-tokens` | 基础、后台和公共站点语义 Token                      | `./base.css`, `./admin.css`, `./public.css`                                                                        |
 
 `apps/reference-admin` 和 `apps/reference-web` 是参考应用，不属于 Consumer API；它们已经使用
 Admin/Web Registry 组合 Frame Core 页面。业务系统消费 Shell 包并安装自己的前端扩展入口，不复制
 参考应用的中心路由分支。
 
 Reference Web 的官方站点扩展属于应用层示例，不是 Frame 公共包。它拥有 `/`、`/framework`、`/architecture`、
-`/packages`、`/extensions`、`/docs` 和 `/releases`；通用 `@lingcoo/frame-web` 仅保留 `/auth/:mode`。
+`/packages`、`/extensions`、`/docs` 和 `/releases`；通用 `@lingcootech/frame-web` 仅保留 `/auth/:mode`。
 
 ## 系统组合
 
 ```ts
-import { buildApp, createFrameWorker } from '@lingcoo/frame';
-import { frameCmsExtension } from '@lingcoo/frame/cms';
-import { frameCoreExtension } from '@lingcoo/frame/extensions';
-import { defineSystem } from '@lingcoo/frame-extension-sdk';
-import { officialSiteExtension } from '@lingcoo/official-site-extension';
+import { buildApp, createFrameWorker } from '@lingcootech/frame';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
+import { frameCoreExtension } from '@lingcootech/frame/extensions';
+import { defineSystem } from '@lingcootech/frame-extension-sdk';
+import { officialSiteExtension } from '@lingcootech/official-site-extension';
 
 const system = defineSystem({
   id: 'official-site',
@@ -54,20 +63,20 @@ CMS。
 
 ## 运行面
 
-- `@lingcoo/frame-extension-sdk`：只含 Manifest、`defineExtension()` 和 `defineSystem()`，可进入浏览器构建。
+- `@lingcootech/frame-extension-sdk`：只含 Manifest、`defineExtension()` 和 `defineSystem()`，可进入浏览器构建。
 - `./server`：Fastify 路由与类型化非敏感设置；声明路由会在注册前检查核心及其他路由冲突。
 - `./worker`：通过受限上下文注册声明过的 Job Handler 与 Outbox Subscriber。
 - `./migrations`：Migration Source 定义及数据库迁移类型，不进入浏览器入口。
-- `@lingcoo/frame-admin`：Admin Route、Navigation、Dashboard Widget、Search Provider 和 Landing
+- `@lingcootech/frame-admin`：Admin Route、Navigation、Dashboard Widget、Search Provider 和 Landing
   Block Editor；同时提供可注入 Client 的认证上下文、可配置基路径的浏览器路由、响应式应用 Shell、Topbar
   搜索/通知/账户入口、Frame 版本页脚，以及表格、筛选、分页、批量操作、详情抽屉、确认操作和 Asset
   Picker。`./system-info` 提供 Runtime/Extension/Migration/Observability/Operations 浏览器安全类型、
   可注入 Client 和集中式系统信息页。React 与具体 API Client 由 Consumer 提供，并显式引入
   `./styles.css`。
-- `@lingcoo/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
+- `@lingcootech/frame-web`：Public Route、SEO Resolver、Sitemap Collector 和 Landing Block Registry；
   同时通过独立子入口提供 SiteShell、布局、Presentation、SEO Head、404/500、错误边界和公共账号安全
   流程。React 与 React DOM 由 Consumer 提供，不重复打包；Consumer 显式引入 `./styles.css`。
-- `@lingcoo/frame-cms`：在独立运行面之外提供可直接安装的 CMS Admin/Web 默认页面。`./admin` 暴露内容列表、
+- `@lingcootech/frame-cms`：在独立运行面之外提供可直接安装的 CMS Admin/Web 默认页面。`./admin` 暴露内容列表、
   编辑器、版本、SEO 预览、计划发布和重定向工作流，以及 `CmsAdminClient`/请求工厂；`./web` 暴露文章
   列表、文章/页面详情、预览、Markdown 渲染、分页和空状态，以及 `CmsWebClient`/请求工厂。两者都由
   Consumer 注入 API Transport 和品牌上下文，Consumer 不复制 Reference App 页面；`./styles.css` 随包
@@ -89,7 +98,7 @@ Worker 实例创建；扩展只能注册 Manifest 已声明的 Job 和 Topic。
 ## Migration V2
 
 ```ts
-import { runSystemMigrations } from '@lingcoo/frame/migrations';
+import { runSystemMigrations } from '@lingcootech/frame/migrations';
 
 await runSystemMigrations({
   connectionString: process.env.DATABASE_URL!,
@@ -117,6 +126,10 @@ await runSystemMigrations({
 Tokens 与完整示例扩展，再在临时目录隔离安装。Consumer Fixture 会进行 TypeScript 公共入口编译，组合
 API/Worker/Admin/Web/CMS 默认页面，验证示例页面、搜索、SEO、Sitemap、Landing Block 和 13 条系统迁移。CI 提供
 PostgreSQL 17，并真实执行全部迁移。
+
+包版本由 Changesets 统一管理：`npm run changeset` 记录变更，`npm run version:packages` 应用版本，
+`Release Frame Packages` workflow 发布 Preview/Stable，`Release Frame Canary` workflow 发布当前提交的
+不可变 Canary。发布脚本只读取明确列出的八个 `private: false` 包，不会发布 Reference App 或 Fixture。
 
 完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见
 [第一方扩展边界](first-party-extensions.md)。

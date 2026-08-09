@@ -10,8 +10,8 @@ import {
   defineMigrationSource,
   frameMigrationSource,
   runMigrations,
-} from '@lingcoo/frame-database/migrations';
-import { cmsMigrationSource } from '@lingcoo/frame-cms/migrations';
+} from '@lingcootech/frame-database/migrations';
+import { cmsMigrationSource } from '@lingcootech/frame-cms/migrations';
 
 test('Migration V2 preserves manifest order and sorts source dependencies', () => {
   const base = defineMigrationSource({

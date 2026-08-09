@@ -1,14 +1,19 @@
-import { Alert } from '@lingcoo/frame-ui/alert';
-import { Avatar, AvatarFallback, AvatarImage } from '@lingcoo/frame-ui/avatar';
-import { Button } from '@lingcoo/frame-ui/button';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
-import { useToast } from '@lingcoo/frame-ui/toast';
+import { Alert } from '@lingcootech/frame-ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@lingcootech/frame-ui/avatar';
+import { Button } from '@lingcootech/frame-ui/button';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Skeleton, SkeletonText } from '@lingcootech/frame-ui/skeleton';
+import { useToast } from '@lingcootech/frame-ui/toast';
 import { CheckCircle2, KeyRound, Laptop, MailCheck, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
-import { AssetPicker, PageFrame, ResourceSection, StatusPill } from '@lingcoo/frame-admin/shared';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+import {
+  AssetPicker,
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+} from '@lingcootech/frame-admin/shared';
 
 import {
   fetchAccountProfile,

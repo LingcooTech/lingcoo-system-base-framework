@@ -10,8 +10,8 @@ import { existsSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { ZodError } from 'zod';
 
-import { createDatabase } from '@lingcoo/frame-database';
-import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
+import { createDatabase } from '@lingcootech/frame-database';
+import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
 import { frameCoreSystem } from '../core/extension.js';
 import { hasAnyPermission, type PermissionCode } from '../core/modules/access/rbac.js';
 import { AuthRepository } from '../core/modules/auth/repository.js';

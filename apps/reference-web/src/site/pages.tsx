@@ -16,13 +16,13 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Button } from '@lingcoo/frame-ui/button';
-import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
-import { PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation, PublicNavigationItem } from '@lingcoo/frame-web/presentation';
-import { SeoHead } from '@lingcoo/frame-web/seo';
-import { SiteShell } from '@lingcoo/frame-web/site';
-import { FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+import { Button } from '@lingcootech/frame-ui/button';
+import { ResponsiveImage } from '@lingcootech/frame-ui/responsive-image';
+import { PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation, PublicNavigationItem } from '@lingcootech/frame-web/presentation';
+import { SeoHead } from '@lingcootech/frame-web/seo';
+import { SiteShell } from '@lingcootech/frame-web/site';
+import { FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
 
 const officialNavigation: PublicNavigationItem[] = [
   { label: '框架', href: '/framework' },
@@ -67,19 +67,23 @@ const packageGroups = [
   {
     title: 'Runtime',
     description: '把服务端、Worker、数据库和迁移组合成一个可部署系统。',
-    packages: ['@lingcoo/frame', '@lingcoo/frame-database', '@lingcoo/frame-extension-sdk'],
+    packages: [
+      '@lingcootech/frame',
+      '@lingcootech/frame-database',
+      '@lingcootech/frame-extension-sdk',
+    ],
     icon: ServerCog,
   },
   {
     title: 'Experience',
     description: '提供业务系统可以直接使用的公共 Web、后台和无业务 UI。',
-    packages: ['@lingcoo/frame-admin', '@lingcoo/frame-web', '@lingcoo/frame-ui'],
+    packages: ['@lingcootech/frame-admin', '@lingcootech/frame-web', '@lingcootech/frame-ui'],
     icon: Layers3,
   },
   {
     title: 'First-party',
     description: '按需安装的 CMS 扩展，覆盖内容工作流和公共内容页面。',
-    packages: ['@lingcoo/frame-cms', '@lingcoo/frame-design-tokens'],
+    packages: ['@lingcootech/frame-cms', '@lingcootech/frame-design-tokens'],
     icon: Blocks,
   },
 ];
@@ -486,7 +490,7 @@ export function ReleasesPage({ presentation }: { presentation: PublicPresentatio
             <span className="reference-release__version">{FRAME_VERSION}</span>
             <div>
               <p className="reference-kicker">Current preview</p>
-              <h2>Frame 0.6</h2>
+              <h2>Frame 0.7</h2>
               <p>
                 完成 Core、Admin/Web Shell、系统信息、CMS 默认体验和 Reference Experience R0-R6
                 产品化。

@@ -1,6 +1,6 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { Input } from '@lingcoo/frame-ui/input';
-import { useToast } from '@lingcoo/frame-ui/toast';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Input } from '@lingcootech/frame-ui/input';
+import { useToast } from '@lingcootech/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { fetchAuditItems, type AuditItem } from '../api/client';
@@ -13,7 +13,7 @@ import {
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcoo/frame-admin/shared';
+} from '@lingcootech/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 function actionLabel(action: string): string {

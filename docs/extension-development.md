@@ -2,7 +2,7 @@
 
 ## 当前能力
 
-Frame 0.6 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
+Frame 0.7 只支持受信任、构建期安装的扩展。扩展与宿主运行在同一个单体部署和 PostgreSQL 数据库
 中，不提供安全沙箱、生产 ZIP 上传、无重启卸载或运行时插件市场。
 
 一个领域扩展可以贡献：
@@ -17,7 +17,7 @@ Frame 0.6 只支持受信任、构建期安装的扩展。扩展与宿主运行�
 ## 推荐包结构
 
 ```text
-@lingcoo/example-extension
+@lingcootech/example-extension
 ├── contracts       # 浏览器安全 Manifest
 ├── server          # Fastify 与设置
 ├── worker          # Job 和领域事件订阅
@@ -33,14 +33,14 @@ Frame 0.6 只支持受信任、构建期安装的扩展。扩展与宿主运行�
 ## Manifest
 
 ```ts
-import type { ExtensionManifest } from '@lingcoo/frame-extension-sdk';
+import type { ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
 export const manifest = {
   id: 'example',
   version: '0.1.0',
   apiVersion: '1',
-  frame: '^0.6.0',
-  dependencies: [{ id: 'frame', version: '^0.6.0' }],
+  frame: '^0.7.0',
+  dependencies: [{ id: 'frame', version: '^0.7.0' }],
   permissions: ['example.read'],
   settings: ['example.greeting'],
   server: { routes: [{ method: 'GET', path: '/api/example' }] },
@@ -79,8 +79,8 @@ Manifest 是声明和冲突检查来源，运行面函数提供实现。权限�
 ## Server 与 Worker
 
 ```ts
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
-import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
+import { defineWorkerExtension } from '@lingcootech/frame-extension-sdk/worker';
 
 export const server = defineServerExtension({
   register({ app }) {
@@ -108,12 +108,12 @@ Server 路由必须先在 Manifest 声明。Worker 受限上下文拒绝未声�
 import {
   defineMigrationExtension,
   defineMigrationSource,
-} from '@lingcoo/frame-extension-sdk/migrations';
+} from '@lingcootech/frame-extension-sdk/migrations';
 
 const source = defineMigrationSource({
   id: 'example',
   version: '0.1.0',
-  dependencies: [{ id: 'frame', version: '^0.6.0' }],
+  dependencies: [{ id: 'frame', version: '^0.7.0' }],
   migrations: [
     {
       id: '0001_initial.sql',
@@ -132,11 +132,11 @@ export const migrations = defineMigrationExtension(source);
 ## 应用组合根
 
 ```ts
-import { buildApp, createFrameWorker, runSystemMigrations } from '@lingcoo/frame';
-import { frameCmsExtension } from '@lingcoo/frame/cms';
-import { frameCoreExtension } from '@lingcoo/frame/extensions';
-import { defineSystem } from '@lingcoo/frame-extension-sdk';
-import { exampleExtension } from '@lingcoo/example-extension';
+import { buildApp, createFrameWorker, runSystemMigrations } from '@lingcootech/frame';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
+import { frameCoreExtension } from '@lingcootech/frame/extensions';
+import { defineSystem } from '@lingcootech/frame-extension-sdk';
+import { exampleExtension } from '@lingcootech/example-extension';
 
 export const system = defineSystem({
   id: 'example-system',

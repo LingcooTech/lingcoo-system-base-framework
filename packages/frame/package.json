@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame",
-  "version": "0.6.0",
+  "name": "@lingcootech/frame",
+  "version": "0.7.0",
   "private": false,
   "type": "module",
   "description": "Lingcoo Frame backend host, core modules and runtime composition.",
@@ -55,10 +55,10 @@
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/sensible": "^6.0.4",
     "@fastify/static": "^10.1.2",
-    "@lingcoo/frame-admin": "^0.6.0",
-    "@lingcoo/frame-database": "^0.6.0",
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-web": "^0.6.0",
+    "@lingcootech/frame-admin": "^0.7.0",
+    "@lingcootech/frame-database": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-web": "^0.7.0",
     "alipay-sdk": "^4.14.0",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.6.1",
@@ -67,16 +67,16 @@
     "zod": "^4.1.11"
   },
   "peerDependencies": {
-    "@lingcoo/frame-cms": "^0.6.0"
+    "@lingcootech/frame-cms": "^0.7.0"
   },
   "peerDependenciesMeta": {
-    "@lingcoo/frame-cms": {
+    "@lingcootech/frame-cms": {
       "optional": true
     }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@lingcoo/frame-cms": "^0.6.0",
+    "@lingcootech/frame-cms": "^0.7.0",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.15.5",
@@ -88,5 +88,12 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
   }
 }

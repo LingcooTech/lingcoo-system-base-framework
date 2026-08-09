@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import {
   defineMigrationExtension,
   defineMigrationSource,
-} from '@lingcoo/frame-extension-sdk/migrations';
+} from '@lingcootech/frame-extension-sdk/migrations';
 
 import { CMS_EXTENSION_ID, CMS_EXTENSION_VERSION } from './contracts.js';
 

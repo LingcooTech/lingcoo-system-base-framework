@@ -1,5 +1,5 @@
-import type { Database } from '@lingcoo/frame-database';
-import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
+import type { Database } from '@lingcootech/frame-database';
+import { defineWorkerExtension } from '@lingcootech/frame-extension-sdk/worker';
 
 import type { CmsServicePorts } from './ports.js';
 import { cmsScheduledJobSchema } from './schemas.js';

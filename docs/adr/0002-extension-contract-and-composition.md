@@ -17,11 +17,11 @@ Node.js 依赖，服务端也不应依赖 React 实现。
 Frame 提供统一 Extension Contract，但每个运行面使用独立入口：
 
 ```text
-@lingcoo/example-extension/contracts
-@lingcoo/example-extension/server
-@lingcoo/example-extension/worker
-@lingcoo/example-extension/admin
-@lingcoo/example-extension/web
+@lingcootech/example-extension/contracts
+@lingcootech/example-extension/server
+@lingcootech/example-extension/worker
+@lingcootech/example-extension/admin
+@lingcootech/example-extension/web
 ```
 
 扩展 Manifest 至少声明：

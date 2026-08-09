@@ -1,9 +1,9 @@
-import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
+import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
 import {
   runMigrations,
   type MigrationLogger,
   type MigrationResult,
-} from '@lingcoo/frame-database/migrations';
+} from '@lingcootech/frame-database/migrations';
 
 import { frameCoreSystem } from '../core/extension.js';
 import { assertFrameSystemCompatibility, collectSystemMigrationSources } from './extensions.js';

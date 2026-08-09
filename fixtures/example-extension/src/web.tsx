@@ -1,4 +1,4 @@
-import { defineLandingBlock, defineWebExtension, type JsonValue } from '@lingcoo/frame-web';
+import { defineLandingBlock, defineWebExtension, type JsonValue } from '@lingcootech/frame-web';
 import { createElement } from 'react';
 import { z } from 'zod';
 

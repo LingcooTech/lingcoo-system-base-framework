@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpenText, Settings2 } from 'lucide-react';
 
-import { AdminLink } from '@lingcoo/frame-admin/router';
-import { PageFrame, ResourceSection } from '@lingcoo/frame-admin/shared';
+import { AdminLink } from '@lingcootech/frame-admin/router';
+import { PageFrame, ResourceSection } from '@lingcootech/frame-admin/shared';
 
 const homeSection = {
   group: '应用',

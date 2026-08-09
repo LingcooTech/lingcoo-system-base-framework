@@ -1,7 +1,11 @@
 import { desc, eq, sql } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
-import { accounts, systemSettings, systemSettingVersions } from '@lingcoo/frame-database/schema';
+import type { Database } from '@lingcootech/frame-database';
+import {
+  accounts,
+  systemSettings,
+  systemSettingVersions,
+} from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
 import { recordAuditEvent } from '../audit/recorder.js';
 import { defaultSettingsRegistry, type SettingsRegistry } from './registry.js';

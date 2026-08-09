@@ -9,7 +9,7 @@ import {
   integrationConnections,
   jobRuns,
   storageAssets,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { loadEnv } from '../src/host/env.js';
 import {
   AssetService,

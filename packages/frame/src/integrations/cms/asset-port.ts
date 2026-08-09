@@ -1,8 +1,8 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import type { CmsAssetPort } from '@lingcoo/frame-cms/server';
-import type { Database } from '@lingcoo/frame-database';
-import { storageAssetReferences, storageAssets } from '@lingcoo/frame-database/schema';
+import type { CmsAssetPort } from '@lingcootech/frame-cms/server';
+import type { Database } from '@lingcootech/frame-database';
+import { storageAssetReferences, storageAssets } from '@lingcootech/frame-database/schema';
 
 export class DatabaseCmsAssetPort implements CmsAssetPort {
   constructor(private readonly db: Database) {}

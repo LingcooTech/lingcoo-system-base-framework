@@ -13,7 +13,7 @@ import {
   passwordCredentials,
   presentationProfiles,
   roles,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { decryptSetting, encryptSetting } from '../src/core/security/settings-crypto.js';
 import { loadEnv } from '../src/host/env.js';

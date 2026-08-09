@@ -1,5 +1,5 @@
-import { defineAdminExtension, type AdminRouteComponent } from '@lingcoo/frame-admin';
-import type { AdminPageSection } from '@lingcoo/frame-admin/shared';
+import { defineAdminExtension, type AdminRouteComponent } from '@lingcootech/frame-admin';
+import type { AdminPageSection } from '@lingcootech/frame-admin/shared';
 import { BookOpenText } from 'lucide-react';
 import type { ComponentType } from 'react';
 

@@ -1,12 +1,12 @@
 import { and, count, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import {
   accounts,
   cmsContentEntries,
   cmsContentVersions,
   cmsRedirects,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { httpError } from './http-error.js';
 import type { CmsServicePorts } from './ports.js';
 import type { CmsContentInput, CmsRedirectInput } from './schemas.js';

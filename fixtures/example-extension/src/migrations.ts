@@ -3,12 +3,12 @@ import { readFileSync } from 'node:fs';
 import {
   defineMigrationExtension,
   defineMigrationSource,
-} from '@lingcoo/frame-extension-sdk/migrations';
+} from '@lingcootech/frame-extension-sdk/migrations';
 
 export const exampleMigrationSource = defineMigrationSource({
   id: 'example',
   version: '0.1.0',
-  dependencies: [{ id: 'frame', version: '^0.6.0' }],
+  dependencies: [{ id: 'frame', version: '^0.7.0' }],
   migrations: [
     {
       id: '0001_initial.sql',

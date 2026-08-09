@@ -1,11 +1,11 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Textarea } from '@lingcoo/frame-ui/textarea';
+import { Button } from '@lingcootech/frame-ui/button';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Textarea } from '@lingcootech/frame-ui/textarea';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
-import { AssetPicker, PageFrame, ResourceSection } from '@lingcoo/frame-admin/shared';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+import { AssetPicker, PageFrame, ResourceSection } from '@lingcootech/frame-admin/shared';
 
 import {
   fetchAssets,

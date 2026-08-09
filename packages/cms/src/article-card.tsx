@@ -1,4 +1,4 @@
-import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
+import { ResponsiveImage } from '@lingcootech/frame-ui/responsive-image';
 
 import type { CmsPublicContent } from './web-client.js';
 

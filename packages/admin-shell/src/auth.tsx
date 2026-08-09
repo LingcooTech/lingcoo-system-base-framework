@@ -1,6 +1,6 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
+import { Button } from '@lingcootech/frame-ui/button';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
 import { KeyRound, Layers3, Mail } from 'lucide-react';
 import {
   createContext,

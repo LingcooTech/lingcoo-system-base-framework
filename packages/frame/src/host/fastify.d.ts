@@ -1,5 +1,5 @@
-import type { Database } from '@lingcoo/frame-database';
-import type { DefinedSystem } from '@lingcoo/frame-extension-sdk';
+import type { Database } from '@lingcootech/frame-database';
+import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
 import type { PermissionCode } from '../core/modules/access/rbac.js';
 import type { DatasetRegistry } from '../core/modules/data-exchange/registry.js';
 import type { ObservabilityService } from '../core/modules/observability/service.js';

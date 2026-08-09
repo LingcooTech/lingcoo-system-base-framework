@@ -1,8 +1,8 @@
-import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
-import { defineMigrationExtension } from '@lingcoo/frame-extension-sdk/migrations';
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
-import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
-import { frameMigrationSource, type Database } from '@lingcoo/frame-database';
+import { defineExtension, defineSystem, FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
+import { defineMigrationExtension } from '@lingcootech/frame-extension-sdk/migrations';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
+import { defineWorkerExtension } from '@lingcootech/frame-extension-sdk/worker';
+import { frameMigrationSource, type Database } from '@lingcootech/frame-database';
 
 import type { AppEnv } from '../host/env.js';
 import { assetDeleteJobPayloadSchema } from './modules/assets/schemas.js';

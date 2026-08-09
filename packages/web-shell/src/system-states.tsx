@@ -1,6 +1,6 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { EmptyState } from '@lingcoo/frame-ui/empty-state';
-import { Skeleton, SkeletonText } from '@lingcoo/frame-ui/skeleton';
+import { Button } from '@lingcootech/frame-ui/button';
+import { EmptyState } from '@lingcootech/frame-ui/empty-state';
+import { Skeleton, SkeletonText } from '@lingcootech/frame-ui/skeleton';
 import { FileQuestion, RefreshCw, ServerCrash } from 'lucide-react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 

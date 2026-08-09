@@ -6,25 +6,28 @@ import {
   frameCoreExtension,
   loadEnv,
   runSystemMigrations,
-} from '@lingcoo/frame';
-import { frameCmsExtension } from '@lingcoo/frame/cms';
-import { frameCoreManifest } from '@lingcoo/frame/manifest';
-import { exampleExtension } from '@lingcoo/frame-example-extension';
-import { exampleAdminExtension } from '@lingcoo/frame-example-extension/admin';
-import { exampleManifest } from '@lingcoo/frame-example-extension/contracts';
-import { exampleWebExtension } from '@lingcoo/frame-example-extension/web';
-import { createAdminRegistry } from '@lingcoo/frame-admin';
-import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
-import { createWebRegistry } from '@lingcoo/frame-web';
+} from '@lingcootech/frame';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
+import { frameCoreManifest } from '@lingcootech/frame/manifest';
+import { exampleExtension } from '@lingcootech/frame-example-extension';
+import { exampleAdminExtension } from '@lingcootech/frame-example-extension/admin';
+import { exampleManifest } from '@lingcootech/frame-example-extension/contracts';
+import { exampleWebExtension } from '@lingcootech/frame-example-extension/web';
+import { createAdminRegistry } from '@lingcootech/frame-admin';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcootech/frame-cms/web';
+import { createWebRegistry } from '@lingcootech/frame-web';
 import {
   defineExtension,
   defineSystem,
   projectExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
-import { createDatabase, schema } from '@lingcoo/frame-database';
-import { frameMigrationsDirectory, listMigrationFiles } from '@lingcoo/frame-database/migrations';
+} from '@lingcootech/frame-extension-sdk';
+import { createDatabase, schema } from '@lingcootech/frame-database';
+import {
+  frameMigrationsDirectory,
+  listMigrationFiles,
+} from '@lingcootech/frame-database/migrations';
 
 const databaseUrl = process.env.DATABASE_URL;
 const migrations = listMigrationFiles();

@@ -1,13 +1,13 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import {
   accounts,
   presentationProfiles,
   presentationProfileVersions,
   storageAssetReferences,
   storageAssets,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
 import { recordAuditEvent } from '../audit/recorder.js';
 import type { PresentationInput } from './schemas.js';

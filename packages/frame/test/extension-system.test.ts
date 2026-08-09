@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { exampleExtension } from '@lingcoo/frame-example-extension';
+import { exampleExtension } from '@lingcootech/frame-example-extension';
 import {
   defineExtension,
   defineSystem,
   type ExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
+} from '@lingcootech/frame-extension-sdk';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
 
 import { frameCoreExtension } from '../src/core/extension.js';
 import { buildApp } from '../src/host/app.js';
@@ -32,7 +32,7 @@ function extension(id: string, contributions: Partial<ExtensionManifest> = {}) {
       id,
       version: '1.0.0',
       apiVersion: '1',
-      frame: '^0.6.0',
+      frame: '^0.7.0',
       ...contributions,
     },
   });
@@ -201,8 +201,8 @@ test('Server composition rejects extension routes that collide with Frame core',
       id: 'collision',
       version: '1.0.0',
       apiVersion: '1',
-      frame: '^0.6.0',
-      dependencies: [{ id: 'frame', version: '^0.6.0' }],
+      frame: '^0.7.0',
+      dependencies: [{ id: 'frame', version: '^0.7.0' }],
       server: { routes: [{ method: 'GET', path: '/health' }] },
     },
     server: defineServerExtension({
@@ -226,11 +226,11 @@ test('runtime rejects a Defined System compiled for a different Frame version', 
   const system = defineSystem({
     id: 'version-mismatch-system',
     version: '1.0.0',
-    frameVersion: '0.6.1',
+    frameVersion: '0.7.1',
     extensions: [frameCoreExtension],
   });
   await assert.rejects(
     () => buildApp(testEnv(), { system }),
-    /targets Frame 0\.6\.1, but this runtime is 0\.6\.0/,
+    /targets Frame 0\.7\.1, but this runtime is 0\.7\.0/,
   );
 });

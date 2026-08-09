@@ -4,7 +4,12 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
-import { accountRoles, accounts, passwordCredentials, roles } from '@lingcoo/frame-database/schema';
+import {
+  accountRoles,
+  accounts,
+  passwordCredentials,
+  roles,
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { DatasetRegistry } from '../src/core/modules/data-exchange/registry.js';
 import { SearchProviderRegistry } from '../src/core/modules/search/registry.js';

@@ -51,7 +51,7 @@ packages/frame/src/
 - `runtime` 负责“把同一个 Defined System 投影到 API、Worker 和 Migration”。
 - `integrations` 负责“可选包怎样接入 Core 已有服务”，防止可选 CMS 反向污染 Core 模块目录。
 
-`packages/frame/src/index.ts` 只导出稳定的默认入口。CMS 适配通过 `@lingcoo/frame/cms` 显式导入，
+`packages/frame/src/index.ts` 只导出稳定的默认入口。CMS 适配通过 `@lingcootech/frame/cms` 显式导入，
 因此不安装 CMS 的 Consumer 不会在概念上获得 CMS。
 
 ## 4. 包之间的依赖方向
@@ -61,7 +61,7 @@ reference apps
       │
       ├───────────────┐
       ▼               ▼
-  @lingcoo/frame   admin-shell / web-shell / cms
+  @lingcootech/frame   admin-shell / web-shell / cms
       │               │
       ├───────┬───────┘
       ▼       ▼

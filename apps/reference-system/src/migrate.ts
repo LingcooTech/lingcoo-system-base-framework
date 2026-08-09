@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { runSystemMigrations } from '@lingcoo/frame';
+import { runSystemMigrations } from '@lingcootech/frame';
 
 import { referenceSystem } from './system.js';
 

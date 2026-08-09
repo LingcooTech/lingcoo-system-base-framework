@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@lingcoo/frame-ui/avatar';
-import { Dialog, DialogContent, DialogHeader } from '@lingcoo/frame-ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@lingcootech/frame-ui/avatar';
+import { Dialog, DialogContent, DialogHeader } from '@lingcootech/frame-ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,9 +7,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@lingcoo/frame-ui/dropdown-menu';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Tooltip, TooltipProvider } from '@lingcoo/frame-ui/tooltip';
+} from '@lingcootech/frame-ui/dropdown-menu';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Tooltip, TooltipProvider } from '@lingcootech/frame-ui/tooltip';
 import {
   Bell,
   ChevronLeft,

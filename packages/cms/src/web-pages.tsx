@@ -1,10 +1,10 @@
-import { Pagination } from '@lingcoo/frame-ui/pagination';
-import { Skeleton } from '@lingcoo/frame-ui/skeleton';
-import { PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SeoHead } from '@lingcoo/frame-web/seo';
-import { SiteShell } from '@lingcoo/frame-web/site';
-import { PageLoading, SystemPage } from '@lingcoo/frame-web/system-states';
+import { Pagination } from '@lingcootech/frame-ui/pagination';
+import { Skeleton } from '@lingcootech/frame-ui/skeleton';
+import { PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
+import { SeoHead } from '@lingcootech/frame-web/seo';
+import { SiteShell } from '@lingcootech/frame-web/site';
+import { PageLoading, SystemPage } from '@lingcootech/frame-web/system-states';
 import { useEffect, useState } from 'react';
 
 import { ArticleList } from './article-list.js';

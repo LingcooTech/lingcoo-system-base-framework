@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame-admin",
-  "version": "0.6.0",
+  "name": "@lingcootech/frame-admin",
+  "version": "0.7.0",
   "private": false,
   "type": "module",
   "description": "Composable Admin Shell and browser-safe extension registry for Lingcoo Frame.",
@@ -48,8 +48,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-ui": "^0.2.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-ui": "^0.7.0",
     "lucide-react": "^0.503.0"
   },
   "peerDependencies": {
@@ -80,5 +80,12 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
   }
 }

@@ -1,8 +1,8 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcoo/frame-ui/dialog';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Textarea } from '@lingcoo/frame-ui/textarea';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcootech/frame-ui/dialog';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Textarea } from '@lingcootech/frame-ui/textarea';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import {
@@ -18,14 +18,14 @@ import {
   type AccessPermission,
   type AccessRole,
 } from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
 import {
   DataTable,
   PageFrame,
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcoo/frame-admin/shared';
+} from '@lingcootech/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 export function AccessPage() {

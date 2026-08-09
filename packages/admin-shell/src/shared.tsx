@@ -1,11 +1,11 @@
-import { Badge, type BadgeTone } from '@lingcoo/frame-ui/badge';
-import { Button } from '@lingcoo/frame-ui/button';
-import { Checkbox } from '@lingcoo/frame-ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcoo/frame-ui/dialog';
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader } from '@lingcoo/frame-ui/drawer';
-import { EmptyState } from '@lingcoo/frame-ui/empty-state';
-import { Pagination } from '@lingcoo/frame-ui/pagination';
-import { Skeleton } from '@lingcoo/frame-ui/skeleton';
+import { Badge, type BadgeTone } from '@lingcootech/frame-ui/badge';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Checkbox } from '@lingcootech/frame-ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcootech/frame-ui/dialog';
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader } from '@lingcootech/frame-ui/drawer';
+import { EmptyState } from '@lingcootech/frame-ui/empty-state';
+import { Pagination } from '@lingcootech/frame-ui/pagination';
+import { Skeleton } from '@lingcootech/frame-ui/skeleton';
 import { Image, Search, X } from 'lucide-react';
 import {
   createContext,

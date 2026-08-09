@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { breadcrumbStructuredData } from '@lingcoo/frame-web/seo';
+import { breadcrumbStructuredData } from '@lingcootech/frame-web/seo';
 
 import { ArticleCard, ContentDetail, ContentRenderer, type CmsPublicContent } from '../src/web.js';
 

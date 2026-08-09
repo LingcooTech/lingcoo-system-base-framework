@@ -1,6 +1,6 @@
-import { FRAME_VERSION, type ExtensionManifest } from '@lingcoo/frame-extension-sdk';
-import { frameAdminManifest } from '@lingcoo/frame-admin/manifest';
-import { frameWebManifest } from '@lingcoo/frame-web/manifest';
+import { FRAME_VERSION, type ExtensionManifest } from '@lingcootech/frame-extension-sdk';
+import { frameAdminManifest } from '@lingcootech/frame-admin/manifest';
+import { frameWebManifest } from '@lingcootech/frame-web/manifest';
 
 import { basePermissions } from './modules/access/rbac.js';
 

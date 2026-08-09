@@ -1,7 +1,7 @@
 {
-  "name": "@lingcoo/frame-reference-web",
+  "name": "@lingcootech/frame-reference-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,11 +11,11 @@
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
-    "@lingcoo/frame-design-tokens": "^0.2.0",
-    "@lingcoo/frame-cms": "^0.6.0",
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-ui": "^0.2.0",
-    "@lingcoo/frame-web": "^0.6.0",
+    "@lingcootech/frame-design-tokens": "^0.7.0",
+    "@lingcootech/frame-cms": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-ui": "^0.7.0",
+    "@lingcootech/frame-web": "^0.7.0",
     "@tailwindcss/vite": "^4.1.18",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",

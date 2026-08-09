@@ -3,9 +3,9 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Hero, PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SiteShell } from '@lingcoo/frame-web/site';
+import { Hero, PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
+import { SiteShell } from '@lingcootech/frame-web/site';
 
 Object.assign(globalThis, { React });
 

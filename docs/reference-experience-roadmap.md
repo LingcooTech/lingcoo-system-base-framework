@@ -51,16 +51,16 @@ Frame 类似应用的操作系统：提供身份、权限、通知、连接、�
 apps/reference-web
   官方首页、文档内容、Packages、示例与发布说明
              │
-             ├── consumes @lingcoo/frame-web
-             ├── consumes @lingcoo/frame-cms/web
-             └── consumes @lingcoo/frame-ui
+             ├── consumes @lingcootech/frame-web
+             ├── consumes @lingcootech/frame-cms/web
+             └── consumes @lingcootech/frame-ui
 
 apps/reference-admin
   Admin 组合、品牌入口和 Reference 环境配置
              │
-             ├── consumes @lingcoo/frame-admin
-             ├── consumes @lingcoo/frame-cms/admin
-             └── consumes @lingcoo/frame-ui
+             ├── consumes @lingcootech/frame-admin
+             ├── consumes @lingcootech/frame-cms/admin
+             └── consumes @lingcootech/frame-ui
 
 apps/reference-system
   defineSystem(frameCoreExtension + frameCmsExtension)
@@ -72,16 +72,16 @@ apps/reference-system
 
 ### 3.1 公共包职责
 
-| 包                             | 当前稳定职责                                              | 本路线需要补齐                                                |
-| ------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------- |
-| `@lingcoo/frame`               | Host、Core Modules、Worker、Migration 和 Server 运行时    | 供 Console 使用的浏览器安全运行信息契约；不加入 React 页面    |
-| `@lingcoo/frame-extension-sdk` | Manifest、Defined System 与分运行面扩展契约               | 保持协议层，不放视觉实现                                      |
-| `@lingcoo/frame-database`      | PostgreSQL、Schema 与 Migration V2                        | 保持服务端数据层，不进入浏览器                                |
-| `@lingcoo/frame-admin`         | Admin Registry、Route、Navigation、Widget、Search、Editor | 完整 Admin Shell、账号入口、通用后台组合组件和 Core 页面实现  |
-| `@lingcoo/frame-web`           | Web Registry、公共 SiteShell、布局、SEO、状态和账号流程   | 默认最小站点与后续真实 Consumer 反馈                          |
-| `@lingcoo/frame-ui`            | 无业务语义 React 组件                                     | 只补真正跨 Admin/Web 的基础组件，不接收 API 或 Frame 业务语义 |
-| `@lingcoo/frame-design-tokens` | Base、Admin、Public 设计变量                              | 保持视觉变量，不放页面样式                                    |
-| `@lingcoo/frame-cms`           | CMS Server、Worker、Migration 与前端贡献工厂              | 完整默认 CMS Admin/Web 页面和内容渲染组件                     |
+| 包                                 | 当前稳定职责                                              | 本路线需要补齐                                                |
+| ---------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
+| `@lingcootech/frame`               | Host、Core Modules、Worker、Migration 和 Server 运行时    | 供 Console 使用的浏览器安全运行信息契约；不加入 React 页面    |
+| `@lingcootech/frame-extension-sdk` | Manifest、Defined System 与分运行面扩展契约               | 保持协议层，不放视觉实现                                      |
+| `@lingcootech/frame-database`      | PostgreSQL、Schema 与 Migration V2                        | 保持服务端数据层，不进入浏览器                                |
+| `@lingcootech/frame-admin`         | Admin Registry、Route、Navigation、Widget、Search、Editor | 完整 Admin Shell、账号入口、通用后台组合组件和 Core 页面实现  |
+| `@lingcootech/frame-web`           | Web Registry、公共 SiteShell、布局、SEO、状态和账号流程   | 默认最小站点与后续真实 Consumer 反馈                          |
+| `@lingcootech/frame-ui`            | 无业务语义 React 组件                                     | 只补真正跨 Admin/Web 的基础组件，不接收 API 或 Frame 业务语义 |
+| `@lingcootech/frame-design-tokens` | Base、Admin、Public 设计变量                              | 保持视觉变量，不放页面样式                                    |
+| `@lingcootech/frame-cms`           | CMS Server、Worker、Migration 与前端贡献工厂              | 完整默认 CMS Admin/Web 页面和内容渲染组件                     |
 
 ## 4. Reference Web 现状归属矩阵
 
@@ -94,7 +94,7 @@ apps/reference-system
 | Frame 架构、Packages、扩展和文档内容 | 当前只有首页少量文案       | `apps/reference-web` | 新增版本化内容与路由                        |
 | Reference Web 品牌差异               | 官方 Frame 视觉            | `apps/reference-web` | 只保留产品级主题覆盖，不复制结构样式        |
 
-### 4.2 应进入 `@lingcoo/frame-web`
+### 4.2 应进入 `@lingcootech/frame-web`
 
 | 当前文件                           | 可复用能力                                    | 目标公开实现                           |
 | ---------------------------------- | --------------------------------------------- | -------------------------------------- |
@@ -108,16 +108,16 @@ apps/reference-system
 公共包不保存 `Lingcoo Frame` 首页文案，也不决定 Consumer 的导航项；结构始终读取 Consumer 提供的
 Presentation 和扩展 Registry。
 
-### 4.3 应进入 `@lingcoo/frame-cms`
+### 4.3 应进入 `@lingcootech/frame-cms`
 
-| 当前文件                             | 可复用能力               | 目标入口                 |
-| ------------------------------------ | ------------------------ | ------------------------ |
-| `components/cms/ArticleCard.tsx`     | 文章摘要卡片             | `@lingcoo/frame-cms/web` |
-| `components/cms/ArticleList.tsx`     | 文章列表                 | `@lingcoo/frame-cms/web` |
-| `components/cms/CmsPages.tsx`        | 列表、预览和详情数据加载 | `@lingcoo/frame-cms/web` |
-| `components/cms/ContentDetail.tsx`   | 内容详情布局与面包屑     | `@lingcoo/frame-cms/web` |
-| `components/cms/ContentRenderer.tsx` | Markdown 内容渲染        | `@lingcoo/frame-cms/web` |
-| `components/cms/EmptyContent.tsx`    | CMS 空状态               | `@lingcoo/frame-cms/web` |
+| 当前文件                             | 可复用能力               | 目标入口                     |
+| ------------------------------------ | ------------------------ | ---------------------------- |
+| `components/cms/ArticleCard.tsx`     | 文章摘要卡片             | `@lingcootech/frame-cms/web` |
+| `components/cms/ArticleList.tsx`     | 文章列表                 | `@lingcootech/frame-cms/web` |
+| `components/cms/CmsPages.tsx`        | 列表、预览和详情数据加载 | `@lingcootech/frame-cms/web` |
+| `components/cms/ContentDetail.tsx`   | 内容详情布局与面包屑     | `@lingcootech/frame-cms/web` |
+| `components/cms/ContentRenderer.tsx` | Markdown 内容渲染        | `@lingcootech/frame-cms/web` |
+| `components/cms/EmptyContent.tsx`    | CMS 空状态               | `@lingcootech/frame-cms/web` |
 
 完成后，`createCmsWebExtension()` 应能提供官方默认页面；Consumer 可以覆盖视觉实现，但不再被要求
 先自行提供四个页面组件才能安装 CMS。
@@ -133,7 +133,7 @@ Presentation 和扩展 Registry。
 | `extensions.tsx`       | `apps/reference-admin` | 保留组合根；页面 Surface 改为从包导入          |
 | Reference 环境品牌覆盖 | `apps/reference-admin` | 只保留 Lingcoo Frame 产品级差异                |
 
-### 5.2 应进入 `@lingcoo/frame-admin` 的 Shell 能力
+### 5.2 应进入 `@lingcootech/frame-admin` 的 Shell 能力
 
 | 当前文件组                              | 可复用能力                                   |
 | --------------------------------------- | -------------------------------------------- |
@@ -158,7 +158,7 @@ Presentation 和扩展 Registry。
 其中纯视觉且跨 Public Web 也成立的部分可以下沉到 `frame-ui`；带 Admin 布局、权限、API 或资源语义的
 部分留在 `frame-admin`，不为了“通用”而抽掉必要语义。
 
-### 5.3 应进入 `@lingcoo/frame-admin` 的 Core 页面
+### 5.3 应进入 `@lingcootech/frame-admin` 的 Core 页面
 
 | 当前页面                            | Frame 能力                            | Console 分组 |
 | ----------------------------------- | ------------------------------------- | ------------ |
@@ -183,7 +183,7 @@ Presentation 和扩展 Registry。
 `api/client.ts` 中与上述页面配套的浏览器类型和请求客户端也随 Core Admin 页面进入浏览器安全入口；
 服务端实现和密钥处理代码不得进入该构建。
 
-### 5.4 应进入 `@lingcoo/frame-cms/admin`
+### 5.4 应进入 `@lingcootech/frame-cms/admin`
 
 | 当前页面      | 处理方式                                                                  |
 | ------------- | ------------------------------------------------------------------------- |
@@ -286,7 +286,7 @@ R1 输入：
 
 已完成：
 
-- `@lingcoo/frame-web` 新增 `./layout`、`./site`、`./presentation`、`./seo`、
+- `@lingcootech/frame-web` 新增 `./layout`、`./site`、`./presentation`、`./seo`、
   `./system-states`、`./account` 和 `./styles.css` 公开入口。
 - SiteShell 支持品牌 Presentation、桌面/移动导航、可选管理入口、页脚联系信息和备案信息。
 - Presentation Hook 读取 Frame 公共 API并应用品牌色与 Favicon；Consumer 可以直接复用返回契约。
@@ -308,7 +308,7 @@ R2 输入：
 
 已完成：
 
-- `@lingcoo/frame-admin` 新增 `./auth`、`./layout`、`./router`、`./shared` 和 `./styles.css` 公开入口。
+- `@lingcootech/frame-admin` 新增 `./auth`、`./layout`、`./router`、`./shared` 和 `./styles.css` 公开入口。
 - 认证状态通过 `AdminAuthClient` 注入；浏览器路由支持 Consumer 自定义后台基路径，不绑定 Reference API。
 - `AdminApplicationShell` 统一响应式 Sidebar、Topbar、全局搜索、通知、账户菜单、品牌读取和移动导航。
 - 个人中心、账号安全、应用设置和退出进入账户菜单；通知显示在账户入口旁，不再依赖侧栏账号区。
@@ -322,7 +322,7 @@ R2 输入：
 
 验证结果：
 
-- `@lingcoo/frame-admin` 构建、类型检查、Lint 与 2/2 测试通过。
+- `@lingcootech/frame-admin` 构建、类型检查、Lint 与 2/2 测试通过。
 - Reference Admin 类型检查、Lint 与生产构建通过；既有约 527 kB 主 Chunk 警告不影响构建。
 - `npm run packages:verify`、`npm run check`、`npm run format:check` 与 `git diff --check` 全部通过。
 
@@ -357,7 +357,7 @@ R3 输入：
 
 验证结果：
 
-- `@lingcoo/frame-admin` 类型检查、Lint 与 3/3 测试通过；Reference Admin 类型检查、Lint 和生产构建通过。
+- `@lingcootech/frame-admin` 类型检查、Lint 与 3/3 测试通过；Reference Admin 类型检查、Lint 和生产构建通过。
 - `npm run packages:verify`：9 个公开包与示例扩展完成 tarball 验收，隔离 Consumer 安装 251 个包后完成
   TypeScript 和运行时验证。
 - `npm run check`：14 项跨包集成测试、52 项 Frame 测试及 Admin/Web/UI 测试全部通过；其中依赖
@@ -366,7 +366,7 @@ R3 输入：
 
 R4 输入：
 
-- 将当前 Reference `/system` 页面提炼为 `@lingcoo/frame-admin` 可复用的系统信息产品面。
+- 将当前 Reference `/system` 页面提炼为 `@lingcootech/frame-admin` 可复用的系统信息产品面。
 - 建立浏览器安全的系统摘要契约，统一展示 Frame/应用版本、扩展、API/Worker/Database、Migration、
   Job/Outbox、指标和异常状态。
 - 把分散的技术详情按权限组合到一个系统信息路由，继续保持零技术主导航贡献。
@@ -378,7 +378,7 @@ R4 输入：
 
 已完成：
 
-- `@lingcoo/frame-admin` 新增 `./system-info` 公开入口，提供浏览器安全的 Runtime、Extension、Migration、
+- `@lingcootech/frame-admin` 新增 `./system-info` 公开入口，提供浏览器安全的 Runtime、Extension、Migration、
   Observability 和 Operations 类型、`AdminSystemInfoClient` 以及完整的 `AdminSystemInfoPage`。
 - 系统信息页通过 Consumer 注入加载器读取真实 API，不依赖 Reference App；统一展示应用/System/Frame
   版本、Extension API、已安装扩展、运行面、迁移来源、Job/Outbox、进程指标和异常摘要。
@@ -390,7 +390,7 @@ R4 输入：
   静态模块数组及未使用的 Section 路由辅助函数已删除，扩展信息只保留一个真实来源。
 - Frame Footer 仍是 `/system` 唯一默认入口；任务、运行诊断、资产和帮助详情页继续受权限保护且不进入
   业务主导航。
-- 补正 `@lingcoo/frame` 对 `@lingcoo/frame-admin`、`@lingcoo/frame-web` 的实际运行时依赖声明，避免
+- 补正 `@lingcootech/frame` 对 `@lingcootech/frame-admin`、`@lingcootech/frame-web` 的实际运行时依赖声明，避免
   Monorepo Hoist 掩盖独立安装缺包。
 
 验证结果：
@@ -405,7 +405,7 @@ R4 输入：
 
 R5 输入：
 
-- 将 CMS Admin/Web 默认页面和工作流从 Reference Apps 迁入 `@lingcoo/frame-cms`。
+- 将 CMS Admin/Web 默认页面和工作流从 Reference Apps 迁入 `@lingcootech/frame-cms`。
 - 让 Consumer 安装 CMS 后只需注入 API/路由环境，不再复制 `CmsPage`、文章列表、详情、预览和编辑实现。
 - 保持内容类型、发布、版本、重定向、SEO 和定时发布契约稳定，并补齐 tarball Consumer 与 E2E 验收。
 
@@ -416,27 +416,27 @@ R5 输入：
 
 已完成：
 
-- `@lingcoo/frame-cms/admin` 默认提供内容列表、批量状态操作、页面/文章编辑器、媒体选择、分类标签、
+- `@lingcootech/frame-cms/admin` 默认提供内容列表、批量状态操作、页面/文章编辑器、媒体选择、分类标签、
   版本历史、SEO/社交预览、计划发布和 URL 重定向；`createCmsAdminExtension()` 只需要 Consumer 注入
   `CmsAdminClient` 即可安装，仍允许按页面覆盖组件。
-- `@lingcoo/frame-cms/web` 默认提供公共文章列表、分页、文章/页面详情、预览、面包屑、响应式封面图、
+- `@lingcootech/frame-cms/web` 默认提供公共文章列表、分页、文章/页面详情、预览、面包屑、响应式封面图、
   Markdown 渲染和空/加载/404/500 状态；`createCmsWebExtension()` 只需要注入 `CmsWebClient` 和
   `resolvePresentation()`，保留公共 SEO Resolver 和 Sitemap Collector。
 - CMS Admin/Web 的浏览器安全类型、请求路径和 JSON 映射分别集中在 `admin-client.ts`、`web-client.ts`；
   Consumer 只提供认证 API Transport、公共 `fetch` 和品牌环境，不再复制 Reference 页面或 CMS CSS。
 - Reference Admin 删除 `CmsPage` 和 CMS-specific API 类型/请求函数；Reference Web 删除 `components/cms`
-  和 `types.ts`，改为直接安装 CMS 默认页面。CMS 样式随 `@lingcoo/frame-cms/styles.css` tarball 发布。
+  和 `types.ts`，改为直接安装 CMS 默认页面。CMS 样式随 `@lingcootech/frame-cms/styles.css` tarball 发布。
 - Consumer Fixture 已按默认页面方式组合 CMS Admin/Web，并验证公开导出、端点映射、404 状态、服务端渲染的
   列表/编辑器、Markdown 渲染和完整 tarball 隔离安装。
 
 验证结果：
 
-- `@lingcoo/frame-cms` 类型检查、Lint、构建与 5/5 测试通过；新增测试覆盖默认 Admin 页面静态渲染、
+- `@lingcootech/frame-cms` 类型检查、Lint、构建与 5/5 测试通过；新增测试覆盖默认 Admin 页面静态渲染、
   Client 端点映射、Web 404 语义和文章详情结构化数据。
 - Reference Admin/Web 类型检查与生产构建通过；Admin 主 Chunk 约 533 kB，只有既有 Vite 分包建议，
   Web 主 Chunk 约 492 kB。
 - `npm run packages:verify` 通过：全部包完成 tarball 构建，隔离 Consumer 安装 350 个包后完成 TypeScript
-  和运行时验证，并实际确认 `@lingcoo/frame-cms/styles.css` 与默认 CMS 页面声明文件存在。
+  和运行时验证，并实际确认 `@lingcootech/frame-cms/styles.css` 与默认 CMS 页面声明文件存在。
 - `git diff --check` 通过；完整 `npm run check` 将在本阶段提交前再次执行，作为跨包回归门槛。
 
 已知事项：

@@ -1,8 +1,8 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import type { CmsTaxonomyPort } from '@lingcoo/frame-cms/server';
-import type { Database } from '@lingcoo/frame-database';
-import { resourceTerms, taxonomies, taxonomyTerms } from '@lingcoo/frame-database/schema';
+import type { CmsTaxonomyPort } from '@lingcootech/frame-cms/server';
+import type { Database } from '@lingcootech/frame-database';
+import { resourceTerms, taxonomies, taxonomyTerms } from '@lingcootech/frame-database/schema';
 
 export class DatabaseCmsTaxonomyPort implements CmsTaxonomyPort {
   constructor(private readonly db: Database) {}

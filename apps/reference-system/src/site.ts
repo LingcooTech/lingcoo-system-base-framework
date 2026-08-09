@@ -1,5 +1,5 @@
-import { defineExtension, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
+import { defineExtension, FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
 
 interface PublicSiteApp {
   publicSiteRegistry: {

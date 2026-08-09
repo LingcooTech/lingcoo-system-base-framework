@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
-import type { Database } from '@lingcoo/frame-database';
-import { notificationDeliveries, notifications } from '@lingcoo/frame-database/schema';
+import type { Database } from '@lingcootech/frame-database';
+import { notificationDeliveries, notifications } from '@lingcootech/frame-database/schema';
 import { decryptSetting } from '../../security/settings-crypto.js';
 import type { IntegrationService } from '../integrations/service.js';
 import { SmtpService } from '../integrations/providers/smtp-service.js';

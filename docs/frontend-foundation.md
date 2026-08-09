@@ -2,7 +2,7 @@
 
 Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考管理后台，
 `apps/reference-web` 是参考公共用户侧宿主。它们
-共享 `@lingcoo/frame-design-tokens` 和 `@lingcoo/frame-ui`，但应用壳与页面组件保持独立。
+共享 `@lingcootech/frame-design-tokens` 和 `@lingcootech/frame-ui`，但应用壳与页面组件保持独立。
 
 ## 当前共享基础
 
@@ -16,7 +16,7 @@ Frame 从一开始就包含两个前端入口：`apps/reference-admin` 是参考
 后台和公共 Web 都直接使用同一个包。后台账号中心已经接入全局 Toast 与 Skeleton；公共 Web 的
 账号流程接入 Alert，CMS 页面接入 Breadcrumb、ResponsiveImage、Skeleton 和 EmptyState。
 
-后台管理基础已经产品化到 `@lingcoo/frame-admin`。`./layout` 提供响应式 Sidebar、Topbar、全局搜索、
+后台管理基础已经产品化到 `@lingcootech/frame-admin`。`./layout` 提供响应式 Sidebar、Topbar、全局搜索、
 通知与账户菜单，`./auth` 和 `./router` 分别提供可注入认证 Client 与可配置后台基路径；`./shared`
 提供 PageFrame、ResourceSection、DataTable、StatusPill、AssetPicker、FilterBar、AdminPagination、
 BulkActionBar、DetailDrawer 和 ConfirmProvider。它们带有管理场景语义，不进入公共 Web。
@@ -33,7 +33,7 @@ Frame 默认 Admin Manifest 不占用 `/`，业务首页必须由 Consumer 或�
 “应用设置”导航；Reference Admin 安装 CMS 后，侧栏由“内容管理”和“应用设置”组成。账号、通知、资产、
 任务、运行状态和扩展管理都不会因为安装 Frame 自动进入业务侧栏。
 
-公共 Web 的统一站点壳已经产品化到 `@lingcoo/frame-web`：SiteShell 组合 Header、Footer 和
+公共 Web 的统一站点壳已经产品化到 `@lingcootech/frame-web`：SiteShell 组合 Header、Footer 和
 MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语义的页面结构；SeoHead、
 404/500、Error Boundary 和账号安全流程也由包提供。Reference Web 只从公开子入口使用这些实现，不再
 拥有 `components/site` 源码副本。
@@ -66,7 +66,7 @@ MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语�
 - CMS 前台已经拆分为 `ContentRenderer`、`ArticleCard`、`ArticleList`、`EmptyContent`、详情布局和
   分页页面；公共文章 API 返回 `page`、`pageSize`、`total` 与 `pageCount`。
 
-账号安全页面保持轻量独立布局，通过 `@lingcoo/frame-web/account` 提供找回密码、重置密码、接受邀请
+账号安全页面保持轻量独立布局，通过 `@lingcootech/frame-web/account` 提供找回密码、重置密码、接受邀请
 和邮箱验证。请求函数可由 Consumer 注入，但默认使用 Frame Core 的同源 Auth API。
 
 管理后台从 Topbar 帮助按钮或受保护的系统信息页进入“框架帮助”，集中说明稳定能力、领域边界、常用
@@ -74,7 +74,7 @@ MobileNavigation；Container、Section、Hero 与 PageHeader 负责无业务语�
 
 Reference Web 是一个 Consumer 组合根。Frame Web Core 只提供认证路由、SEO/站点壳和系统状态；它不拥有公共首页。
 官网首页、文档、Packages、扩展和发布页由应用自己的 Reference Site Extension 声明，CMS 文章路由由
-`@lingcoo/frame-cms` 声明。这样业务 Consumer 可以安装同一底座而不继承 Frame 官方站点导航。
+`@lingcootech/frame-cms` 声明。这样业务 Consumer 可以安装同一底座而不继承 Frame 官方站点导航。
 
 ## 应用设置与系统信息
 
@@ -84,14 +84,14 @@ Provider/Connection/Credential 契约，避免无价值的协议迁移。
 
 通知固定在 Topbar，个人资料和账号安全固定在账户菜单，媒体资产优先通过 AssetPicker 进入业务流程。
 Footer 的 Frame 名称和版本是默认系统信息入口；`/system` 及其技术子页面受权限保护且不声明 Navigation。
-`/system` 的页面实现来自 `@lingcoo/frame-admin/system-info`；扩展和迁移直接读取 Defined System 与数据库
+`/system` 的页面实现来自 `@lingcootech/frame-admin/system-info`；扩展和迁移直接读取 Defined System 与数据库
 账本，任务和运行状态按独立权限加载。行业应用可以保持 Frame 完全在幕后，同时不复制运维页面源码。
 
 公共 Web 只共享展示和交互结构，不把课程卡片、商品卡片、购物车或报名表等行业组件放进 Frame。
 
 ## CMS 默认体验
 
-`@lingcoo/frame-cms` 是可选的业务能力包。安装后，`createCmsAdminExtension({ client })` 会直接提供
+`@lingcootech/frame-cms` 是可选的业务能力包。安装后，`createCmsAdminExtension({ client })` 会直接提供
 内容列表、编辑器、版本历史、SEO/社交预览、计划发布和 URL 重定向；`createCmsWebExtension({ client,
 resolvePresentation })` 会直接提供文章列表、分页、预览、文章/页面详情、面包屑、封面图和 Markdown
 渲染。Consumer 只需要把自己的认证 API 请求器、公共 `fetch` 和品牌 Presentation 传入 Client；Admin
@@ -99,5 +99,5 @@ resolvePresentation })` 会直接提供文章列表、分页、预览、文章/�
 `components/cms`。
 
 领域系统可以覆盖单个 Admin/Web 路由组件，但仍应复用 `CmsAdminClient`、`CmsWebClient` 和内容契约，确保
-发布、版本、重定向、SEO 和定时发布行为保持一致。CMS 专属 CSS 从 `@lingcoo/frame-cms/styles.css`
+发布、版本、重定向、SEO 和定时发布行为保持一致。CMS 专属 CSS 从 `@lingcootech/frame-cms/styles.css`
 显式引入，和 UI、Admin、Web Shell 样式分开管理。

@@ -2,14 +2,14 @@ import {
   FRAME_VERSION,
   type DefinedSystem,
   type ExtensionDefinition,
-} from '@lingcoo/frame-extension-sdk';
-import type { MigrationExtensionSurface } from '@lingcoo/frame-extension-sdk/migrations';
+} from '@lingcootech/frame-extension-sdk';
+import type { MigrationExtensionSurface } from '@lingcootech/frame-extension-sdk/migrations';
 import type {
   ServerExtensionSurface,
   ServerSettingDefinition,
-} from '@lingcoo/frame-extension-sdk/server';
-import type { WorkerExtensionSurface } from '@lingcoo/frame-extension-sdk/worker';
-import type { Database, MigrationSource } from '@lingcoo/frame-database';
+} from '@lingcootech/frame-extension-sdk/server';
+import type { WorkerExtensionSurface } from '@lingcootech/frame-extension-sdk/worker';
+import type { Database, MigrationSource } from '@lingcootech/frame-database';
 import type { FastifyInstance } from 'fastify';
 
 import { JobHandlerRegistry, OutboxSubscriberRegistry } from '../core/modules/jobs/registry.js';

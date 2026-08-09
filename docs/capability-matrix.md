@@ -5,19 +5,19 @@
 
 ## 工程与 UI
 
-| 能力                     | Core            | Edu                 | Retail                  | Frame 决策                            |
-| ------------------------ | --------------- | ------------------- | ----------------------- | ------------------------------------- |
-| Fastify + TypeScript API | 是              | 是                  | 是                      | 保留                                  |
-| React + Vite             | 管理后台        | 公共 Web + 管理后台 | 商城 Web + 管理后台     | 保留双 Web 入口                       |
-| 单镜像运行               | 是              | 是                  | 多镜像                  | Frame 保持单镜像                      |
-| npm workspace            | 否              | 否                  | 是                      | Frame 采用 workspace 共享包           |
-| Design Tokens            | 后台 CSS Tokens | 后台 CSS Tokens     | 独立 `design-tokens` 包 | 提炼为 `@lingcoo/frame-design-tokens` |
-| 通用 UI 包               | 后台内部组件    | 后台内部组件        | 独立 `ui` 包            | 提炼为 `@lingcoo/frame-ui`            |
-| Button / Input / Dialog  | Radix/shadcn    | Radix + 简化组件    | 独立可复用组件          | 统一到 Frame UI                       |
-| DataTable                | 是              | 是                  | 是                      | 第二批提炼，保留查询状态扩展点        |
-| Confirm Dialog           | 是              | 是                  | 是                      | 第二批提炼为 Promise API              |
-| Toast                    | 是              | 是                  | 是                      | 第二批提炼                            |
-| 公共页面块               | Core 内容页     | Edu 内容与营销块    | Retail 商城组件         | 只抽布局和反馈，不抽业务区块          |
+| 能力                     | Core            | Edu                 | Retail                  | Frame 决策                                |
+| ------------------------ | --------------- | ------------------- | ----------------------- | ----------------------------------------- |
+| Fastify + TypeScript API | 是              | 是                  | 是                      | 保留                                      |
+| React + Vite             | 管理后台        | 公共 Web + 管理后台 | 商城 Web + 管理后台     | 保留双 Web 入口                           |
+| 单镜像运行               | 是              | 是                  | 多镜像                  | Frame 保持单镜像                          |
+| npm workspace            | 否              | 否                  | 是                      | Frame 采用 workspace 共享包               |
+| Design Tokens            | 后台 CSS Tokens | 后台 CSS Tokens     | 独立 `design-tokens` 包 | 提炼为 `@lingcootech/frame-design-tokens` |
+| 通用 UI 包               | 后台内部组件    | 后台内部组件        | 独立 `ui` 包            | 提炼为 `@lingcootech/frame-ui`            |
+| Button / Input / Dialog  | Radix/shadcn    | Radix + 简化组件    | 独立可复用组件          | 统一到 Frame UI                           |
+| DataTable                | 是              | 是                  | 是                      | 第二批提炼，保留查询状态扩展点            |
+| Confirm Dialog           | 是              | 是                  | 是                      | 第二批提炼为 Promise API                  |
+| Toast                    | 是              | 是                  | 是                      | 第二批提炼                                |
+| 公共页面块               | Core 内容页     | Edu 内容与营销块    | Retail 商城组件         | 只抽布局和反馈，不抽业务区块              |
 
 结论是：
 

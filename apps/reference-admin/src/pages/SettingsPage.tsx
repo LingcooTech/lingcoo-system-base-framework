@@ -1,8 +1,8 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcoo/frame-ui/dialog';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Textarea } from '@lingcoo/frame-ui/textarea';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@lingcootech/frame-ui/dialog';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Textarea } from '@lingcootech/frame-ui/textarea';
 import {
   ArrowRight,
   DatabaseZap,
@@ -21,9 +21,9 @@ import {
   type SystemSetting,
   type SystemSettingVersion,
 } from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
-import { AdminLink } from '@lingcoo/frame-admin/router';
-import { PageFrame, ResourceSection, StatusPill } from '@lingcoo/frame-admin/shared';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+import { AdminLink } from '@lingcootech/frame-admin/router';
+import { PageFrame, ResourceSection, StatusPill } from '@lingcootech/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 const settingAreas = [

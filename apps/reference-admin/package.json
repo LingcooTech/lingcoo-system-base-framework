@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame-reference-admin",
-  "version": "0.1.0",
+  "name": "@lingcootech/frame-reference-admin",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,11 +11,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-admin": "^0.6.0",
-    "@lingcoo/frame-cms": "^0.6.0",
-    "@lingcoo/frame-design-tokens": "^0.2.0",
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-ui": "^0.2.0",
+    "@lingcootech/frame-admin": "^0.7.0",
+    "@lingcootech/frame-cms": "^0.7.0",
+    "@lingcootech/frame-design-tokens": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-ui": "^0.7.0",
     "@tailwindcss/vite": "^4.3.0",
     "@vitejs/plugin-react": "^5.0.0",
     "lucide-react": "^0.503.0",

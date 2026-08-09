@@ -1,13 +1,13 @@
 import { and, count, desc, eq, ilike, or } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import {
   accounts,
   integrationConnections,
   jobRuns,
   notificationDeliveries,
   notifications,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
 import type { EncryptedSetting } from '../../security/settings-crypto.js';
 import { recordAuditEvent } from '../audit/recorder.js';

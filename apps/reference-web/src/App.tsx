@@ -1,6 +1,6 @@
-import { WebRouteSlot, WebShell } from '@lingcoo/frame-web';
-import { usePublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SystemPage } from '@lingcoo/frame-web/system-states';
+import { WebRouteSlot, WebShell } from '@lingcootech/frame-web';
+import { usePublicPresentation } from '@lingcootech/frame-web/presentation';
+import { SystemPage } from '@lingcootech/frame-web/system-states';
 
 import { webRegistry, type PublicWebContext } from './extensions';
 

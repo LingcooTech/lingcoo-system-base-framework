@@ -1,5 +1,5 @@
-import { defineExtension, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
-import { type WebRouteContext, defineWebExtension } from '@lingcoo/frame-web';
+import { defineExtension, FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
+import { type WebRouteContext, defineWebExtension } from '@lingcootech/frame-web';
 import type { ComponentType } from 'react';
 
 import {
@@ -15,7 +15,7 @@ import { referenceDocuments } from './docs';
 import { officialSitemapEntries, referenceSiteManifest } from './manifest';
 
 export interface ReferenceWebContext {
-  presentation: import('@lingcoo/frame-web/presentation').PublicPresentation | null;
+  presentation: import('@lingcootech/frame-web/presentation').PublicPresentation | null;
 }
 
 function withPresentation(

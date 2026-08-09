@@ -1,5 +1,5 @@
-import type { Database } from '@lingcoo/frame-database';
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
+import type { Database } from '@lingcootech/frame-database';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import type { CmsPublicSitePort, CmsServicePorts } from './ports.js';

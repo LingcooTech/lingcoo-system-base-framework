@@ -1,13 +1,13 @@
 import { ilike, or } from 'drizzle-orm';
 
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { cmsMigrationExtension } from '@lingcoo/frame-cms/migrations';
-import { createCmsServerExtension, type CmsServicePorts } from '@lingcoo/frame-cms/server';
-import { createCmsWorkerExtension } from '@lingcoo/frame-cms/worker';
-import type { Database } from '@lingcoo/frame-database';
-import { cmsContentEntries } from '@lingcoo/frame-database/schema';
-import { defineExtension } from '@lingcoo/frame-extension-sdk';
-import { defineServerExtension } from '@lingcoo/frame-extension-sdk/server';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
+import { cmsMigrationExtension } from '@lingcootech/frame-cms/migrations';
+import { createCmsServerExtension, type CmsServicePorts } from '@lingcootech/frame-cms/server';
+import { createCmsWorkerExtension } from '@lingcootech/frame-cms/worker';
+import type { Database } from '@lingcootech/frame-database';
+import { cmsContentEntries } from '@lingcootech/frame-database/schema';
+import { defineExtension } from '@lingcootech/frame-extension-sdk';
+import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
 
 import { recordAuditEvent } from '../../core/modules/audit/recorder.js';
 import type { SearchProvider } from '../../core/modules/search/registry.js';

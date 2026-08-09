@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ToastProvider } from '@lingcoo/frame-ui/toast';
-import { PublicErrorBoundary } from '@lingcoo/frame-web/system-states';
+import { ToastProvider } from '@lingcootech/frame-ui/toast';
+import { PublicErrorBoundary } from '@lingcootech/frame-web/system-states';
 import App from './App';
 import './styles.css';
 

@@ -13,7 +13,7 @@
 Server/Worker Service Port：`CmsAuditPort`、`CmsAssetPort`、`CmsTaxonomyPort` 和 `CmsJobPort`。
 重定向与动态 Sitemap 通过 `PublicSiteRegistry` 注册，不再由宿主直接构造 `CmsService`。
 
-## `@lingcoo/frame-cms`
+## `@lingcootech/frame-cms`
 
 该包提供七个公开入口：
 

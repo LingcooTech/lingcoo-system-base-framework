@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame-database",
-  "version": "0.6.0",
+  "name": "@lingcootech/frame-database",
+  "version": "0.7.0",
   "private": false,
   "type": "module",
   "description": "Database client, schema and migration runtime for Lingcoo Frame.",
@@ -47,5 +47,12 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
   }
 }

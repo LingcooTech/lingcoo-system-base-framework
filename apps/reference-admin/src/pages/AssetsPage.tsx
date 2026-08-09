@@ -1,8 +1,8 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { FormField } from '@lingcoo/frame-ui/form-field';
-import { Input } from '@lingcoo/frame-ui/input';
-import { Skeleton } from '@lingcoo/frame-ui/skeleton';
-import { useToast } from '@lingcoo/frame-ui/toast';
+import { Button } from '@lingcootech/frame-ui/button';
+import { FormField } from '@lingcootech/frame-ui/form-field';
+import { Input } from '@lingcootech/frame-ui/input';
+import { Skeleton } from '@lingcootech/frame-ui/skeleton';
+import { useToast } from '@lingcootech/frame-ui/toast';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import {
@@ -20,8 +20,13 @@ import {
   type IntegrationConnection,
   type StorageAsset,
 } from '../api/client';
-import { useAdminAuth as useAuth } from '@lingcoo/frame-admin/auth';
-import { PageFrame, ResourceSection, StatusPill, useConfirm } from '@lingcoo/frame-admin/shared';
+import { useAdminAuth as useAuth } from '@lingcootech/frame-admin/auth';
+import {
+  PageFrame,
+  ResourceSection,
+  StatusPill,
+  useConfirm,
+} from '@lingcootech/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 function formatBytes(value: number) {

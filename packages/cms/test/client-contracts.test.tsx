@@ -3,10 +3,10 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { AdminAuthProvider } from '@lingcoo/frame-admin/auth';
-import { AdminRouterProvider } from '@lingcoo/frame-admin/router';
-import { ConfirmProvider } from '@lingcoo/frame-admin/shared';
-import { ToastProvider } from '@lingcoo/frame-ui/toast';
+import { AdminAuthProvider } from '@lingcootech/frame-admin/auth';
+import { AdminRouterProvider } from '@lingcootech/frame-admin/router';
+import { ConfirmProvider } from '@lingcootech/frame-admin/shared';
+import { ToastProvider } from '@lingcootech/frame-ui/toast';
 
 import { CmsAdminPage, createCmsAdminClient, createCmsAdminExtension } from '../src/admin.js';
 import { CmsWebRequestError, createCmsWebClient, createCmsWebExtension } from '../src/web.js';

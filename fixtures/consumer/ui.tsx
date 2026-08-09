@@ -1,31 +1,34 @@
-import '@lingcoo/frame-design-tokens/base.css';
-import '@lingcoo/frame-ui/styles.css';
-import '@lingcoo/frame-admin/styles.css';
-import '@lingcoo/frame-web/styles.css';
-import '@lingcoo/frame-cms/styles.css';
+import '@lingcootech/frame-design-tokens/base.css';
+import '@lingcootech/frame-ui/styles.css';
+import '@lingcootech/frame-admin/styles.css';
+import '@lingcootech/frame-web/styles.css';
+import '@lingcootech/frame-cms/styles.css';
 
-import { frameCoreManifest } from '@lingcoo/frame/manifest';
-import { Button } from '@lingcoo/frame-ui/button';
-import { AdminAuthProvider, type AdminAuthClient } from '@lingcoo/frame-admin/auth';
-import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
-import { createAdminRegistry } from '@lingcoo/frame-admin';
-import { AdminRouterProvider } from '@lingcoo/frame-admin/router';
-import { AdminSystemInfoPage, type AdminSystemInfoClient } from '@lingcoo/frame-admin/system-info';
-import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
-import { createWebRegistry } from '@lingcoo/frame-web';
-import { PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SiteShell } from '@lingcoo/frame-web/site';
-import { exampleAdminExtension } from '@lingcoo/frame-example-extension/admin';
-import { exampleManifest } from '@lingcoo/frame-example-extension/contracts';
-import { exampleWebExtension } from '@lingcoo/frame-example-extension/web';
+import { frameCoreManifest } from '@lingcootech/frame/manifest';
+import { Button } from '@lingcootech/frame-ui/button';
+import { AdminAuthProvider, type AdminAuthClient } from '@lingcootech/frame-admin/auth';
+import { AdminApplicationShell } from '@lingcootech/frame-admin/layout';
+import { createAdminRegistry } from '@lingcootech/frame-admin';
+import { AdminRouterProvider } from '@lingcootech/frame-admin/router';
+import {
+  AdminSystemInfoPage,
+  type AdminSystemInfoClient,
+} from '@lingcootech/frame-admin/system-info';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcootech/frame-cms/web';
+import { createWebRegistry } from '@lingcootech/frame-web';
+import { PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
+import { SiteShell } from '@lingcootech/frame-web/site';
+import { exampleAdminExtension } from '@lingcootech/frame-example-extension/admin';
+import { exampleManifest } from '@lingcootech/frame-example-extension/contracts';
+import { exampleWebExtension } from '@lingcootech/frame-example-extension/web';
 import {
   defineExtension,
   defineSystem,
   projectExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-extension-sdk';
 
 const frameDependency = defineExtension({
   manifest: projectExtensionManifest(frameCoreManifest, []),
@@ -90,7 +93,7 @@ export function ConsumerAdminShell({
   return (
     <AdminAuthProvider client={authClient}>
       <AdminRouterProvider>
-        <AdminApplicationShell context={{}} frame={{ name: 'Lingcoo Frame', version: '0.6.0' }}>
+        <AdminApplicationShell context={{}} frame={{ name: 'Lingcoo Frame', version: '0.7.0' }}>
           {children}
         </AdminApplicationShell>
       </AdminRouterProvider>

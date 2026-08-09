@@ -1,13 +1,13 @@
 import { and, asc, count, eq, isNotNull } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import {
   metadataDictionaries,
   metadataDictionaryItems,
   resourceTerms,
   taxonomies,
   taxonomyTerms,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
 import { recordAuditEvent } from '../audit/recorder.js';
 

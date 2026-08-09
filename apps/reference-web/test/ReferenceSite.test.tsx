@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
 
 import { officialSitemapEntries, referenceSiteManifest } from '../src/site/manifest';
 import { HomePage } from '../src/site/pages';

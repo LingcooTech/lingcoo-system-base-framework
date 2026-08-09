@@ -1,6 +1,6 @@
 {
-  "name": "@lingcoo/frame-web",
-  "version": "0.6.0",
+  "name": "@lingcootech/frame-web",
+  "version": "0.7.0",
   "private": false,
   "type": "module",
   "description": "Composable Public Web Shell, SEO and controlled Landing Block registry for Lingcoo Frame.",
@@ -52,8 +52,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-ui": "^0.2.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-ui": "^0.7.0",
     "lucide-react": "^0.468.0",
     "zod": "^4.1.11"
   },
@@ -85,5 +85,12 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
   }
 }

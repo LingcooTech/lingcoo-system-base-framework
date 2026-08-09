@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { ServerExtensionSurface } from '@lingcoo/frame-extension-sdk/server';
-import { frameWebManifest } from '@lingcoo/frame-web/manifest';
+import type { ServerExtensionSurface } from '@lingcootech/frame-extension-sdk/server';
+import { frameWebManifest } from '@lingcootech/frame-web/manifest';
 
 import { referenceSiteServerExtension } from '../../apps/reference-system/src/site.js';
 import {

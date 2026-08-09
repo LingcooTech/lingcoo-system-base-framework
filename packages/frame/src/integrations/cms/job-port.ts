@@ -1,5 +1,5 @@
-import type { CmsJobPort } from '@lingcoo/frame-cms/server';
-import { jobRuns, outboxEvents } from '@lingcoo/frame-database/schema';
+import type { CmsJobPort } from '@lingcootech/frame-cms/server';
+import { jobRuns, outboxEvents } from '@lingcootech/frame-database/schema';
 
 const resourceType = 'cms.content';
 

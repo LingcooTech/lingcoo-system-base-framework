@@ -1,6 +1,6 @@
 {
   "$schema": "./docs/framework-manifest.schema.json",
-  "name": "@lingcoo/frame",
+  "name": "@lingcootech/frame",
   "version": "0.6.0",
   "kind": "runnable-base-framework",
   "origin": {

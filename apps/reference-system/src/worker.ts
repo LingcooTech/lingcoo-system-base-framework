@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createFrameWorker, loadEnv } from '@lingcoo/frame';
+import { createFrameWorker, loadEnv } from '@lingcootech/frame';
 
 import { referenceSystem } from './system.js';
 

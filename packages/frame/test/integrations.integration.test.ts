@@ -10,7 +10,7 @@ import {
   integrationConnections,
   passwordCredentials,
   roles,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { createIntegrationProviderRegistry } from '../src/core/modules/integrations/registry.js';
 import { IntegrationService } from '../src/core/modules/integrations/service.js';

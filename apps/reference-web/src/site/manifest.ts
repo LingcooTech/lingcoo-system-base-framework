@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from '@lingcoo/frame-extension-sdk';
+import type { ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
 export const referenceSiteRoutes = [
   { id: 'reference.home', path: '/' },

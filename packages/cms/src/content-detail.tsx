@@ -1,8 +1,8 @@
-import { Breadcrumb } from '@lingcoo/frame-ui/breadcrumb';
-import { ResponsiveImage } from '@lingcoo/frame-ui/responsive-image';
-import { PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { breadcrumbStructuredData, type StructuredData, SeoHead } from '@lingcoo/frame-web/seo';
+import { Breadcrumb } from '@lingcootech/frame-ui/breadcrumb';
+import { ResponsiveImage } from '@lingcootech/frame-ui/responsive-image';
+import { PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
+import { breadcrumbStructuredData, type StructuredData, SeoHead } from '@lingcootech/frame-web/seo';
 
 import type { CmsPublicContent } from './web-client.js';
 import { ContentRenderer } from './content-renderer.js';

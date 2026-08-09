@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ServerSettingDefinition } from '@lingcoo/frame-extension-sdk/server';
+import type { ServerSettingDefinition } from '@lingcootech/frame-extension-sdk/server';
 
 export type SettingDefinition = ServerSettingDefinition;
 

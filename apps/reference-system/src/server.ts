@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
-import { buildApp, loadEnv } from '@lingcoo/frame';
+import { buildApp, loadEnv } from '@lingcootech/frame';
 
 import { referenceSystem } from './system.js';
 

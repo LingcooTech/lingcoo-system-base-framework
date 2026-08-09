@@ -42,7 +42,7 @@ try {
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
   const exampleExtension = packPackage(path.join(repositoryRoot, 'fixtures/example-extension'));
 
-  assertPackageFiles('@lingcoo/frame', frame.files, [
+  assertPackageFiles('@lingcootech/frame', frame.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/host/app.js',
@@ -54,7 +54,7 @@ try {
   ]);
   assert.equal(frame.files.has('apps/reference-admin/dist/index.html'), false);
   assert.equal(frame.files.has('apps/reference-web/dist/index.html'), false);
-  assertPackageFiles('@lingcoo/frame-database', database.files, [
+  assertPackageFiles('@lingcootech/frame-database', database.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/migrations.js',
@@ -62,14 +62,14 @@ try {
     'drizzle/0000_base_system.sql',
     'drizzle/0010_account_security.sql',
   ]);
-  assertPackageFiles('@lingcoo/frame-extension-sdk', extensionSdk.files, [
+  assertPackageFiles('@lingcootech/frame-extension-sdk', extensionSdk.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/server.js',
     'dist/worker.js',
     'dist/migrations.js',
   ]);
-  assertPackageFiles('@lingcoo/frame-admin', admin.files, [
+  assertPackageFiles('@lingcootech/frame-admin', admin.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/auth.js',
@@ -86,7 +86,7 @@ try {
     'dist/system-info.d.ts',
     'dist/styles.css',
   ]);
-  assertPackageFiles('@lingcoo/frame-cms', cms.files, [
+  assertPackageFiles('@lingcootech/frame-cms', cms.files, [
     'dist/index.js',
     'dist/contracts.js',
     'dist/server.js',
@@ -111,7 +111,7 @@ try {
     'migrations/0009_cms_lite.sql',
     'migrations/0011_cms_workflow.sql',
   ]);
-  assertPackageFiles('@lingcoo/frame-web', web.files, [
+  assertPackageFiles('@lingcootech/frame-web', web.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/manifest.js',
@@ -124,19 +124,19 @@ try {
     'dist/system-states.js',
     'dist/styles.css',
   ]);
-  assertPackageFiles('@lingcoo/frame-design-tokens', designTokens.files, [
+  assertPackageFiles('@lingcootech/frame-design-tokens', designTokens.files, [
     'dist/base.css',
     'dist/admin.css',
     'dist/public.css',
   ]);
-  assertPackageFiles('@lingcoo/frame-ui', ui.files, [
+  assertPackageFiles('@lingcootech/frame-ui', ui.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/Button.js',
     'dist/Button.d.ts',
     'dist/styles.css',
   ]);
-  assertPackageFiles('@lingcoo/frame-example-extension', exampleExtension.files, [
+  assertPackageFiles('@lingcootech/frame-example-extension', exampleExtension.files, [
     'dist/index.js',
     'dist/contracts.js',
     'dist/server.js',
@@ -150,26 +150,36 @@ try {
   await cp(path.join(repositoryRoot, 'fixtures/consumer'), consumerDirectory, { recursive: true });
   const fixtureManifestPath = path.join(consumerDirectory, 'package.json');
   const fixtureManifest = JSON.parse(await readFile(fixtureManifestPath, 'utf8'));
-  fixtureManifest.dependencies['@lingcoo/frame'] = pathToFileURL(frame.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-database'] = pathToFileURL(database.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-extension-sdk'] = pathToFileURL(
+  fixtureManifest.dependencies['@lingcootech/frame'] = pathToFileURL(frame.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-database'] = pathToFileURL(
+    database.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-extension-sdk'] = pathToFileURL(
     extensionSdk.archive,
   ).href;
-  fixtureManifest.dependencies['@lingcoo/frame-admin'] = pathToFileURL(admin.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-cms'] = pathToFileURL(cms.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-web'] = pathToFileURL(web.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-design-tokens'] = pathToFileURL(
+  fixtureManifest.dependencies['@lingcootech/frame-admin'] = pathToFileURL(admin.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-cms'] = pathToFileURL(cms.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-web'] = pathToFileURL(web.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-design-tokens'] = pathToFileURL(
     designTokens.archive,
   ).href;
-  fixtureManifest.dependencies['@lingcoo/frame-ui'] = pathToFileURL(ui.archive).href;
-  fixtureManifest.dependencies['@lingcoo/frame-example-extension'] = pathToFileURL(
+  fixtureManifest.dependencies['@lingcootech/frame-ui'] = pathToFileURL(ui.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-example-extension'] = pathToFileURL(
     exampleExtension.archive,
   ).href;
   await writeFile(fixtureManifestPath, `${JSON.stringify(fixtureManifest, null, 2)}\n`);
 
   execFileSync(
     'npm',
-    ['install', '--prefer-offline', '--ignore-scripts', '--no-audit', '--no-fund'],
+    [
+      'install',
+      '--prefer-offline',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--fetch-retries=0',
+      '--fetch-timeout=10000',
+    ],
     {
       cwd: consumerDirectory,
       stdio: 'inherit',

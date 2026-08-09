@@ -6,7 +6,7 @@ import type {
   ExtensionAdminRouteDeclaration,
   ExtensionAdminSearchProviderDeclaration,
   ExtensionDefinition,
-} from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-extension-sdk';
 import {
   createContext,
   createElement,

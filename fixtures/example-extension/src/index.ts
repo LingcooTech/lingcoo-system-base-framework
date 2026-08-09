@@ -1,4 +1,4 @@
-import { defineExtension } from '@lingcoo/frame-extension-sdk';
+import { defineExtension } from '@lingcootech/frame-extension-sdk';
 
 import { exampleManifest } from './contracts.js';
 import { exampleMigrationExtension } from './migrations.js';

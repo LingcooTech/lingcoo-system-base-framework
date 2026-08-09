@@ -1,9 +1,9 @@
 @import 'tailwindcss';
-@import '@lingcoo/frame-design-tokens/base.css';
-@import '@lingcoo/frame-design-tokens/public.css';
-@import '@lingcoo/frame-ui/styles.css';
-@import '@lingcoo/frame-web/styles.css';
-@import '@lingcoo/frame-cms/styles.css';
+@import '@lingcootech/frame-design-tokens/base.css';
+@import '@lingcootech/frame-design-tokens/public.css';
+@import '@lingcootech/frame-ui/styles.css';
+@import '@lingcootech/frame-web/styles.css';
+@import '@lingcootech/frame-cms/styles.css';
 
 :root {
   --site-primary: #23684e;

@@ -1,9 +1,9 @@
 import { BookOpenText, ChevronRight } from 'lucide-react';
-import { ContentRenderer } from '@lingcoo/frame-cms/web';
-import { PageHeader, Section } from '@lingcoo/frame-web/layout';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
-import { SeoHead } from '@lingcoo/frame-web/seo';
-import { PageLoading, SystemPage } from '@lingcoo/frame-web/system-states';
+import { ContentRenderer } from '@lingcootech/frame-cms/web';
+import { PageHeader, Section } from '@lingcootech/frame-web/layout';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
+import { SeoHead } from '@lingcootech/frame-web/seo';
+import { PageLoading, SystemPage } from '@lingcootech/frame-web/system-states';
 import { useEffect, useState } from 'react';
 
 import {

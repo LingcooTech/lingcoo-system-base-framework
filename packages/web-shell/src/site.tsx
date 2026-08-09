@@ -1,5 +1,5 @@
-import { Button } from '@lingcoo/frame-ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTrigger } from '@lingcoo/frame-ui/drawer';
+import { Button } from '@lingcootech/frame-ui/button';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTrigger } from '@lingcootech/frame-ui/drawer';
 import { ExternalLink, Menu } from 'lucide-react';
 import { type ReactNode } from 'react';
 

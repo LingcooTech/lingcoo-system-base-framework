@@ -3,7 +3,7 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { defineExtension, defineSystem } from '@lingcoo/frame-extension-sdk';
+import { defineExtension, defineSystem } from '@lingcootech/frame-extension-sdk';
 
 import { AdminShell, createAdminRegistry, defineAdminExtension } from '../src/index.js';
 import { AdminAuthProvider, type AdminAccount, type AdminAuthClient } from '../src/auth.js';
@@ -43,7 +43,7 @@ const extension = defineExtension({
     id: 'example',
     version: '1.0.0',
     apiVersion: '1',
-    frame: '^0.6.0',
+    frame: '^0.7.0',
     admin: {
       routes: [
         {
@@ -71,7 +71,7 @@ const extension = defineExtension({
 });
 
 const registry = createAdminRegistry(
-  defineSystem({ id: 'admin-test', version: '0.6.0', extensions: [extension] }),
+  defineSystem({ id: 'admin-test', version: '0.7.0', extensions: [extension] }),
 );
 
 function installWindow() {
@@ -100,7 +100,7 @@ test('application shell keeps business navigation primary and Frame identity in 
             context={{}}
             frame={{
               name: 'Lingcoo Frame',
-              version: '0.6.0',
+              version: '0.7.0',
               systemInfoHref: '/system',
               systemInfoPermission: 'system.runtime.read',
             }}
@@ -115,7 +115,7 @@ test('application shell keeps business navigation primary and Frame identity in 
   assert.match(markup, /应用后台导航/);
   assert.match(markup, /业务首页/);
   assert.match(markup, /Owner的账号菜单/);
-  assert.match(markup, /本系统基于 Lingcoo Frame 构建 · v0\.6\.0/);
+  assert.match(markup, /本系统基于 Lingcoo Frame 构建 · v0\.7\.0/);
   assert.doesNotMatch(markup, /模块扩展/);
 });
 
@@ -169,11 +169,11 @@ const runtimeSummary: AdminSystemRuntimeSummary = {
   environment: 'test',
   surfaces: ['api', 'worker', 'admin-ui', 'public-web'],
   system: { id: 'reference-system', version: '0.1.0' },
-  frame: { version: '0.6.0', apiVersion: '1' },
+  frame: { version: '0.7.0', apiVersion: '1' },
   extensions: [
     {
       id: 'frame',
-      version: '0.6.0',
+      version: '0.7.0',
       surfaces: ['server', 'worker', 'migrations', 'admin', 'web'],
       contributions: {
         permissions: 20,

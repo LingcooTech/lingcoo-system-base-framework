@@ -4,16 +4,21 @@ import test from 'node:test';
 
 import { eq } from 'drizzle-orm';
 
-import { buildApp, frameCoreExtension, loadEnv } from '@lingcoo/frame';
-import { frameCmsExtension } from '@lingcoo/frame/cms';
+import { buildApp, frameCoreExtension, loadEnv } from '@lingcootech/frame';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
 import {
   cmsContentInputSchema,
   cmsRedirectInputSchema,
   cmsScheduleSchema,
   publicCmsListSchema,
-} from '@lingcoo/frame-cms/server';
-import { accountRoles, accounts, passwordCredentials, roles } from '@lingcoo/frame-database/schema';
-import { defineSystem, FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-cms/server';
+import {
+  accountRoles,
+  accounts,
+  passwordCredentials,
+  roles,
+} from '@lingcootech/frame-database/schema';
+import { defineSystem, FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
 
 import { hashPassword } from '../../packages/frame/src/core/modules/auth/password.js';
 

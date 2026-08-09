@@ -72,26 +72,26 @@ Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。完�
 
 ### 公共 Web
 
-公共 Web 是未来用户侧应用的宿主，不等同于营销官网。`@lingcoo/frame-web` 提供按依赖顺序组合的
+公共 Web 是未来用户侧应用的宿主，不等同于营销官网。`@lingcootech/frame-web` 提供按依赖顺序组合的
 路由、SEO、Sitemap 和 Landing Block Registry；参考页面只说明框架状态，没有预设行业内容模型。
 
 ### 管理后台
 
-`@lingcoo/frame-admin` 提供可消费的 Shell Context，以及路由、导航、Dashboard Widget、全局搜索和
+`@lingcootech/frame-admin` 提供可消费的 Shell Context，以及路由、导航、Dashboard Widget、全局搜索和
 Landing Block Editor Registry。参考后台的响应式导航直接读取该注册表；当前数据只表达框架状态，
 不伪造业务仪表盘。
 
-集中式系统信息页由 `@lingcoo/frame-admin/system-info` 提供，Footer 是默认入口且不产生技术导航。
+集中式系统信息页由 `@lingcootech/frame-admin/system-info` 提供，Footer 是默认入口且不产生技术导航。
 Backend 的 `/api/system/runtime` 从当前 `DefinedSystem` Manifest 与 `framework_migrations` 账本生成安全
 摘要；Worker/Database、指标、异常、Job 与 Outbox 继续通过各自权限接口组合，避免形成万能运维接口。
 
 ### 共享 UI
 
-`@lingcoo/frame-design-tokens` 定义语义颜色、间距、排版、圆角、阴影、动效和层级；`@lingcoo/frame-ui` 实现 Button、Badge、Card、Input、Textarea、FormField、Dialog、Spinner 和 EmptyState 等无业务含义的组件。两套前端只能通过语义 Token 定制品牌外观，不复制组件实现。
+`@lingcootech/frame-design-tokens` 定义语义颜色、间距、排版、圆角、阴影、动效和层级；`@lingcootech/frame-ui` 实现 Button、Badge、Card、Input、Textarea、FormField、Dialog、Spinner 和 EmptyState 等无业务含义的组件。两套前端只能通过语义 Token 定制品牌外观，不复制组件实现。
 
 ### CMS 前端运行面
 
-`@lingcoo/frame-cms` 在 Server、Worker 和 Migration 之外拥有可选的 Admin/Web 默认体验。Admin 页面使用
+`@lingcootech/frame-cms` 在 Server、Worker 和 Migration 之外拥有可选的 Admin/Web 默认体验。Admin 页面使用
 `CmsAdminClient` 读取 Consumer 的认证 API，Web 页面使用 `CmsWebClient` 读取公共内容 API；品牌由
 Consumer 通过 Presentation Resolver 注入，路由仍由 Admin/Web Registry 管理。这样 CMS 的内容类型、版本、
 发布、重定向、SEO 和计划发布只有一份默认实现，官网、教育和零售系统可以覆盖视觉而不复制工作流代码。
@@ -117,7 +117,7 @@ Fastify 宿主统一提供：
 
 ### 数据库
 
-PostgreSQL 是默认事务数据库。`@lingcoo/frame-database` 提供共享 Drizzle Schema、连接工厂和 Migration
+PostgreSQL 是默认事务数据库。`@lingcootech/frame-database` 提供共享 Drizzle Schema、连接工厂和 Migration
 V2 执行器。迁移使用 `source/id.sql` canonical ID，来源按依赖拓扑排序，来源内严格保持 Manifest
 顺序，并以 SHA-256 防止已发布 SQL 被修改。历史迁移 SQL 保持不变，旧文件名账本通过 Legacy Alias
 adoption 原地升级且不重放 SQL；执行过程由 PostgreSQL advisory lock 串行化。
@@ -148,7 +148,7 @@ adoption 原地升级且不重放 SQL；执行过程由 PostgreSQL advisory lock
 - `framework_migrations`：迁移执行记录
 
 这些表不包含行业业务。CMS 表的 TypeScript Schema 暂时仍由 Database 包统一导出，但建表 SQL 已归属
-`@lingcoo/frame-cms`；禁用 CMS 的新数据库不会创建 CMS 表。
+`@lingcootech/frame-cms`；禁用 CMS 的新数据库不会创建 CMS 表。
 
 `system_settings` 只接受代码注册表中声明的非敏感键，并在写入前执行类型校验；每次变更同步追加到 `system_setting_versions`，保留版本、操作者与变更原因。部署密钥来自运行环境，Provider 凭据使用 AES-256-GCM 加密并存入独立连接表，不进入普通设置接口。`audit_logs` 通过统一写入函数记录操作者、动作、资源和安全上下文，领域模块不直接拼装表字段，也不得写入密码、令牌或 Provider 密钥。
 

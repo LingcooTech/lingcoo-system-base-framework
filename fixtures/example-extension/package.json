@@ -1,9 +1,9 @@
 {
-  "name": "@lingcoo/frame-example-extension",
-  "version": "0.0.0",
+  "name": "@lingcootech/frame-example-extension",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "Reference extension used to verify every Frame 0.6 runtime surface.",
+  "description": "Reference extension used to verify every Frame 0.7 runtime surface.",
   "files": [
     "dist",
     "migrations"
@@ -44,9 +44,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcoo/frame-admin": "^0.6.0",
-    "@lingcoo/frame-extension-sdk": "^0.6.0",
-    "@lingcoo/frame-web": "^0.6.0",
+    "@lingcootech/frame-admin": "^0.7.0",
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-web": "^0.7.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {

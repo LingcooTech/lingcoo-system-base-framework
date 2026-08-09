@@ -19,14 +19,14 @@ Frame，不再复制其内部源码。
 
 第一轮包化保持较粗粒度：
 
-- `@lingcoo/frame`：服务端宿主、核心生命周期和现有稳定基础模块。
-- `@lingcoo/frame-database`：数据库创建、基础 Schema 和迁移协议。
-- `@lingcoo/frame-extension-sdk`：系统与扩展定义契约。
-- `@lingcoo/frame-admin`：管理后台 Shell、认证上下文和扩展注册表。
-- `@lingcoo/frame-web`：公共站点基础、路由和页面区块契约。
-- `@lingcoo/frame-ui` 与 `@lingcoo/frame-design-tokens`：共享视觉基础。
-- `@lingcoo/frame-testkit`：测试数据库、认证夹具和扩展契约测试。
-- `@lingcoo/frame-devkit`：创建、校验、迁移和升级工具。
+- `@lingcootech/frame`：服务端宿主、核心生命周期和现有稳定基础模块。
+- `@lingcootech/frame-database`：数据库创建、基础 Schema 和迁移协议。
+- `@lingcootech/frame-extension-sdk`：系统与扩展定义契约。
+- `@lingcootech/frame-admin`：管理后台 Shell、认证上下文和扩展注册表。
+- `@lingcootech/frame-web`：公共站点基础、路由和页面区块契约。
+- `@lingcootech/frame-ui` 与 `@lingcootech/frame-design-tokens`：共享视觉基础。
+- `@lingcootech/frame-testkit`：测试数据库、认证夹具和扩展契约测试。
+- `@lingcootech/frame-devkit`：创建、校验、迁移和升级工具。
 
 Frame 仓库中的 `reference-web`、`reference-admin` 和文档站只用于演示、文档和验收，不作为业务
 应用源代码分发。Starter 只生成应用组合根、领域目录、部署文件和最小前端入口。
@@ -34,7 +34,8 @@ Frame 仓库中的 `reference-web`、`reference-admin` 和文档站只用于演�
 业务应用构建时将依赖和扩展编译进自己的单体镜像。生产运行不依赖 Frame 中央服务，也不自动跟随
 Frame 最新版本。
 
-内部预览版本先发布到组织的私有 npm 兼容注册表；公开 Beta 稳定后再发布公共包。
+内部预览版本以 `@lingcootech` scope 发布到组织的 GitHub Packages npm Registry；公开 Beta 稳定后再
+评估公共 Registry。Consumer 只通过不可变版本和 lockfile 升级，不通过 dist-tag 直接进入生产。
 
 ## Consequences
 

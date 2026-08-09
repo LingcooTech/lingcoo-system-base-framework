@@ -1,22 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createAdminRegistry, defineAdminExtension } from '@lingcoo/frame-admin';
-import { frameAdminManifest } from '@lingcoo/frame-admin/manifest';
-import { createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { createCmsWebExtension } from '@lingcoo/frame-cms/web';
+import { createAdminRegistry, defineAdminExtension } from '@lingcootech/frame-admin';
+import { frameAdminManifest } from '@lingcootech/frame-admin/manifest';
+import { createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
+import { createCmsWebExtension } from '@lingcootech/frame-cms/web';
 import {
   defineExtension,
   defineSystem,
   FRAME_VERSION,
   projectExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
-import { createWebRegistry, defineWebExtension } from '@lingcoo/frame-web';
-import { frameWebManifest } from '@lingcoo/frame-web/manifest';
+} from '@lingcootech/frame-extension-sdk';
+import { createWebRegistry, defineWebExtension } from '@lingcootech/frame-web';
+import { frameWebManifest } from '@lingcootech/frame-web/manifest';
 
-import { buildApp, createFrameWorker, frameCoreExtension, loadEnv } from '@lingcoo/frame';
-import { frameCmsExtension } from '@lingcoo/frame/cms';
+import { buildApp, createFrameWorker, frameCoreExtension, loadEnv } from '@lingcootech/frame';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
 
 import { collectSystemMigrationSources } from '../../packages/frame/src/runtime/extensions.js';
 

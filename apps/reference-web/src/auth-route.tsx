@@ -1,6 +1,6 @@
-import type { WebRouteContext } from '@lingcoo/frame-web';
-import { PublicAuthFlow, publicAuthModeFromRoute } from '@lingcoo/frame-web/account';
-import { SystemPage } from '@lingcoo/frame-web/system-states';
+import type { WebRouteContext } from '@lingcootech/frame-web';
+import { PublicAuthFlow, publicAuthModeFromRoute } from '@lingcootech/frame-web/account';
+import { SystemPage } from '@lingcootech/frame-web/system-states';
 
 import type { PublicWebContext } from './extensions';
 

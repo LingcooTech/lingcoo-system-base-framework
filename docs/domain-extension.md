@@ -1,6 +1,6 @@
 # 领域扩展指南
 
-下面描述如何基于 Frame 0.6 开发具体业务系统。这里的“基于”是消费可升级的软件包，并在应用组合根
+下面描述如何基于 Frame 0.7 开发具体业务系统。这里的“基于”是消费可升级的软件包，并在应用组合根
 安装领域扩展，不是复制 `packages/frame` 后修改一套私有 Core。
 
 ## 1. 定义领域边界
@@ -47,10 +47,10 @@ Port 或事务 Outbox，不直接查询其他扩展的私有表。
 应用组合根显式声明系统安装的 Core、一方扩展和领域扩展：
 
 ```ts
-import { frameCmsExtension } from '@lingcoo/frame/cms';
-import { frameCoreExtension } from '@lingcoo/frame/extensions';
-import { defineSystem } from '@lingcoo/frame-extension-sdk';
-import { exampleExtension } from '@lingcoo/example-extension';
+import { frameCmsExtension } from '@lingcootech/frame/cms';
+import { frameCoreExtension } from '@lingcootech/frame/extensions';
+import { defineSystem } from '@lingcootech/frame-extension-sdk';
+import { exampleExtension } from '@lingcootech/example-extension';
 
 export const system = defineSystem({
   id: 'example-system',
@@ -82,8 +82,8 @@ packages/example-extension/src/admin.tsx
 packages/example-extension/src/web.tsx
 ```
 
-管理后台优先消费 `@lingcoo/frame-admin` 和 `@lingcoo/frame-ui`；公共站点优先消费
-`@lingcoo/frame-web`、共享 UI 与 Design Tokens。只有经过多个领域验证、没有业务含义的组件才应回到
+管理后台优先消费 `@lingcootech/frame-admin` 和 `@lingcootech/frame-ui`；公共站点优先消费
+`@lingcootech/frame-web`、共享 UI 与 Design Tokens。只有经过多个领域验证、没有业务含义的组件才应回到
 Frame 包。
 
 浏览器代码只能导入扩展的 Contracts、Admin 或 Web 入口，不能间接带入 Server、Worker、Migration、

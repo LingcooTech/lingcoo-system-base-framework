@@ -1,4 +1,4 @@
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 
 export interface ExchangeDocument {
   formatVersion: 1;

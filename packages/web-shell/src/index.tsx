@@ -5,7 +5,7 @@ import type {
   ExtensionWebRouteDeclaration,
   ExtensionWebSeoDeclaration,
   ExtensionWebSitemapDeclaration,
-} from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-extension-sdk';
 import {
   createContext,
   createElement,

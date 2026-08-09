@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
-import { systemSettings } from '@lingcoo/frame-database/schema';
+import type { Database } from '@lingcootech/frame-database';
+import { systemSettings } from '@lingcootech/frame-database/schema';
 import { decryptSetting, encryptSetting } from '../../security/settings-crypto.js';
 
 export async function getSystemSetting<T>(db: Database, key: string): Promise<T | null> {

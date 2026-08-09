@@ -68,8 +68,8 @@
 
 ### 范围
 
-- 将后端宿主从私有参考工程改为有明确 `exports` 的 `@lingcoo/frame@0.2.0`。
-- 建立独立 `@lingcoo/frame-database`，承载连接、Schema、迁移运行时和历史 SQL。
+- 将后端宿主从私有参考工程改为有明确 `exports` 的 `@lingcootech/frame@0.2.0`。
+- 建立独立 `@lingcootech/frame-database`，承载连接、Schema、迁移运行时和历史 SQL。
 - 将 UI 与 Design Tokens 从 TypeScript/CSS 源码导出改为编译产物导出。
 - 提取无导入副作用的 Worker 工厂，保留现有参考 CLI 与容器运行方式。
 - 使用真实 npm tarball 建立隔离 Consumer Fixture 和 CI 门槛。
@@ -81,12 +81,12 @@
 
 已交付：
 
-- `@lingcoo/frame`：公开 `.`, `./app`, `./env`, `./worker`，包含声明、Source Map 与参考 Web 产物。
-- `@lingcoo/frame-database`：公开连接工厂、完整基础 Schema、迁移发现/执行 API 和迁移 CLI；迁移
+- `@lingcootech/frame`：公开 `.`, `./app`, `./env`, `./worker`，包含声明、Source Map 与参考 Web 产物。
+- `@lingcootech/frame-database`：公开连接工厂、完整基础 Schema、迁移发现/执行 API 和迁移 CLI；迁移
   `0000` 至 `0011` 随包发布且 checksum 行为不变。
-- `@lingcoo/frame-ui`：全部组件子路径指向 `dist` JavaScript 与声明文件，React/React DOM 保持 peer
+- `@lingcootech/frame-ui`：全部组件子路径指向 `dist` JavaScript 与声明文件，React/React DOM 保持 peer
   dependency，内部 ESM 引用使用显式 `.js` 后缀。
-- `@lingcoo/frame-design-tokens`：基础、Admin 和 Public CSS 从 `dist` 发布。
+- `@lingcootech/frame-design-tokens`：基础、Admin 和 Public CSS 从 `dist` 发布。
 - Worker：`createFrameWorker()` 不在 import 时读取环境、监听端口或挂载 Signal；现有 `src/worker.ts`
   变为薄 CLI。
 - 构建：每次编译先清理旧 `dist`，避免删除或移动后的内部文件混入发布 tarball。
@@ -128,7 +128,7 @@
 
 ### 范围
 
-- 发布 `@lingcoo/frame-extension-sdk@0.3.0`，提供 Manifest、`defineExtension()` 与 `defineSystem()`。
+- 发布 `@lingcootech/frame-extension-sdk@0.3.0`，提供 Manifest、`defineExtension()` 与 `defineSystem()`。
 - 将 Frame Core、Fastify Server、Worker、设置和迁移接入统一 Defined System。
 - 实现 Migration V2 的命名空间、来源依赖、Legacy Alias adoption 和 checksum 保护。
 - 建立一个覆盖权限、设置、API、Job、Outbox 事件和 SQL 迁移的完整示例扩展。
@@ -192,7 +192,7 @@
 
 阶段 3 输入：
 
-- 建立 `@lingcoo/frame-admin` 与 `@lingcoo/frame-web` 的可消费 Shell，不再把参考应用源码作为 Consumer
+- 建立 `@lingcootech/frame-admin` 与 `@lingcootech/frame-web` 的可消费 Shell，不再把参考应用源码作为 Consumer
   的前端实现。
 - 扩展 Manifest 增加 Admin 路由、导航、Dashboard Widget、全局搜索，以及 Public Web 路由、SEO、
   Sitemap 和 Landing Block 声明，并保持 contracts 入口浏览器安全。
@@ -206,7 +206,7 @@
 
 ### 范围
 
-- 发布可消费的 `@lingcoo/frame-admin@0.4.0` 与 `@lingcoo/frame-web@0.4.0`。
+- 发布可消费的 `@lingcootech/frame-admin@0.4.0` 与 `@lingcootech/frame-web@0.4.0`。
 - 将 Admin/Web 声明纳入浏览器安全 Manifest 和 `defineSystem()` 冲突检查。
 - 让参考 Admin/Public Web 使用注册表选择页面，不再维护中心路由分支。
 - 建立受控 Landing Block Type、Schema、Renderer、Editor、Asset 和配置迁移协议。
@@ -224,10 +224,10 @@
   引用缺失、参数同构路由冲突、重复贡献 ID、重复 Block Type 和无对应 Block 的 Editor。
 - 运行面投影：`projectExtensionManifest()` 让浏览器组合根只保留 Admin 或 Web 声明，避免把 Fastify、
   Worker、数据库和迁移实现带入前端构建；Landing Block Editor 投影会保留必要的 Block 声明。
-- `@lingcoo/frame-admin`：提供 `AdminShell`、Registry Context、Route Slot、Dashboard Widget Slot，以及
+- `@lingcootech/frame-admin`：提供 `AdminShell`、Registry Context、Route Slot、Dashboard Widget Slot，以及
   Route、Navigation、Search 和 Landing Block Editor 注册表。声明与实现逐项核对，运行时拒绝漏注册、
   重复注册和未声明实现；路由支持静态段、参数段和末尾通配符。
-- `@lingcoo/frame-web`：提供 `WebShell`、Route Slot、SEO Resolver、Sitemap Collector 和 Landing Block
+- `@lingcootech/frame-web`：提供 `WebShell`、Route Slot、SEO Resolver、Sitemap Collector 和 Landing Block
   Registry。注册顺序遵循 System 依赖拓扑，路由匹配优先选择更具体的模式。
 - Landing Block：数据库边界只接受 JSON 配置；每个 Type 必须提供 Zod Schema、公共 Renderer、后台
   Editor、资产引用函数和显式配置迁移。Registry 拒绝未知类型、函数/类实例、非有限数字、未来版本、
@@ -285,7 +285,7 @@
 ### 范围
 
 - 审计 CMS、资产、通知和品牌展示对 Core 能力的真实依赖，避免一次性拆分全部模块。
-- 发布 `@lingcoo/frame-cms@0.5.0`，完成 Server、Worker、Admin、Web 与 Migration 五个运行面。
+- 发布 `@lingcootech/frame-cms@0.5.0`，完成 Server、Worker、Admin、Web 与 Migration 五个运行面。
 - 通过最小 Service Port 倒置 CMS 对审计、资产、分类、任务/Outbox 和公共站点发现的依赖。
 - 让 CMS 能从 Defined System 显式启用或停用，不修改 Core 路由、菜单、Job 分支或迁移清单。
 - 保持阶段 1 至 3 数据库账本和历史 SQL 字节兼容。
@@ -299,7 +299,7 @@
 
 - 依赖审计：新增 `first-party-extensions.md`，记录 CMS、资产、通知和品牌展示的上下游依赖及后续
   拆分前置条件。CMS 不直接依赖 Settings/Integrations，因此被选为首个贯穿一方扩展。
-- CMS 包：新增独立 `@lingcoo/frame-cms` workspace 和浏览器安全 `./contracts`，以及 `./server`、
+- CMS 包：新增独立 `@lingcootech/frame-cms` workspace 和浏览器安全 `./contracts`，以及 `./server`、
   `./worker`、`./migrations`、`./admin`、`./web` 公开入口。版本统一推进到 `0.5.0`。
 - Service Port：CMS 服务只通过 `CmsAuditPort`、`CmsAssetPort`、`CmsTaxonomyPort` 和 `CmsJobPort`
   使用其他能力；Frame 宿主提供现有 PostgreSQL/Audit/Assets/Metadata/Jobs 实现。
@@ -354,7 +354,7 @@
 ### 范围
 
 - 让 Monorepo 物理目录与 Host、Core、Runtime、Integration、Package 和 Reference App 架构逐层对应。
-- 把根仓库从可发布 Backend 包改为私有 Workspace 调度器，将 `@lingcoo/frame` 迁入独立 Package。
+- 把根仓库从可发布 Backend 包改为私有 Workspace 调度器，将 `@lingcootech/frame` 迁入独立 Package。
 - 建立 API、Worker 和 Migration 共用的 Reference System 组合根，显式安装 Core 与 CMS。
 - 将参考前端、可发布 Shell、包内测试和跨包测试迁入清晰归属目录。
 - 更新本地构建、真实 tarball Consumer、Docker 和生产部署入口，不改变历史 Migration ID 与 SQL。
@@ -368,7 +368,7 @@
 
 - 顶层语义：形成 `apps/`、`packages/`、`fixtures/`、`test/integration/`、`scripts/`、`deploy/` 和
   `docs/` 七个清晰入口；删除旧根 Backend `src/`、历史根 `dist/` 和空目录。
-- Frame 包：新增独立 `packages/frame@0.6.0`。源码按 `host/`、`core/`、`runtime/` 和
+- Frame 包：新增独立 `packages/frame@0.7.0`。源码按 `host/`、`core/`、`runtime/` 和
   `integrations/` 分层；根 `package.json` 只负责 Workspace 调度，不再发布。
 - Reference System：新增 `apps/reference-system`，由 `system.ts` 显式组合
   `frameCoreExtension + frameCmsExtension`；Server、Worker 和 Migration 全部读取同一个 System。
@@ -376,7 +376,7 @@
   `apps/reference-web`；可发布的 Admin/Web Registry 分别迁入 `packages/admin-shell` 和
   `packages/web-shell`。
 - Core 默认语义：`buildApp()`、`createFrameWorker()` 与 `runSystemMigrations()` 默认只安装 Core；CMS
-  通过新的 `@lingcoo/frame/cms` 子入口显式接入，不再从 Frame 主入口隐式导出。
+  通过新的 `@lingcootech/frame/cms` 子入口显式接入，不再从 Frame 主入口隐式导出。
 - CMS 边界：Frame 对 CMS 的 Audit、Asset、Taxonomy、Job 和 Search 适配集中到
   `packages/frame/src/integrations/cms`；旧 `core/modules/cms` 转发文件和空目录已删除。
 - 测试归属：Frame 内部测试迁入 `packages/frame/test`；CMS、Frontend Extension 与 Migration V2
@@ -413,7 +413,7 @@
 - 选择一个已有生产数据和部署链路的真实业务系统作为 Consumer，优先使用即将开发的官网系统。
 - 业务仓库只保留组合配置、品牌/站点页面、领域扩展和部署环境；不得复制 Frame Core 或 CMS 后端源码。
 - 同一个 Defined System 必须用于 API、Worker 和迁移；Admin/Web 使用相同扩展清单的浏览器投影。
-- 先建立数据和功能基线，再原地采用 Frame 0.6 包；验证现有数据、登录、CMS、Sitemap、Worker 和部署
+- 先建立数据和功能基线，再原地采用 Frame 0.7 包；验证现有数据、登录、CMS、Sitemap、Worker 和部署
   不中断，并记录从 0.5 升级的真实摩擦点。
 - 根据 Consumer 证据决定是否提取 CMS 默认前端页面、Admin 路由懒加载和 Landing Block 持久化 Port，
   不在试点前继续凭假设扩展公开 API。
@@ -475,7 +475,7 @@ R1 输入：
 
 已交付：
 
-- `@lingcoo/frame-web` 新增 `layout`、`site`、`presentation`、`seo`、`system-states`、`account` 与
+- `@lingcootech/frame-web` 新增 `layout`、`site`、`presentation`、`seo`、`system-states`、`account` 与
   `styles.css` 七类公开入口，并在构建时复制样式到 `dist`。
 - 公共 Presentation Hook 负责同源 API、品牌 Token 与 Favicon；SiteShell 读取导航、Logo、联系信息和
   备案信息，管理后台入口可以由 Consumer 改名或关闭。
@@ -485,7 +485,7 @@ R1 输入：
 
 验证结果：
 
-- `@lingcoo/frame-web` 构建、类型检查、Lint 与 4/4 测试通过。
+- `@lingcootech/frame-web` 构建、类型检查、Lint 与 4/4 测试通过。
 - Reference Web 生产构建、Lint 与 4/4 测试通过。
 - `npm run packages:verify`：所有 Frame 包完成 tarball 打包，隔离 Consumer 安装成功，Consumer TypeScript
   校验和运行时导入验证通过。
@@ -515,7 +515,7 @@ R2 输入：
 
 已交付：
 
-- `@lingcoo/frame-admin` 新增 Auth、Router、Application Shell、共享工作流组件与包内样式公开入口。
+- `@lingcootech/frame-admin` 新增 Auth、Router、Application Shell、共享工作流组件与包内样式公开入口。
 - Admin Auth 接受 `AdminAuthClient`；账号、角色和权限使用最小公共契约，Consumer 保留实际请求实现。
 - Admin Router 支持自定义 Base Path、Search Params、Hash 和 SPA History，修复账号安全锚点导航边界。
 - Application Shell 组合响应式 Sidebar、Topbar、权限过滤导航、Search Provider、通知计数、账户菜单、
@@ -531,7 +531,7 @@ R2 输入：
 
 验证结果：
 
-- `@lingcoo/frame-admin` 构建、类型检查、Lint 与 2/2 Shell/共享组件测试通过。
+- `@lingcootech/frame-admin` 构建、类型检查、Lint 与 2/2 Shell/共享组件测试通过。
 - Reference Admin 类型检查、Lint 和生产构建通过；主 Chunk 约 527 kB，仍为既有懒加载优化项。
 - `npm run packages:verify`：9 个公开包与示例扩展完成 tarball 打包；临时 Consumer 安装 251 个包，
   新 Admin Auth/Layout/Router/Shared/CSS 入口的 TypeScript 与运行时验收通过。
@@ -602,7 +602,7 @@ R4 输入：
 
 已交付：
 
-- `@lingcoo/frame-admin/system-info` 提供完整类型、Client 契约和 System Info 页面；样式随 Admin 包发布。
+- `@lingcootech/frame-admin/system-info` 提供完整类型、Client 契约和 System Info 页面；样式随 Admin 包发布。
 - `/api/system/runtime` 新增 System/Frame/API 版本、扩展运行面与贡献计数、Migration Source、账本条数、
   已应用和待执行统计；旧 `name/version/environment/surfaces` 字段保持兼容。
 - Fastify Host 保存当前 `DefinedSystem` 只读引用，摘要不依赖进程全局变量，也不返回环境变量或 Secret。
@@ -612,7 +612,7 @@ R4 输入：
   对应 Route、模块数组及遗留 Section Resolver 已删除。
 - Admin 包新增完整渲染与无权限分区测试；Backend 新增 Manifest/Ledger 摘要和账本不可用降级测试；
   Consumer Fixture 与 tarball 文件检查覆盖 `./system-info`。
-- `@lingcoo/frame` 补齐对 Admin/Web Manifest 包的直接依赖，独立安装契约与源码 import 保持一致。
+- `@lingcootech/frame` 补齐对 Admin/Web Manifest 包的直接依赖，独立安装契约与源码 import 保持一致。
 
 验证结果：
 
@@ -630,11 +630,11 @@ R5 输入：
 
 ### Reference Experience R5 已交付（2026-08-08）
 
-- CMS Admin/Web 默认页面已迁入 `@lingcoo/frame-cms`，包括内容列表、编辑器、版本、发布、重定向、SEO、
+- CMS Admin/Web 默认页面已迁入 `@lingcootech/frame-cms`，包括内容列表、编辑器、版本、发布、重定向、SEO、
   预览、文章列表、详情、分页、Markdown 渲染和公共状态页。
 - Consumer 通过 `CmsAdminClient`/`CmsWebClient` 注入请求 Transport 与品牌 Presentation；Reference Apps
   不再拥有 CMS 页面、CMS-specific API 方法或 CMS 专属样式副本。
-- `@lingcoo/frame-cms/styles.css`、新增浏览器安全 Client 类型和默认页面均纳入 tarball 验收；隔离 Consumer
+- `@lingcootech/frame-cms/styles.css`、新增浏览器安全 Client 类型和默认页面均纳入 tarball 验收；隔离 Consumer
   真实安装后通过 TypeScript 和运行时验证。
 - CMS 包测试覆盖 Client 路径、404 语义、默认 Admin 页面静态渲染、Markdown 渲染与详情结构化数据。
 
@@ -651,7 +651,7 @@ R5 输入：
 - Reference Web 新增 `/framework`、`/architecture`、`/packages`、`/extensions`、`/docs`、`/docs/:slug`
   和 `/releases`，首页明确解释 Frame 能力边界、四个运行面、扩展契约和 Console 入口。
 - Frame Web Core 只拥有应用无关的 `/auth/:mode`；官网路由由 Reference Site Extension 组合，CMS 文章
-  路由仍由 `@lingcoo/frame-cms` 贡献。通用 Presentation 默认导航为空，应用配置为空时才回退官方站导航。
+  路由仍由 `@lingcootech/frame-cms` 贡献。通用 Presentation 默认导航为空，应用配置为空时才回退官方站导航。
 - 文档由仓库 Markdown 元数据驱动，详情正文按路由懒加载并使用 CMS `ContentRenderer`；加载、404、500
   状态复用 Frame Web 的公共页面状态。
 - 真实 Reference Console 登录界面截图作为 `apps/reference-web/public/images/frame-console.png` 发布，

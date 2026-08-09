@@ -2,8 +2,8 @@ import {
   defineWebExtension,
   type WebRouteComponent,
   type WebRouteContext,
-} from '@lingcoo/frame-web';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
+} from '@lingcootech/frame-web';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
 
 import { ArticleCard } from './article-card.js';
 import { ArticleList } from './article-list.js';

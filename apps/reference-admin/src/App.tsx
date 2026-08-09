@@ -1,14 +1,14 @@
-import { AdminRouteSlot, AdminShell } from '@lingcoo/frame-admin';
+import { AdminRouteSlot, AdminShell } from '@lingcootech/frame-admin';
 import {
   AdminAuthProvider,
   AdminChangePasswordPage,
   AdminLoginPage,
   useAdminAuth,
   type AdminAuthClient,
-} from '@lingcoo/frame-admin/auth';
-import { AdminApplicationShell } from '@lingcoo/frame-admin/layout';
-import { AdminRouterProvider, useAdminRouter } from '@lingcoo/frame-admin/router';
-import { FRAME_VERSION } from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-admin/auth';
+import { AdminApplicationShell } from '@lingcootech/frame-admin/layout';
+import { AdminRouterProvider, useAdminRouter } from '@lingcootech/frame-admin/router';
+import { FRAME_VERSION } from '@lingcootech/frame-extension-sdk';
 
 import {
   ApiError,

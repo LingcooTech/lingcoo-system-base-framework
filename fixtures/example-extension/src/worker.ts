@@ -1,4 +1,4 @@
-import { defineWorkerExtension } from '@lingcoo/frame-extension-sdk/worker';
+import { defineWorkerExtension } from '@lingcootech/frame-extension-sdk/worker';
 
 export const exampleWorkerExtension = defineWorkerExtension({
   register({ registerJob, subscribe }) {

@@ -1,4 +1,4 @@
-import { defineAdminExtension } from '@lingcoo/frame-admin';
+import { defineAdminExtension } from '@lingcootech/frame-admin';
 import { createElement, type ChangeEvent } from 'react';
 
 function ExampleAdminPage() {

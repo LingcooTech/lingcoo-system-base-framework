@@ -1,4 +1,4 @@
-import { FRAME_VERSION, type ExtensionManifest } from '@lingcoo/frame-extension-sdk';
+import { FRAME_VERSION, type ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
 export const CMS_EXTENSION_ID = 'frame-cms';
 export const CMS_EXTENSION_VERSION = FRAME_VERSION;

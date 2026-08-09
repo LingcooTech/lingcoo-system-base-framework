@@ -10,7 +10,7 @@ import {
   auditLogs,
   passwordCredentials,
   roles,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { MetricsRegistry } from '../src/core/modules/observability/metrics.js';
 import { loadEnv } from '../src/host/env.js';

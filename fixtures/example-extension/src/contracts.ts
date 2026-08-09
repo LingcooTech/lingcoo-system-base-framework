@@ -1,11 +1,11 @@
-import type { ExtensionManifest } from '@lingcoo/frame-extension-sdk';
+import type { ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
 export const exampleManifest = {
   id: 'example',
   version: '0.1.0',
   apiVersion: '1',
-  frame: '^0.6.0',
-  dependencies: [{ id: 'frame', version: '^0.6.0' }],
+  frame: '^0.7.0',
+  dependencies: [{ id: 'frame', version: '^0.7.0' }],
   permissions: ['example.read'],
   settings: ['example.greeting'],
   server: {

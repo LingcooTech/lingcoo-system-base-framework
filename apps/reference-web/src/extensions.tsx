@@ -1,14 +1,14 @@
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
-import { createCmsWebClient, createCmsWebExtension } from '@lingcoo/frame-cms/web';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
+import { createCmsWebClient, createCmsWebExtension } from '@lingcootech/frame-cms/web';
 import {
   defineExtension,
   defineSystem,
   FRAME_VERSION,
   projectExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
-import { createWebRegistry, defineWebExtension } from '@lingcoo/frame-web';
-import { frameWebManifest } from '@lingcoo/frame-web/manifest';
-import type { PublicPresentation } from '@lingcoo/frame-web/presentation';
+} from '@lingcootech/frame-extension-sdk';
+import { createWebRegistry, defineWebExtension } from '@lingcootech/frame-web';
+import { frameWebManifest } from '@lingcootech/frame-web/manifest';
+import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
 
 import { AuthRoute } from './auth-route';
 import { referenceSiteDefinition } from './site/extension';

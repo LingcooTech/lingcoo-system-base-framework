@@ -3,7 +3,7 @@ import type {
   JobHandlerContext,
   OutboxEventContext,
   OutboxSubscriber,
-} from '@lingcoo/frame-extension-sdk/worker';
+} from '@lingcootech/frame-extension-sdk/worker';
 
 export type { JobHandler, JobHandlerContext, OutboxEventContext, OutboxSubscriber };
 

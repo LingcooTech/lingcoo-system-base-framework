@@ -1,4 +1,4 @@
-import { Button } from '@lingcoo/frame-ui/button';
+import { Button } from '@lingcootech/frame-ui/button';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -16,7 +16,7 @@ import {
   ResourceSection,
   StatusPill,
   type DataTableColumn,
-} from '@lingcoo/frame-admin/shared';
+} from '@lingcootech/frame-admin/shared';
 import { sections } from '../lib/foundation';
 
 function bytes(value: number): string {

@@ -1,13 +1,13 @@
-import { createAdminRegistry, defineAdminExtension } from '@lingcoo/frame-admin';
-import { frameAdminManifest } from '@lingcoo/frame-admin/manifest';
-import { createCmsAdminClient, createCmsAdminExtension } from '@lingcoo/frame-cms/admin';
-import { cmsManifest } from '@lingcoo/frame-cms/contracts';
+import { createAdminRegistry, defineAdminExtension } from '@lingcootech/frame-admin';
+import { frameAdminManifest } from '@lingcootech/frame-admin/manifest';
+import { createCmsAdminClient, createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
+import { cmsManifest } from '@lingcootech/frame-cms/contracts';
 import {
   defineExtension,
   defineSystem,
   FRAME_VERSION,
   projectExtensionManifest,
-} from '@lingcoo/frame-extension-sdk';
+} from '@lingcootech/frame-extension-sdk';
 import { Settings2 } from 'lucide-react';
 
 import { apiRequest, searchResources } from './api/client';

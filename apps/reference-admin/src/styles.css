@@ -1,9 +1,9 @@
 @import 'tailwindcss';
-@import '@lingcoo/frame-design-tokens/base.css';
-@import '@lingcoo/frame-design-tokens/admin.css';
-@import '@lingcoo/frame-ui/styles.css';
-@import '@lingcoo/frame-admin/styles.css';
-@import '@lingcoo/frame-cms/styles.css';
+@import '@lingcootech/frame-design-tokens/base.css';
+@import '@lingcootech/frame-design-tokens/admin.css';
+@import '@lingcootech/frame-ui/styles.css';
+@import '@lingcootech/frame-admin/styles.css';
+@import '@lingcootech/frame-cms/styles.css';
 
 :root {
   color: #17201d;

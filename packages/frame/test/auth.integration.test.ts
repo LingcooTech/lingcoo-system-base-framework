@@ -9,7 +9,7 @@ import {
   accounts,
   passwordCredentials,
   roles as roleRecords,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { buildApp } from '../src/host/app.js';
 import { loadEnv } from '../src/host/env.js';

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { and, asc, desc, eq, gt, inArray, isNull, ne, sql } from 'drizzle-orm';
 
-import type { Database } from '@lingcoo/frame-database';
+import type { Database } from '@lingcootech/frame-database';
 import {
   accountRoles,
   accounts,
@@ -12,7 +12,7 @@ import {
   permissions,
   rolePermissions,
   roles,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 
 export class AuthRepository {
   constructor(private readonly db: Database) {}

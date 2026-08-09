@@ -10,7 +10,7 @@ import {
   integrationConnections,
   passwordCredentials,
   roles,
-} from '@lingcoo/frame-database/schema';
+} from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { OutboxService } from '../src/core/modules/jobs/outbox.js';
 import { JobHandlerRegistry, OutboxSubscriberRegistry } from '../src/core/modules/jobs/registry.js';

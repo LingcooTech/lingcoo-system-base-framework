@@ -1,1 +1,1 @@
-export { frameCmsExtension } from '@lingcoo/frame/cms';
+export { frameCmsExtension } from '@lingcootech/frame/cms';
