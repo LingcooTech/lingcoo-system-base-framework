@@ -1,9 +1,14 @@
 {
   "name": "@lingcootech/frame-database",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "type": "module",
   "description": "Database client, schema and migration runtime for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "files": [
     "dist",
     "drizzle"
@@ -26,7 +31,7 @@
     "lingcoo-frame-migrate": "./dist/cli.js"
   },
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node ../../scripts/copy-package-legal.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint ."
   },
@@ -49,7 +54,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,14 @@
 {
   "name": "@lingcootech/frame-extension-sdk",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "type": "module",
   "description": "Build-time extension and system composition contracts for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "files": [
     "dist"
   ],
@@ -26,7 +31,7 @@
     }
   },
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node ../../scripts/copy-package-legal.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint ."
   },
@@ -34,7 +39,7 @@
     "semver": "^7.7.2"
   },
   "peerDependencies": {
-    "@lingcootech/frame-database": "^0.7.1",
+    "@lingcootech/frame-database": "^0.7.2",
     "fastify": "^5.6.0"
   },
   "peerDependenciesMeta": {
@@ -47,7 +52,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@lingcootech/frame-database": "^0.7.1",
+    "@lingcootech/frame-database": "^0.7.2",
     "@types/node": "^24.5.2",
     "@types/semver": "^7.7.1",
     "eslint": "^10.8.0",
@@ -60,7 +65,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",

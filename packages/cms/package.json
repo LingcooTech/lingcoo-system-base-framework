@@ -1,9 +1,14 @@
 {
   "name": "@lingcootech/frame-cms",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "type": "module",
   "description": "First-party CMS extension for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "files": [
     "dist",
     "migrations"
@@ -43,17 +48,17 @@
     "./dist/styles.css"
   ],
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/copy-styles.mjs",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/copy-styles.mjs && node ../../scripts/copy-package-legal.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "test": "node --import tsx --test test/**/*.test.tsx"
   },
   "dependencies": {
-    "@lingcootech/frame-admin": "^0.7.1",
-    "@lingcootech/frame-database": "^0.7.1",
-    "@lingcootech/frame-extension-sdk": "^0.7.1",
-    "@lingcootech/frame-ui": "^0.7.1",
-    "@lingcootech/frame-web": "^0.7.1",
+    "@lingcootech/frame-admin": "^0.7.2",
+    "@lingcootech/frame-database": "^0.7.2",
+    "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-ui": "^0.7.2",
+    "@lingcootech/frame-web": "^0.7.2",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.503.0",
     "react-markdown": "^10.1.0",
@@ -82,7 +87,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",

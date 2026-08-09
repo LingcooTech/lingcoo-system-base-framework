@@ -15,6 +15,12 @@ if (versions.size !== 1) {
 }
 
 const [frameVersion] = versions;
+
+const frameworkManifestPath = path.join(repositoryRoot, 'lingcoo.framework.json');
+const frameworkManifest = JSON.parse(await readFile(frameworkManifestPath, 'utf8'));
+frameworkManifest.version = frameVersion;
+await writeFile(frameworkManifestPath, `${JSON.stringify(frameworkManifest, null, 2)}\n`);
+
 const versionSourcePath = path.join(repositoryRoot, 'packages/extension-sdk/src/index.ts');
 const versionSource = await readFile(versionSourcePath, 'utf8');
 const synchronizedSource = versionSource.replace(

@@ -47,3 +47,9 @@ Frame Core、Extension SDK、UI、Devkit、Testkit、文档和 Starter 计划使
 - 发布流程比当前单仓库部署更严格，但可以把升级风险集中在一次验证中。
 - 开源时间由可消费性和文档质量决定，而不是仅由代码可见性决定。
 - 官方扩展需要兼容矩阵和维护状态，未维护扩展不能标记为官方认证。
+
+## Implementation Note
+
+2026-08-09 完成 Apache-2.0、NOTICE、商标边界、安全披露、贡献指南、行为准则和首个不复制 Frame 源码的
+生产 Consumer。公开 Stable 目标为 npmjs `latest`，GitHub Packages 仅保留 Preview/Canary；行业应用、
+Stack 中台和商业镜像仍保持私有。

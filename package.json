@@ -3,6 +3,11 @@
   "private": true,
   "type": "module",
   "description": "Lingcoo Frame packages, reference applications and verification workspace.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -26,12 +31,14 @@
     "test": "npm run build:packages && npm run test:integration && npm run test --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
     "lint": "eslint . && npm run lint --workspaces --if-present",
-    "check": "npm run typecheck && npm test && npm run lint",
+    "check": "npm run typecheck && npm test && npm run lint && npm run check:opensource",
+    "check:opensource": "node scripts/verify-open-source.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "changeset": "changeset",
     "version:packages": "changeset version && node scripts/sync-frame-version.mjs && npm install --package-lock-only --ignore-scripts",
     "release:packages": "node scripts/publish-packages.mjs preview",
+    "release:stable": "node scripts/publish-packages.mjs stable",
     "release:canary": "node scripts/prepare-canary.mjs && npm run build:packages && node scripts/publish-packages.mjs canary",
     "packages:verify": "npm run build:all && node scripts/verify-packages.mjs",
     "db:generate": "drizzle-kit generate",

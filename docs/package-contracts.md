@@ -2,17 +2,23 @@
 
 ## 状态
 
-`0.7` 是第一个通过 `@lingcootech` scope 分发的内部预览包契约。仓库 CI 验证真实 npm tarball，
-并通过 GitHub Packages 的私有 `preview` dist-tag 发布。Consumer 应锁定同一 `0.7.x` Backend、
+`0.7` 是第一个通过 `@lingcootech` scope 分发的包契约。仓库 CI 验证真实 npm tarball。公开 Stable
+发布到 npmjs 的 `latest` dist-tag；GitHub Packages 继续承载需要 Token 的 `preview` 和 `canary`。Consumer 应锁定同一 `0.7.x` Backend、
 Database、Extension SDK、Admin、Web 和一方扩展版本，不导入 `exports` 之外的文件。
 
-应用仓库配置以下 scope 后，通过普通 npm 依赖消费 Frame，不拉取或复制 Frame 源码：
+Stable Consumer 通过普通 npm 依赖消费 Frame，不拉取或复制 Frame 源码，也不需要 Registry Token：
+
+```bash
+npm install @lingcootech/frame@0.7.2 @lingcootech/frame-cms@0.7.2
+```
+
+只有需要 Preview/Canary 的应用才配置以下 scope：
 
 ```ini
 @lingcootech:registry=https://npm.pkg.github.com
 ```
 
-开发中的跨仓库验证使用与 Git commit 绑定的 `canary` 版本；验证通过后再发布不可变 Preview 版本。
+开发中的跨仓库验证使用与 Git commit 绑定的 `canary` 版本；验证通过后再发布不可变 Preview 或 Stable 版本。
 应用必须提交 lockfile，生产环境禁止自动跟随 dist-tag。
 
 ## 包边界

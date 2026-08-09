@@ -11,7 +11,6 @@ registry TLS timeout does not immediately abort the deployment.
 ## Target
 
 - Repository: `LingcooTech/lingcoo-system-base-framework`
-- Host: `82.157.22.93`
 - Domain: `frame.lingcoo.com`
 - Deploy path: `/opt/lingcoo-system-base-framework`
 - Health check: `https://frame.lingcoo.com/ready`
@@ -31,14 +30,17 @@ registry TLS timeout does not immediately abort the deployment.
 - `DEPLOY_SSH_KNOWN_HOSTS`
 - `DEPLOY_HEALTHCHECK_URL`
 
-Project-specific values:
+Example values (replace host, user and path for the target environment):
 
 ```text
-DEPLOY_HOST=82.157.22.93
-DEPLOY_USER=root
-DEPLOY_PATH=/opt/lingcoo-system-base-framework
+DEPLOY_HOST=<server-hostname-or-ip>
+DEPLOY_USER=<dedicated-non-root-deploy-user>
+DEPLOY_PATH=<absolute-deploy-path>
 DEPLOY_HEALTHCHECK_URL=https://frame.lingcoo.com/ready
 ```
+
+Do not use direct root SSH for a new deployment. Give a dedicated deploy account only the filesystem and container
+runtime permissions required by this application.
 
 ## One-time server bootstrap
 

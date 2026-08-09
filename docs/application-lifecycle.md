@@ -17,7 +17,7 @@
 
 ## 2. Frame 发布边界
 
-当前内部 Preview 由以下八个包组成：
+当前 Frame 兼容版本集由以下八个包组成：
 
 ```text
 @lingcootech/frame
@@ -30,7 +30,8 @@
 @lingcootech/frame-web
 ```
 
-Frame 使用 Changesets 统一版本并发布到 GitHub Packages。Consumer 必须锁定明确版本并提交
+Frame 使用 Changesets 统一版本。Stable 公开发布到 npmjs；Preview/Canary 发布到 GitHub Packages。
+Consumer 必须锁定明确版本并提交
 `package-lock.json`，不能让生产环境跟随 `latest`、`preview` 或 `canary` dist-tag。完整公开入口与发布
 规则见 [0.7 Package Contracts](package-contracts.md)。
 
@@ -56,35 +57,49 @@ package-lock.json
 根 workspace 只声明应用自己的 `apps/*` 和 `packages/*`。Frame 包是 registry 依赖，不进入 workspace。
 应用包使用自己的 scope 或稳定包名，不能冒充 Frame 公共包。
 
-## 4. 安装私有 Frame 包
+## 4. 安装 Frame 包
 
-应用仓库提交以下 `.npmrc`，但不提交 Token：
+Stable 包从 npmjs 匿名安装，不需要复制 Frame 源码、`.npmrc`、PAT 或逐包 Actions Access：
+
+```bash
+npm install \
+  @lingcootech/frame@0.7.2 \
+  @lingcootech/frame-admin@0.7.2 \
+  @lingcootech/frame-cms@0.7.2 \
+  @lingcootech/frame-database@0.7.2 \
+  @lingcootech/frame-design-tokens@0.7.2 \
+  @lingcootech/frame-extension-sdk@0.7.2 \
+  @lingcootech/frame-ui@0.7.2 \
+  @lingcootech/frame-web@0.7.2
+```
+
+只有需要验证 Preview 或 Canary 时，应用仓库才提交以下 `.npmrc`，但不提交 Token：
 
 ```ini
 @lingcootech:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-本地开发使用具有 `read:packages` 的 classic PAT：
+此时本地开发使用具有 `read:packages` 的 classic PAT：
 
 ```bash
 export NODE_AUTH_TOKEN="$(gh auth token)"
 npm ci
 ```
 
-GitHub Actions 使用两种受支持模式之一：
+GitHub Actions 使用两种预发布模式之一：
 
 1. 给 Consumer 仓库授予八个包的 `Manage Actions access: Read`，CI 使用仓库自己的
    `GITHUB_TOKEN`。这是没有长期共享 Token 的安全模式。
-2. CI 使用专用机器账号的只读 `FRAME_PACKAGES_TOKEN`。这是私有包阶段的快速接入模式，但必须限制
+2. CI 使用专用机器账号的只读 `FRAME_PACKAGES_TOKEN`。该模式必须限制
    Token 权限、可见仓库、使用位置并建立轮换流程。
 
-GitHub npm registry 即使包是 public，通常仍要求 PAT 或 `GITHUB_TOKEN`；只有将公共包发布到 npmjs
-等允许匿名安装的 registry，才能真正取消 npm 安装认证。GitHub 官方权限说明见
+GitHub npm registry 即使包是 public 仍要求 PAT 或 `GITHUB_TOKEN`，因此不作为开源 Stable 主分发入口。
+GitHub 官方权限说明见
 [About permissions for GitHub Packages](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages)。
 
-Docker 构建通过 BuildKit secret mount 传入 Token。Dockerfile 不应使用 `ARG` 或 `ENV` 持久化 npm
-Token，并应在最终镜像中检查不存在 `.npmrc`。
+Preview/Canary 的 Docker 构建通过 BuildKit secret mount 传入 Token。Stable 构建不再需要 npm Token；
+Dockerfile 仍应在最终镜像中检查不存在 `.npmrc`。
 
 ## 5. 组合应用系统
 
@@ -147,7 +162,7 @@ cp .env.example .env
 # 设置 DATABASE_URL、AUTH_JWT_SECRET、SETTINGS_ENCRYPTION_KEY，
 # 以及本环境唯一的 AUTH_BOOTSTRAP_EMAIL / AUTH_BOOTSTRAP_PASSWORD。
 
-NODE_AUTH_TOKEN=... npm ci
+npm ci
 docker compose up -d postgres
 npm run build:packages
 npm run db:migrate
@@ -234,15 +249,15 @@ push main
 | 环节                                      | 状态     |
 | ----------------------------------------- | -------- |
 | Frame Preview 发布                        | 已打通   |
-| 独立仓库安装八个私有包                    | 已打通   |
+| 独立仓库安装八个版本化包                  | 已打通   |
 | Core、CMS、领域扩展组合                   | 已打通   |
 | 空库完整迁移                              | 已打通   |
 | API、Worker、Admin、Web                   | 已打通   |
 | Ubuntu CI 与 Alpine 生产构建              | 已打通   |
 | ACR/GHCR 镜像发布、服务器迁移和健康检查   | 已打通   |
 | 自动创建新应用                            | 尚未自动 |
-| 单动作完成私有包授权                      | 尚未自动 |
+| Stable 匿名安装、无需逐包授权             | 发布就绪 |
 | 从上一 Frame 版本升级到下一版本的真实验证 | 尚未验证 |
 
-因此，当前端到端技术链路已经可用；应用创建、私有包接入和跨版本升级仍需按
+因此，当前端到端技术链路已经可用；开源治理和公开发布链路已落地，应用创建和跨版本升级仍需按
 [应用接入产品化实施方案](application-adoption-plan.md) 继续自动化。

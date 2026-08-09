@@ -1,9 +1,14 @@
 {
   "name": "@lingcootech/frame",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "type": "module",
   "description": "Lingcoo Frame backend host, core modules and runtime composition.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "files": [
     "dist"
   ],
@@ -42,7 +47,7 @@
     }
   },
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node ../../scripts/copy-package-legal.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "test": "node --import tsx --test --test-concurrency=1 test/**/*.test.ts"
@@ -55,10 +60,10 @@
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/sensible": "^6.0.4",
     "@fastify/static": "^10.1.2",
-    "@lingcootech/frame-admin": "^0.7.1",
-    "@lingcootech/frame-database": "^0.7.1",
-    "@lingcootech/frame-extension-sdk": "^0.7.1",
-    "@lingcootech/frame-web": "^0.7.1",
+    "@lingcootech/frame-admin": "^0.7.2",
+    "@lingcootech/frame-database": "^0.7.2",
+    "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-web": "^0.7.2",
     "alipay-sdk": "^4.14.0",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.6.1",
@@ -67,7 +72,7 @@
     "zod": "^4.1.11"
   },
   "peerDependencies": {
-    "@lingcootech/frame-cms": "^0.7.1"
+    "@lingcootech/frame-cms": "^0.7.2"
   },
   "peerDependenciesMeta": {
     "@lingcootech/frame-cms": {
@@ -76,7 +81,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@lingcootech/frame-cms": "^0.7.1",
+    "@lingcootech/frame-cms": "^0.7.2",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.15.5",
@@ -90,7 +95,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",

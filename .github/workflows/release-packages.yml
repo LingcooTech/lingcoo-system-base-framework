@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
   packages: write
 
 jobs:
@@ -21,15 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
-          registry-url: https://npm.pkg.github.com
+          registry-url: ${{ inputs.channel == 'stable' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com' }}
           scope: '@lingcootech'
+      - name: Use npm with trusted publishing support
+        if: ${{ inputs.channel == 'stable' }}
+        run: npm install --global npm@11.5.1
       - run: npm ci
       - run: npm run packages:verify
       - run: node scripts/publish-packages.mjs "${{ inputs.channel }}"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ inputs.channel == 'stable' && secrets.NPM_TOKEN || secrets.GITHUB_TOKEN }}

@@ -1,7 +1,7 @@
 {
   "$schema": "./docs/framework-manifest.schema.json",
   "name": "@lingcootech/frame",
-  "version": "0.6.0",
+  "version": "0.7.2",
   "kind": "runnable-base-framework",
   "origin": {
     "referenceProject": "lingcoo-edu-system",

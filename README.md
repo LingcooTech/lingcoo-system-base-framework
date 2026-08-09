@@ -1,8 +1,11 @@
 # Lingcoo System Base Framework
 
+[![CI](https://github.com/LingcooTech/lingcoo-system-base-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/LingcooTech/lingcoo-system-base-framework/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.7` 已完成首个一方扩展闭环、目录架构对齐、官方 Reference Experience 和私有包发布链路：后端宿主、Database、
+当前 `0.7` 已完成首个一方扩展闭环、目录架构对齐、官方 Reference Experience 和版本化包发布链路：后端宿主、Database、
 Extension SDK、Admin/Web Shell、共享 UI、Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。
 Frame 仍同时保留可运行参考系统；新的业务
 系统通过 `defineSystem()` 显式安装构建期扩展，而不是复制本仓库后长期维护底层源码副本。
@@ -13,8 +16,21 @@ Frame 仍同时保留可运行参考系统；新的业务
 [ADR](docs/adr/README.md)。
 
 新业务仓库从初始化到生产部署的标准步骤见
-[基于 Frame 的应用全生命周期](docs/application-lifecycle.md)；脚手架、私有包接入和跨版本升级的下一步
+[基于 Frame 的应用全生命周期](docs/application-lifecycle.md)；脚手架和跨版本升级的下一步
 工作见 [Frame 应用接入产品化实施方案](docs/application-adoption-plan.md)。
+
+## 开源与商业边界
+
+Frame 源码、八个官方包、参考应用、测试和文档采用 [Apache License 2.0](LICENSE)。Edu 等行业应用、
+Stack 中台、应用市场、客户代码/数据、商业镜像交付和运维服务不因 Frame 开源而自动开放。Apache-2.0
+不授予 LingcooTech、Lingcoo 或 Lingcoo Frame 的品牌使用权，详见
+[Frame 开源与商业边界](docs/open-source-policy.md) 和 [商标说明](TRADEMARKS.md)。
+
+参与贡献、安全披露和支持范围分别见 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md) 和
+[SUPPORT.md](SUPPORT.md)。
+
+Stable 包以同一版本集发布到 npmjs，Consumer 可匿名安装；GitHub Packages 只保留需要 Token 的 Preview
+和 Canary 通道。生产应用必须锁定明确版本与 lockfile，不自动跟随 `latest`。
 
 ## 当前包含什么
 

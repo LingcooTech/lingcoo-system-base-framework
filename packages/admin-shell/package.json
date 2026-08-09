@@ -1,9 +1,14 @@
 {
   "name": "@lingcootech/frame-admin",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "type": "module",
   "description": "Composable Admin Shell and browser-safe extension registry for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/LingcooTech/lingcoo-system-base-framework#readme",
+  "bugs": {
+    "url": "https://github.com/LingcooTech/lingcoo-system-base-framework/issues"
+  },
   "files": [
     "dist"
   ],
@@ -46,14 +51,14 @@
     "./dist/styles.css"
   ],
   "scripts": {
-    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/copy-styles.mjs",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/copy-styles.mjs && node ../../scripts/copy-package-legal.mjs",
     "test": "node --import tsx --test test/**/*.test.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@lingcootech/frame-extension-sdk": "^0.7.1",
-    "@lingcootech/frame-ui": "^0.7.1",
+    "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-ui": "^0.7.2",
     "lucide-react": "^0.503.0"
   },
   "peerDependencies": {
@@ -86,7 +91,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",

@@ -2,15 +2,15 @@
 
 ## 目标
 
-Frame `0.7.1` 已经通过第一个独立生产应用验证了发布、安装、组合、迁移、CI、镜像和部署。下一阶段不是
-增加更多 Core 功能，而是把以下三个仍依赖人工经验的环节产品化：
+Frame `0.7.1` 已经通过第一个独立生产应用验证了发布、安装、组合、迁移、CI、镜像和部署。2026-08-09
+已经完成开源治理和公开 Stable 发布链路，原有“八包逐一授权”问题由 npmjs 匿名安装消除。下一阶段
+不是增加更多 Core 功能，而是把以下两个仍依赖人工经验的环节产品化：
 
 1. 新应用没有标准生成器，需要手工创建目录和入口。
-2. 私有 GitHub Packages 需要对八个包逐一授予 Consumer Actions 权限。
-3. 尚未真实验证从一个已发布 Frame 版本升级到下一个版本。
+2. 尚未真实验证从一个已发布 Frame 版本升级到下一个版本。
 
-最终目标是让一个新的业务仓库通过一个初始化命令和一次凭据配置获得可运行、可测试、可部署、可升级
-的系统，同时保留明确的安全和迁移门禁。
+最终目标是让一个新的业务仓库通过一个初始化命令获得可运行、可测试、可部署、可升级的系统，同时
+保留明确的安全和迁移门禁。
 
 ## 实施原则
 
@@ -32,7 +32,7 @@ GitHub Template 都不是第二份源码，只是同一模板的不同入口。
 建议命令：
 
 ```bash
-npm create @lingcootech/frame-app@0.7.1 my-system
+npm create @lingcootech/frame-app@0.7.2 my-system
 ```
 
 首版只询问会影响代码结构的稳定选项：
@@ -75,58 +75,16 @@ package-lock.json    与生成器版本一致的精确 Frame 版本
 - 生成应用在隔离目录通过 `npm ci`、空库迁移、`check`、`build:all` 和 Docker build。
 - 连续生成两次得到除时间戳外完全一致的结果。
 
-## 改进二：私有包接入从八次授权降为一次配置
+## 已完成：公开分发取代八包授权
 
-### 已确认的约束
+Frame 采用 Apache-2.0，源码仓库公开。八个官方包声明相同许可证和公开 npmjs `publishConfig`；Stable
+使用 npmjs `latest`，Preview/Canary 保留在 GitHub Packages。Stable Consumer 不再配置 `.npmrc`、PAT、
+`NODE_AUTH_TOKEN`、BuildKit npm secret 或逐包 Actions Access。
 
-GitHub npm registry 支持包级细粒度权限，但 Consumer 的 `GITHUB_TOKEN` 必须被每个包显式授予 Actions
-Read。GitHub 官方文档同时允许使用 classic PAT 安装其他私有仓库关联的包。GitHub Packages 没有公开、
-稳定的“批量给多个 npm 包添加 Actions 仓库访问”的 REST 契约，因此首版不应依赖网页自动化或未公开
-API。
+发布脚本按通道强制 Registry 和可见性，CI 检查开源治理文件、包许可证、源码链接和公开发布配置。
+GitHub Packages 即使公开仍要求 Token，因此只作为预发布通道，不再承担开源 Consumer 的默认安装。
 
-参考：
-
-- [About permissions for GitHub Packages](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages)
-- [REST API endpoints for packages](https://docs.github.com/en/rest/packages/packages)
-
-### 双模式方案
-
-#### A. 独立 GITHUB_TOKEN 模式
-
-保留当前最小权限方案：给 Consumer 仓库授予八个包的 Actions Read，不保存共享 PAT。增加
-`frame packages verify-access` 命令，一次检查八个包并输出缺失包的准确设置链接和期望角色。
-
-该模式适合安全要求高、Consumer 数量少的阶段。
-
-#### B. 只读机器账号 Token 模式（当前推荐的快速接入方案）
-
-1. 创建不参与日常开发的 GitHub 机器账号。
-2. 只给它八个 Frame 包的 Read 权限。
-3. 创建仅含 `read:packages` 的 classic PAT，不附加 `write:packages`、`delete:packages`。
-4. Consumer 仓库只配置一个 Secret：`FRAME_PACKAGES_TOKEN`。
-5. CI 将其映射到 `NODE_AUTH_TOKEN`；Docker 只通过 BuildKit secret 使用。
-6. 记录 Token owner、创建时间、使用仓库和轮换时间；泄漏时可一次吊销。
-
-如果后续把代码和包转移到真正的 GitHub Organization，可以把同一只读 Token 配置为选定仓库可用的
-Organization Actions Secret，减少逐仓库 Secret 写入。机器账号不得拥有 Frame 源码写权限或生产部署
-权限。
-
-### 长期出口
-
-若 Frame 完成开源治理并决定公开分发，应将 Stable 包发布到 npmjs。GitHub Packages 可继续保存
-Canary/内部 Preview；公开 Stable 从 npmjs 匿名安装，才能同时消除本地 PAT、Actions Package Access 和
-Docker npm Token。是否开源必须由许可证、支持策略、品牌和安全披露方案决定，不能只为绕过权限界面而
-仓促执行。
-
-### 验收标准
-
-- 快速模式的新仓库只配置一个 Secret，即可安装全部 Frame 包。
-- Token 不出现在 lockfile、Docker history、构建日志、镜像文件系统或前端产物。
-- `verify-access` 能区分认证缺失、包不存在、版本不存在和仓库未授权。
-- Token 撤销演练后，所有依赖它的构建可被准确定位并在完成轮换后恢复。
-- Stable 公开分发启用后，全新环境可在没有 GitHub Token 的情况下执行 `npm ci`。
-
-## 改进三：真实跨版本升级门禁
+## 改进二：真实跨版本升级门禁
 
 ### 目标形态
 
@@ -209,10 +167,9 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 
 1. 新增 `templates/application` 和非交互生成器 MVP。
 2. 新增 Generated Consumer tarball 验证。
-3. 新增 `verify-access`，并建立只读机器账号 Token 流程。
-4. 在文档和模板中统一 `NODE_AUTH_TOKEN`/BuildKit secret 用法。
+3. 生成模板默认使用 npmjs Stable，不生成 `.npmrc` 或 npm Token 配置。
 
-阶段 A 完成后，新应用创建和私有包安装不再需要复制已有项目或打开八个包页面。
+阶段 A 完成后，新应用创建不再需要复制已有项目。
 
 ### 阶段 B：升级门禁
 
@@ -221,21 +178,19 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 3. Release CI 增加上一版本数据库升级 Fixture 和数据哨兵。
 4. 使用官网完成首个真实升级 PR。
 
-### 阶段 C：规模化与公开策略
+### 阶段 C：规模化
 
 1. 增加 GitHub Template 镜像和更多生成选项，但保持同一模板源。
 2. 接入第二个差异化业务系统并完成生成、部署、升级验证。
-3. 完成 LICENSE、SECURITY、CONTRIBUTING、支持版本和安全披露治理。
-4. 决策是否开源并把 Stable 同步到 npmjs。
+3. 根据两个真实 Consumer 的反馈收敛公共 API 和支持矩阵。
 
 ## 完成定义
 
-三个改进点只有在以下端到端场景全部自动通过后才算完成：
+剩余两个改进点只有在以下端到端场景全部自动通过后才算完成：
 
 ```text
 空目录
 → 生成应用
-→ 一次凭据配置
 → 安装真实发布包
 → 空库迁移
 → 本地登录和业务示例
@@ -246,4 +201,4 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 → 数据保留和幂等验证
 ```
 
-仅增加模板目录、权限说明或版本更新脚本，不构成“已经产品化”。
+仅增加模板目录或版本更新脚本，不构成“已经产品化”。

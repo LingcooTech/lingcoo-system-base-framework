@@ -680,7 +680,7 @@ Frame 跨版本升级。
   Schema、基础迁移和默认后台页面不再复制到业务仓库。
 - 官网领域扩展完成 Manifest、命名空间 Migration、Schema、Service、API、Permission、Event、Worker、
   Admin/Web 和测试的垂直切片。
-- GitHub Packages 八个私有包、Consumer CI、BuildKit secret、Alpine 生产镜像、ACR/GHCR、服务器迁移、
+- GitHub Packages 八个 Preview 包、Consumer CI、BuildKit secret、Alpine 生产镜像、ACR/GHCR、服务器迁移、
   API/Worker/Caddy 和公网 `/ready` 已在真实部署中通过。
 - 生产数据库在“无历史数据”的明确前提下从空卷重建，完整应用 Frame、CMS 和官网领域迁移；后续普通
   部署再次通过，证明当前迁移和部署幂等。
@@ -690,6 +690,7 @@ Frame 跨版本升级。
 未满足阶段退出条件：
 
 - 本次是从零重建，不是从已发布 Frame 版本原地升级，因此没有证明“保留生产数据”的跨版本升级能力。
-- 创建仓库、八包权限和版本升级仍依赖人工操作。实施方案见
+- 创建仓库和版本升级仍依赖人工操作。Frame 已完成 Apache-2.0 开源治理，Stable 公开发布目标切换到
+  npmjs 匿名安装，不再把逐包 Actions Access 作为正式接入流程。剩余实施方案见
   [Frame 应用接入产品化实施方案](application-adoption-plan.md)。
 - 阶段 5 保持 `In progress`，直到官网完成至少一次 Frame Canary/Preview 到下一受支持版本的保数据升级。

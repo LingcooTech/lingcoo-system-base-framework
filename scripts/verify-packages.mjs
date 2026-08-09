@@ -140,6 +140,18 @@ try {
     'dist/Button.d.ts',
     'dist/styles.css',
   ]);
+  for (const [packageName, archive] of [
+    ['@lingcootech/frame', frame],
+    ['@lingcootech/frame-database', database],
+    ['@lingcootech/frame-extension-sdk', extensionSdk],
+    ['@lingcootech/frame-admin', admin],
+    ['@lingcootech/frame-cms', cms],
+    ['@lingcootech/frame-web', web],
+    ['@lingcootech/frame-design-tokens', designTokens],
+    ['@lingcootech/frame-ui', ui],
+  ]) {
+    assertPackageFiles(packageName, archive.files, ['dist/LICENSE', 'dist/NOTICE']);
+  }
   assertPackageFiles('@lingcootech/frame-example-extension', exampleExtension.files, [
     'dist/index.js',
     'dist/contracts.js',
