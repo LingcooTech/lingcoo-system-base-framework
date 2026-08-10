@@ -1,7 +1,11 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { publicPackageDirectories, repositoryRoot } from './package-catalog.mjs';
+import {
+  publicPackageDirectories,
+  repositoryRoot,
+  runtimePackageDirectories,
+} from './package-catalog.mjs';
 
 const manifests = await Promise.all(
   publicPackageDirectories.map(async (directory) => {
@@ -16,7 +20,7 @@ if (versions.size !== 1) {
 
 const [frameVersion] = versions;
 
-const frameworkManifestPath = path.join(repositoryRoot, 'lingcoo.framework.json');
+const frameworkManifestPath = path.join(repositoryRoot, 'lingcootech.framework.json');
 const frameworkManifest = JSON.parse(await readFile(frameworkManifestPath, 'utf8'));
 frameworkManifest.version = frameVersion;
 await writeFile(frameworkManifestPath, `${JSON.stringify(frameworkManifest, null, 2)}\n`);
@@ -46,9 +50,21 @@ if (
 }
 await writeFile(databaseVersionPath, synchronizedDatabaseVersion);
 
+const runtimePackageNames = new Set(
+  await Promise.all(
+    runtimePackageDirectories.map(async (directory) => {
+      const manifest = JSON.parse(
+        await readFile(path.join(repositoryRoot, directory, 'package.json'), 'utf8'),
+      );
+      return manifest.name;
+    }),
+  ),
+);
 const fixturePath = path.join(repositoryRoot, 'fixtures/consumer/package.json');
 const fixture = JSON.parse(await readFile(fixturePath, 'utf8'));
-for (const manifest of manifests) fixture.dependencies[manifest.name] = frameVersion;
+for (const manifest of manifests) {
+  if (runtimePackageNames.has(manifest.name)) fixture.dependencies[manifest.name] = frameVersion;
+}
 await writeFile(fixturePath, `${JSON.stringify(fixture, null, 2)}\n`);
 
 const fixtureUiPath = path.join(repositoryRoot, 'fixtures/consumer/ui.tsx');

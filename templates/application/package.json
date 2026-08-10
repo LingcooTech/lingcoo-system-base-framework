@@ -1,0 +1,50 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "__DISPLAY_NAME__, built as an independent Lingcoo Frame consumer.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run build:packages",
+    "dev:api": "npm run dev --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "dev:worker": "npm run dev:worker --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "dev:admin": "npm run dev --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-admin",
+    "dev:web": "npm run dev --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-web",
+    "build:packages": "npm run build --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-domain",
+    "build:system": "npm run build --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "build:admin": "npm run build --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-admin",
+    "build:web": "npm run build --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-web",
+    "build:all": "npm run build:packages && npm run build:system && npm run build:admin && npm run build:web",
+    "start": "npm run start --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "start:worker": "npm run start:worker --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "db:migrate": "npm run build:packages && npm run migrate --workspace __PACKAGE_SCOPE__/__PROJECT_NAME__-system",
+    "frame:verify": "create-frame-app verify",
+    "frame:upgrade": "create-frame-app upgrade",
+    "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:packages && npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "check": "npm run frame:verify && npm run typecheck && npm test && npm run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@lingcootech/create-frame-app": "__FRAME_VERSION__",
+    "prettier": "^3.8.3",
+    "typescript": "^5.9.3"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.62.3",
+    "@rollup/rollup-linux-x64-musl": "4.62.3",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
+    "@tailwindcss/oxide-linux-x64-musl": "4.3.3",
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "lightningcss-linux-x64-musl": "1.32.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

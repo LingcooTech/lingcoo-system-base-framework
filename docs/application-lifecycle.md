@@ -30,7 +30,9 @@
 @lingcootech/frame-web
 ```
 
-Frame 使用 Changesets 统一版本。Stable 公开发布到 npmjs；Preview/Canary 发布到 GitHub Packages。
+Frame 使用 Changesets 统一版本。Stable 长期发布到 npmjs；Preview/Canary 发布到 GitHub Packages。
+截至 2026-08-10，`@lingcootech` npm scope 等待删除名称释放，Consumer 暂时使用 GitHub Packages
+Preview，不能把 npmjs Stable 标记为已经发布。
 Consumer 必须锁定明确版本并提交
 `package-lock.json`，不能让生产环境跟随 `latest`、`preview` 或 `canary` dist-tag。完整公开入口与发布
 规则见 [0.7 Package Contracts](package-contracts.md)。
@@ -59,7 +61,8 @@ package-lock.json
 
 ## 4. 安装 Frame 包
 
-Stable 包从 npmjs 匿名安装，不需要复制 Frame 源码、`.npmrc`、PAT 或逐包 Actions Access：
+scope 释放并完成首次 Stable 发布后，包可从 npmjs 匿名安装，不需要复制 Frame 源码、`.npmrc`、PAT
+或逐包 Actions Access：
 
 ```bash
 npm install \
@@ -246,18 +249,18 @@ push main
 
 `lingcoo-official-website-system` 已验证以下完整链路：
 
-| 环节                                      | 状态     |
-| ----------------------------------------- | -------- |
-| Frame Preview 发布                        | 已打通   |
-| 独立仓库安装八个版本化包                  | 已打通   |
-| Core、CMS、领域扩展组合                   | 已打通   |
-| 空库完整迁移                              | 已打通   |
-| API、Worker、Admin、Web                   | 已打通   |
-| Ubuntu CI 与 Alpine 生产构建              | 已打通   |
-| ACR/GHCR 镜像发布、服务器迁移和健康检查   | 已打通   |
-| 自动创建新应用                            | 尚未自动 |
-| Stable 匿名安装、无需逐包授权             | 发布就绪 |
-| 从上一 Frame 版本升级到下一版本的真实验证 | 尚未验证 |
+| 环节                                      | 状态                |
+| ----------------------------------------- | ------------------- |
+| Frame Preview 发布                        | 已打通              |
+| 独立仓库安装八个版本化包                  | 已打通              |
+| Core、CMS、领域扩展组合                   | 已打通              |
+| 空库完整迁移                              | 已打通              |
+| API、Worker、Admin、Web                   | 已打通              |
+| Ubuntu CI 与 Alpine 生产构建              | 已打通              |
+| ACR/GHCR 镜像发布、服务器迁移和健康检查   | 已打通              |
+| 自动创建新应用                            | 尚未自动            |
+| Stable 匿名安装、无需逐包授权             | 等待 npm scope 释放 |
+| 从上一 Frame 版本升级到下一版本的真实验证 | 尚未验证            |
 
 因此，当前端到端技术链路已经可用；开源治理和公开发布链路已落地，应用创建和跨版本升级仍需按
 [应用接入产品化实施方案](application-adoption-plan.md) 继续自动化。

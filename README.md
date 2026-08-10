@@ -29,8 +29,9 @@ Stack 中台、应用市场、客户代码/数据、商业镜像交付和运维�
 参与贡献、安全披露和支持范围分别见 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md) 和
 [SUPPORT.md](SUPPORT.md)。
 
-Stable 包以同一版本集发布到 npmjs，Consumer 可匿名安装；GitHub Packages 只保留需要 Token 的 Preview
-和 Canary 通道。生产应用必须锁定明确版本与 lockfile，不自动跟随 `latest`。
+Stable 长期以同一版本集发布到 npmjs，Consumer 可匿名安装。`@lingcootech` npm scope 当前处于名称
+释放等待期，生产验证暂时继续使用需要 Token 的 GitHub Packages Preview。生产应用必须锁定明确版本与
+lockfile，不自动跟随 dist-tag。
 
 ## 当前包含什么
 

@@ -4,10 +4,19 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', 'apps/**', 'packages/**', 'fixtures/example-extension/**'],
+    ignores: [
+      '**/dist/**',
+      'apps/**',
+      'packages/**',
+      'templates/**',
+      'fixtures/example-extension/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } },
+  },
   {
     files: ['test/**/*.ts', 'scripts/**/*.mjs', 'fixtures/**/*.mjs'],
     languageOptions: {

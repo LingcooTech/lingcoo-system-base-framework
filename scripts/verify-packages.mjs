@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -9,6 +9,7 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const temporaryRoot = await mkdtemp(path.join(tmpdir(), 'lingcoo-frame-pack-'));
 const archiveDirectory = path.join(temporaryRoot, 'archives');
 const consumerDirectory = path.join(temporaryRoot, 'consumer');
+const generatedConsumerDirectory = path.join(temporaryRoot, 'generated-consumer');
 
 function packPackage(directory) {
   const output = execFileSync(
@@ -29,6 +30,20 @@ function assertPackageFiles(packageName, actualFiles, expectedFiles) {
   }
 }
 
+async function findPackageManifests(root) {
+  const manifests = [];
+  async function visit(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      if (['dist', 'node_modules'].includes(entry.name)) continue;
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) await visit(entryPath);
+      else if (entry.name === 'package.json') manifests.push(entryPath);
+    }
+  }
+  await visit(root);
+  return manifests;
+}
+
 await mkdir(archiveDirectory, { recursive: true });
 
 try {
@@ -40,7 +55,11 @@ try {
   const web = packPackage(path.join(repositoryRoot, 'packages/web-shell'));
   const designTokens = packPackage(path.join(repositoryRoot, 'packages/design-tokens'));
   const ui = packPackage(path.join(repositoryRoot, 'packages/ui'));
+  const createFrameApp = packPackage(path.join(repositoryRoot, 'packages/create-frame-app'));
   const exampleExtension = packPackage(path.join(repositoryRoot, 'fixtures/example-extension'));
+  const frameVersion = JSON.parse(
+    await readFile(path.join(repositoryRoot, 'packages/frame/package.json'), 'utf8'),
+  ).version;
 
   assertPackageFiles('@lingcootech/frame', frame.files, [
     'dist/index.js',
@@ -140,6 +159,13 @@ try {
     'dist/Button.d.ts',
     'dist/styles.css',
   ]);
+  assertPackageFiles('@lingcootech/create-frame-app', createFrameApp.files, [
+    'dist/cli.mjs',
+    'dist/generator.mjs',
+    'dist/template/package.json',
+    'dist/template/apps/system/src/system.ts',
+    'dist/template/packages/domain/src/contracts.ts',
+  ]);
   for (const [packageName, archive] of [
     ['@lingcootech/frame', frame],
     ['@lingcootech/frame-database', database],
@@ -207,7 +233,136 @@ try {
     stdio: 'inherit',
   });
 
-  console.log('All Frame package tarballs verified.');
+  execFileSync(
+    'node',
+    [
+      path.join(repositoryRoot, 'packages/create-frame-app/dist/cli.mjs'),
+      generatedConsumerDirectory,
+      '--package-scope',
+      '@generated',
+      '--system-id',
+      'generated-consumer',
+      '--display-name',
+      'Generated Consumer',
+      '--frame-version',
+      frameVersion,
+      '--registry',
+      'github',
+      '--no-install',
+    ],
+    { cwd: repositoryRoot, stdio: 'inherit' },
+  );
+
+  const generatedArchives = new Map([
+    ['@lingcootech/create-frame-app', createFrameApp.archive],
+    ['@lingcootech/frame', frame.archive],
+    ['@lingcootech/frame-admin', admin.archive],
+    ['@lingcootech/frame-cms', cms.archive],
+    ['@lingcootech/frame-database', database.archive],
+    ['@lingcootech/frame-design-tokens', designTokens.archive],
+    ['@lingcootech/frame-extension-sdk', extensionSdk.archive],
+    ['@lingcootech/frame-ui', ui.archive],
+    ['@lingcootech/frame-web', web.archive],
+  ]);
+  const vendoredArchives = new Map();
+  const vendoredDirectory = path.join(generatedConsumerDirectory, '.frame-packages');
+  await mkdir(vendoredDirectory, { recursive: true });
+  for (const [packageName, archive] of generatedArchives) {
+    const vendoredArchive = path.join(vendoredDirectory, path.basename(archive));
+    await cp(archive, vendoredArchive);
+    vendoredArchives.set(packageName, vendoredArchive);
+  }
+  for (const manifestPath of await findPackageManifests(generatedConsumerDirectory)) {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    for (const field of [
+      'dependencies',
+      'devDependencies',
+      'optionalDependencies',
+      'peerDependencies',
+    ]) {
+      for (const dependencyName of Object.keys(manifest[field] ?? {})) {
+        const archive = vendoredArchives.get(dependencyName);
+        if (archive) {
+          const relativeArchive = path.relative(path.dirname(manifestPath), archive);
+          manifest[field][dependencyName] = `file:${relativeArchive.split(path.sep).join('/')}`;
+        }
+      }
+    }
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+
+  execFileSync(
+    'npm',
+    [
+      'install',
+      '--prefer-offline',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--fetch-retries=0',
+      '--fetch-timeout=10000',
+    ],
+    {
+      cwd: generatedConsumerDirectory,
+      env: {
+        ...process.env,
+        NODE_AUTH_TOKEN:
+          process.env.NODE_AUTH_TOKEN ?? 'generated-consumer-uses-local-frame-tarballs',
+      },
+      stdio: 'inherit',
+    },
+  );
+  execFileSync('npm', ['run', 'frame:verify'], {
+    cwd: generatedConsumerDirectory,
+    env: { ...process.env, FRAME_ALLOW_LOCAL_TARBALLS: '1' },
+    stdio: 'inherit',
+  });
+  execFileSync('npm', ['run', 'check'], {
+    cwd: generatedConsumerDirectory,
+    env: { ...process.env, FRAME_ALLOW_LOCAL_TARBALLS: '1' },
+    stdio: 'inherit',
+  });
+  execFileSync('npm', ['run', 'build:all'], {
+    cwd: generatedConsumerDirectory,
+    env: process.env,
+    stdio: 'inherit',
+  });
+  if (process.env.DATABASE_URL) {
+    execFileSync('npm', ['run', 'db:migrate'], {
+      cwd: generatedConsumerDirectory,
+      env: process.env,
+      stdio: 'inherit',
+    });
+  }
+  if (process.env.VERIFY_GENERATED_DOCKER === '1') {
+    const dockerfilePath = path.join(generatedConsumerDirectory, 'Dockerfile');
+    const verificationDockerfilePath = path.join(generatedConsumerDirectory, 'Dockerfile.verify');
+    const dockerfile = await readFile(dockerfilePath, 'utf8');
+    const manifestCopy = 'COPY packages/domain/package.json ./packages/domain/';
+    assert.ok(dockerfile.includes(manifestCopy), 'Generated Dockerfile structure changed');
+    await writeFile(
+      verificationDockerfilePath,
+      dockerfile.replace(manifestCopy, `${manifestCopy}\nCOPY .frame-packages ./.frame-packages`),
+    );
+    const dummySecret = path.join(temporaryRoot, 'dummy-npm-token');
+    await writeFile(dummySecret, 'local-tarball-verification');
+    execFileSync(
+      'docker',
+      [
+        'build',
+        '--file',
+        'Dockerfile.verify',
+        '--secret',
+        `id=npm_token,src=${dummySecret}`,
+        '--tag',
+        `frame-generated-consumer:${frameVersion.replaceAll('+', '-')}`,
+        '.',
+      ],
+      { cwd: generatedConsumerDirectory, env: process.env, stdio: 'inherit' },
+    );
+  }
+
+  console.log('All Frame package tarballs and the generated Consumer verified.');
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

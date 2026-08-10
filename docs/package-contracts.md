@@ -3,7 +3,8 @@
 ## 状态
 
 `0.7` 是第一个通过 `@lingcootech` scope 分发的包契约。仓库 CI 验证真实 npm tarball。公开 Stable
-发布到 npmjs 的 `latest` dist-tag；GitHub Packages 继续承载需要 Token 的 `preview` 和 `canary`。Consumer 应锁定同一 `0.7.x` Backend、
+目标是 npmjs 的 `latest` dist-tag；scope 释放前由 GitHub Packages 承载需要 Token 的 `preview` 和
+`canary`。Consumer 应锁定同一 `0.7.x` Backend、
 Database、Extension SDK、Admin、Web 和一方扩展版本，不导入 `exports` 之外的文件。
 
 Stable Consumer 通过普通 npm 依赖消费 Frame，不拉取或复制 Frame 源码，也不需要 Registry Token：
@@ -136,7 +137,8 @@ PostgreSQL 17，并真实执行全部迁移。
 
 包版本由 Changesets 统一管理：`npm run changeset` 记录变更，`npm run version:packages` 应用版本，
 `Release Frame Packages` workflow 发布 Preview/Stable，`Release Frame Canary` workflow 发布当前提交的
-不可变 Canary。发布脚本只读取明确列出的八个 `private: false` 包，不会发布 Reference App 或 Fixture。
+不可变 Canary。发布脚本只读取明确列出的八个运行时包和 `create-frame-app` 生成器，不会发布 Reference
+App 或 Fixture。
 
 完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见
 [第一方扩展边界](first-party-extensions.md)。独立业务仓库的安装、开发、CI、Docker 和生产部署顺序见

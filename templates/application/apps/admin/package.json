@@ -1,0 +1,38 @@
+{
+  "name": "__PACKAGE_SCOPE__/__PROJECT_NAME__-admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@lingcootech/frame-admin": "__FRAME_VERSION__",
+    "@lingcootech/frame-cms": "__FRAME_VERSION__",
+    "@lingcootech/frame-design-tokens": "__FRAME_VERSION__",
+    "@lingcootech/frame-extension-sdk": "__FRAME_VERSION__",
+    "@lingcootech/frame-ui": "__FRAME_VERSION__",
+    "__PACKAGE_SCOPE__/__PROJECT_NAME__-domain": "*",
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.8.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^16.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0",
+    "vite": "^7.3.0"
+  }
+}

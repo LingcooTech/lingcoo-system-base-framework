@@ -12,9 +12,9 @@
 | 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成         |
 | 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成          |
 | 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成          |
-| 5. Consumer 试点  | In progress | 官网已从零作为独立 Consumer 上线，跨版本保数据升级待验证 |
-| 6. 文档与参考应用 | In progress | R0-R5 产品化完成，R6 官方站与发布验收待完成              |
-| 7. 开源 Beta      | Not started | -                                                        |
+| 5. Consumer 试点  | In progress | 官网已独立上线；生成器和合成升级门禁完成，真实升级待验证 |
+| 6. 文档与参考应用 | In progress | R0-R6 已交付，线上生命周期与回滚验收待完成               |
+| 7. 开源 Beta      | In progress | Apache-2.0 与公开仓库完成，npmjs scope 释放和首发待完成  |
 | 8. 1.0 稳定       | Not started | -                                                        |
 
 ## 阶段 0：架构冻结
@@ -40,7 +40,7 @@
 - ADR 0003：确定命名空间迁移、checksum、Legacy Alias 和前向升级规则。
 - ADR 0004：确定 SemVer、发布通道、受控升级和 Apache-2.0 Core 开源路线。
 - README 和架构文档已改为“参考实现向可依赖平台演进”的准确定位。
-- `lingcoo.framework.json` 已补齐当前 16 个基础模块。
+- `lingcootech.framework.json` 已补齐当前 16 个基础模块。
 - 修复两处既存 Prettier 格式偏差，没有逻辑变化。
 
 验证结果：
@@ -691,6 +691,22 @@ Frame 跨版本升级。
 
 - 本次是从零重建，不是从已发布 Frame 版本原地升级，因此没有证明“保留生产数据”的跨版本升级能力。
 - 创建仓库和版本升级仍依赖人工操作。Frame 已完成 Apache-2.0 开源治理，Stable 公开发布目标切换到
-  npmjs 匿名安装，不再把逐包 Actions Access 作为正式接入流程。剩余实施方案见
+  npmjs 匿名安装；scope 等待期仍使用 GitHub Packages 和逐包 Actions Access。剩余实施方案见
   [Frame 应用接入产品化实施方案](application-adoption-plan.md)。
 - 阶段 5 保持 `In progress`，直到官网完成至少一次 Frame Canary/Preview 到下一受支持版本的保数据升级。
+
+### 应用生成器与升级门禁（2026-08-10）
+
+已交付：
+
+- 新增单一模板源 `templates/application` 和公开包 `@lingcootech/create-frame-app@0.7.2`；新系统不再
+  复制官网或 Frame 源码，可按 CMS/Web 特性生成独立 workspaces Consumer。
+- 生成应用内置 `lingcootech.frame.json`、版本一致性 CI、PostgreSQL、本地迁移、BuildKit secret 和
+  非 root Alpine 生产镜像；凭据只保留环境变量占位符。
+- `packages:verify` 新增 Generated Consumer，使用候选 tarball 完成隔离安装、类型检查、测试、Lint、
+  System/Admin/Web 构建和 Docker build。
+- Release workflow 新增 `0.7.1 → 0.7.2` PostgreSQL 升级门禁，已验证旧版本迁移、数据哨兵保留、
+  候选迁移追加和重复迁移幂等。
+
+遗留：官网真实数据库升级、Preview 运行验证与回滚演练仍是阶段 5 的退出条件；GitHub Template 镜像和
+第二个差异化 Consumer 属于后续规模化工作。

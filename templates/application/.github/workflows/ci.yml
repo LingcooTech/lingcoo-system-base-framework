@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  # <github>
+  packages: read
+# </github>
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: __DATABASE_NAME__
+          POSTGRES_USER: __DATABASE_NAME__
+          POSTGRES_PASSWORD: ci_only_password
+        ports:
+          - 5438:5432
+        options: >-
+          --health-cmd "pg_isready -U __DATABASE_NAME__ -d __DATABASE_NAME__"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://__DATABASE_NAME__:ci_only_password@localhost:5438/__DATABASE_NAME__
+      # <github>
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # </github>
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          # <github>
+          registry-url: https://npm.pkg.github.com
+          scope: '@lingcootech'
+      # </github>
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run check
+      - run: npm run build:all
+      - run: npm audit --omit=dev --audit-level=high

@@ -3,14 +3,30 @@
 ## 目标
 
 Frame `0.7.1` 已经通过第一个独立生产应用验证了发布、安装、组合、迁移、CI、镜像和部署。2026-08-09
-已经完成开源治理和公开 Stable 发布链路，原有“八包逐一授权”问题由 npmjs 匿名安装消除。下一阶段
-不是增加更多 Core 功能，而是把以下两个仍依赖人工经验的环节产品化：
+完成开源治理；npmjs Stable 配置已就绪，但 `@lingcootech` scope 处于名称释放等待期，当前继续使用
+GitHub Packages Preview。下一阶段不是增加更多 Core 功能，而是把以下两个仍依赖人工经验的环节产品化：
 
 1. 新应用没有标准生成器，需要手工创建目录和入口。
 2. 尚未真实验证从一个已发布 Frame 版本升级到下一个版本。
 
 最终目标是让一个新的业务仓库通过一个初始化命令获得可运行、可测试、可部署、可升级的系统，同时
 保留明确的安全和迁移门禁。
+
+## 实施进展（2026-08-10）
+
+阶段 A 和阶段 B 的仓库内 MVP 已完成：
+
+- `templates/application` 成为唯一应用模板源，`@lingcootech/create-frame-app@0.7.2` 支持非交互创建、
+  功能裁剪、版本一致性校验和受控升级。
+- Generated Consumer 使用本次构建的九个真实 tarball，在独立临时目录完成安装、类型检查、测试、
+  Admin/Web/System 生产构建和 Alpine 多阶段镜像构建；CI 有 PostgreSQL 时同时验证空库迁移。
+- `lingcootech.frame.json` 及其 JSON Schema 已落地，八个运行时包必须保持精确同版本。
+- Release 门禁已真实验证 `0.7.1 → 0.7.2`：旧版本迁移并写入数据哨兵，候选版本在同一 PostgreSQL
+  数据库迁移，断言数据保留、账本增长和第二次迁移零变更。
+
+尚未完成的是真实 Consumer 试点：官网仍需提交 `0.7.1 → 0.7.2` 升级并在其 Preview/生产部署中
+确认登录、CMS、询盘、Worker 与回滚流程。GitHub Template Repository 镜像属于阶段 C，不阻塞 CLI
+创建应用。
 
 ## 实施原则
 
@@ -64,7 +80,8 @@ package-lock.json    与生成器版本一致的精确 Frame 版本
 3. 生成器先支持非交互参数，交互模式只是其包装，保证 CI 可重复执行。
 4. `packages:verify` 增加 Generated Consumer：在临时目录生成应用、安装本次构建 tarball、编译所有运行面。
 5. CI 使用 PostgreSQL 17 对生成应用执行空库迁移、测试和生产构建。
-6. Docker Verify 同时覆盖 Ubuntu/glibc 和 Alpine/musl 原生依赖。
+6. Generated Consumer 在 Node 环境完成源码构建，并通过 Alpine/musl 生产镜像验证；Consumer CI 的
+   Ubuntu runner 覆盖 glibc 原生依赖。
 7. 发布 Frame 时同步发布同版本生成器；版本不一致时生成器直接拒绝。
 
 ### 验收标准
@@ -75,11 +92,11 @@ package-lock.json    与生成器版本一致的精确 Frame 版本
 - 生成应用在隔离目录通过 `npm ci`、空库迁移、`check`、`build:all` 和 Docker build。
 - 连续生成两次得到除时间戳外完全一致的结果。
 
-## 已完成：公开分发取代八包授权
+## 分发状态：开源已完成，npmjs Stable 待 scope 释放
 
-Frame 采用 Apache-2.0，源码仓库公开。八个官方包声明相同许可证和公开 npmjs `publishConfig`；Stable
-使用 npmjs `latest`，Preview/Canary 保留在 GitHub Packages。Stable Consumer 不再配置 `.npmrc`、PAT、
-`NODE_AUTH_TOKEN`、BuildKit npm secret 或逐包 Actions Access。
+Frame 采用 Apache-2.0，源码仓库公开。八个运行时包和应用生成器声明相同许可证及公开 npmjs
+`publishConfig`。等待期内 Consumer 使用 GitHub Packages Preview，仍需 `.npmrc`、`NODE_AUTH_TOKEN`、
+BuildKit npm secret 和 Package Actions Access；scope 释放并完成首次 Stable 发布后再移除这些配置。
 
 发布脚本按通道强制 Registry 和可见性，CI 检查开源治理文件、包许可证、源码链接和公开发布配置。
 GitHub Packages 即使公开仍要求 Token，因此只作为预发布通道，不再承担开源 Consumer 的默认安装。
@@ -95,19 +112,20 @@ Frame 的 Release workflow 在发布 Stable/Preview 前，同时验证：
 上一受支持版本 → 写入数据哨兵 → 当前候选版本迁移 → 新运行时验证
 ```
 
-Consumer 侧使用一个版本清单和升级命令统一更新八个 Frame 包，避免手工版本漂移。
+Consumer 侧使用一个版本清单和升级命令统一更新八个 Frame 运行时包及同版本生成/升级工具，避免手工
+版本漂移。
 
 ### 版本清单和升级命令
 
-生成应用包含 `lingcoo.frame.json`：
+生成应用包含 `lingcootech.frame.json`：
 
 ```json
 {
-  "frameVersion": "0.7.1",
+  "schemaVersion": 1,
+  "frameVersion": "0.7.2",
   "channel": "preview",
-  "extensions": {
-    "cms": true
-  }
+  "registry": "github",
+  "features": { "cms": true, "web": true }
 }
 ```
 
@@ -120,10 +138,11 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 升级命令负责：
 
 1. 校验目标版本和允许的升级跨度。
-2. 同步八个 Frame 依赖及对应的 Linux 原生可选依赖。
+2. 同步八个 Frame 运行时依赖和 `create-frame-app` 工具；Linux 原生可选依赖由模板维护并在构建门禁
+   验证。
 3. 更新 Manifest 的 Frame SemVer 范围。
 4. 重新生成 lockfile。
-5. 输出需要人工阅读的 Release Notes 和迁移风险。
+5. 升级前要求人工阅读目标版本的 Release Notes 和迁移风险；自动链接将在阶段 C 补齐。
 6. 不自动执行生产迁移、不修改已应用 SQL、不自动提交 Git。
 
 ### Release 升级测试
@@ -167,13 +186,13 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 
 1. 新增 `templates/application` 和非交互生成器 MVP。
 2. 新增 Generated Consumer tarball 验证。
-3. 生成模板默认使用 npmjs Stable，不生成 `.npmrc` 或 npm Token 配置。
+3. scope 等待期默认使用 GitHub Packages Preview；npmjs 首次发布后切换为 Stable 且不生成 Token 配置。
 
 阶段 A 完成后，新应用创建不再需要复制已有项目。
 
 ### 阶段 B：升级门禁
 
-1. 定义 `lingcoo.frame.json` Schema 和同版本校验器。
+1. 定义 `lingcootech.frame.json` Schema 和同版本校验器。
 2. 实现升级命令，但先只输出/修改文件，不接触数据库。
 3. Release CI 增加上一版本数据库升级 Fixture 和数据哨兵。
 4. 使用官网完成首个真实升级 PR。

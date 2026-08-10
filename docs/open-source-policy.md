@@ -26,8 +26,8 @@ Frame 开源不改变以下资产的权属或分发策略：
 
 ```text
 公开 GitHub 源码
-├── npmjs Stable / latest：公开、匿名安装、供应用生产锁定版本
-├── GitHub Packages Preview / Canary：需 GitHub Token 的预发布验证
+├── npmjs Stable / latest：目标公开渠道，等待 @lingcootech scope 释放
+├── GitHub Packages Preview / Canary：当前渠道，需 GitHub Token
 └── GHCR Reference Image：用于体验和参考部署，不等于商业应用镜像
 ```
 
@@ -35,8 +35,8 @@ Frame 开源不改变以下资产的权属或分发策略：
 `package.json` 和 lockfile 中锁定明确版本，不能让生产环境自动跟随 dist-tag。Preview 和 Canary 不作
 长期兼容承诺。
 
-GitHub npm registry 即使公开包也要求 Token，因此它不作为开源 Stable 的主分发入口。npmjs Stable
-完成首次发布后，全新 Consumer 不需要 `.npmrc`、PAT、`NODE_AUTH_TOKEN` 或逐包 Actions Access。
+GitHub npm registry 即使公开包也要求 Token，因此它只是 scope 等待期和长期预发布通道。npmjs Stable
+完成首次发布后，全新 Consumer 才不需要 `.npmrc`、PAT、`NODE_AUTH_TOKEN` 或逐包 Actions Access。
 
 ## 商业闭环
 

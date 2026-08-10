@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@import '@lingcootech/frame-design-tokens/base.css';
+@import '@lingcootech/frame-design-tokens/public.css';
+@import '@lingcootech/frame-ui/styles.css';
+@import '@lingcootech/frame-web/styles.css';
+/* <cms> */
+@import '@lingcootech/frame-cms/styles.css';
+/* </cms> */
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #17201d;
+  background: #f4f6f4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.domain-page {
+  width: min(100% - 48px, 960px);
+  margin: 0 auto;
+  padding: 96px 0;
+}

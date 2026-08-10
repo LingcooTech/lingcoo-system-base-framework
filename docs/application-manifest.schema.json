@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/LingcooTech/lingcoo-system-base-framework/main/docs/application-manifest.schema.json",
+  "title": "LingcooTech Frame Consumer Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "frameVersion", "channel", "registry", "features"],
+  "properties": {
+    "$schema": { "type": "string", "format": "uri" },
+    "schemaVersion": { "const": 1 },
+    "frameVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "channel": { "enum": ["canary", "preview", "stable"] },
+    "registry": { "enum": ["github", "npmjs"] },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cms", "web"],
+      "properties": {
+        "cms": { "type": "boolean" },
+        "web": { "type": "boolean" }
+      }
+    }
+  }
+}
