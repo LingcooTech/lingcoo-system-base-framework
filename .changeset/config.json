@@ -11,7 +11,8 @@
       "@lingcootech/frame-design-tokens",
       "@lingcootech/frame-extension-sdk",
       "@lingcootech/frame-ui",
-      "@lingcootech/frame-web"
+      "@lingcootech/frame-web",
+      "@lingcootech/create-frame-app"
     ]
   ],
   "linked": [],
