@@ -2,12 +2,10 @@
 
 ## 目标
 
-Frame `0.7.1` 已经通过第一个独立生产应用验证了发布、安装、组合、迁移、CI、镜像和部署。2026-08-09
-完成开源治理；npmjs Stable 配置已就绪，但 `@lingcootech` scope 处于名称释放等待期，当前继续使用
-GitHub Packages Preview。下一阶段不是增加更多 Core 功能，而是把以下两个仍依赖人工经验的环节产品化：
-
-1. 新应用没有标准生成器，需要手工创建目录和入口。
-2. 尚未真实验证从一个已发布 Frame 版本升级到下一个版本。
+Frame `0.7.1` 已经通过第一个独立生产应用验证了发布、安装、组合、迁移、CI、镜像和部署。2026-08-10
+又完成了官网 Consumer 从 `0.7.1` 到 `0.7.2` 的保数据生产升级。开源治理已经完成；npmjs Stable 配置
+已就绪，但 `@lingcootech` scope 处于名称释放等待期，当前继续使用 GitHub Packages Preview。本方案原定
+产品化的标准生成器和真实跨版本升级两个环节均已落地，后续重点转为第二个差异化 Consumer 和规模化体验。
 
 最终目标是让一个新的业务仓库通过一个初始化命令获得可运行、可测试、可部署、可升级的系统，同时
 保留明确的安全和迁移门禁。
@@ -24,9 +22,13 @@ GitHub Packages Preview。下一阶段不是增加更多 Core 功能，而是把
 - Release 门禁已真实验证 `0.7.1 → 0.7.2`：旧版本迁移并写入数据哨兵，候选版本在同一 PostgreSQL
   数据库迁移，断言数据保留、账本增长和第二次迁移零变更。
 
-尚未完成的是真实 Consumer 试点：官网仍需提交 `0.7.1 → 0.7.2` 升级并在其 Preview/生产部署中
-确认登录、CMS、询盘、Worker 与回滚流程。GitHub Template Repository 镜像属于阶段 C，不阻塞 CLI
-创建应用。
+- 官网升级 PR 已将八个运行时包和生成器统一升级到 `0.7.2`；CI、Alpine 镜像和生产部署通过。
+- 生产迁移前后受保护数据计数均为 `accounts=1 inquiries=0 cms_entries=0 migrations=13`，13 条迁移均为
+  `Already applied`，证明升级没有重建数据库或重放 SQL；Worker 与公网健康检查均通过。
+- Consumer 升级 workflow 使用仓库 `GITHUB_TOKEN` 和 Package Actions Access，不保存长期 PAT。
+
+尚未完成的是第二个差异化 Consumer、生产回滚演练和 GitHub Template Repository 镜像；这些属于阶段 C，
+不阻塞 CLI 创建与升级应用。
 
 ## 实施原则
 
@@ -162,13 +164,17 @@ npx @lingcootech/create-frame-app upgrade 0.8.0
 
 ### Consumer 升级试点
 
-第一个升级目标使用官网系统：
+第一个升级目标使用官网系统，以下流程已在 `0.7.1 → 0.7.2` 完成：
 
-1. Frame 发布下一 Canary。
-2. 自动创建官网升级 PR，八个 Frame 包保持同版本。
-3. PR CI 同时执行空库和生产数据库脱敏副本升级。
-4. Preview 环境验证后台登录、CMS、询盘、Worker 和公开站点。
-5. 合并后观察部署与指标，再发布 Stable。
+1. Frame 发布下一 Preview。
+2. 官网升级 workflow 统一更新八个 Frame 包和 lockfile，并创建升级 PR。
+3. PR CI 执行版本一致性、类型、测试、Lint、生产构建和 Alpine 镜像验证。
+4. 合并后在现有生产数据库执行迁移；部署前后自动比较账号、询盘、CMS 内容和迁移账本计数。
+5. 验证 Worker、公开站点和数据库健康状态。
+
+试点同时暴露并修复了两个 Consumer 自动化问题：提交升级结果时必须暂存所有 workspace 的
+`package.json`，不能只暂存根清单；通过 SSH stdin 发送部署脚本时必须先在远端完整落盘再执行，避免
+Compose 子进程消费后续脚本内容。两项均属于应用工作流问题，不需要复制或修改 Frame 源码。
 
 第二个结构不同的业务系统完成同一升级后，才把该升级跨度标记为“多应用验证”。
 

@@ -5,17 +5,17 @@
 
 ## 总体状态
 
-| 阶段              | 状态        | 结果                                                     |
-| ----------------- | ----------- | -------------------------------------------------------- |
-| 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结             |
-| 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成       |
-| 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成         |
-| 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成          |
-| 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成          |
-| 5. Consumer 试点  | In progress | 官网已独立上线；生成器和合成升级门禁完成，真实升级待验证 |
-| 6. 文档与参考应用 | In progress | R0-R6 已交付，线上生命周期与回滚验收待完成               |
-| 7. 开源 Beta      | In progress | Apache-2.0 与公开仓库完成，npmjs scope 释放和首发待完成  |
-| 8. 1.0 稳定       | Not started | -                                                        |
+| 阶段              | 状态        | 结果                                                    |
+| ----------------- | ----------- | ------------------------------------------------------- |
+| 0. 架构冻结       | Completed   | 4 项 ADR、平台路线、0.1 基线和质量门槛已冻结            |
+| 1. 0.2 包化       | Completed   | 4 个可安装包、公开导出和 tarball Consumer 验收完成      |
+| 2. 扩展内核       | Completed   | 0.3 系统组合、分运行面注册与 Migration V2 已完成        |
+| 3. 前端扩展       | Completed   | 0.4 Admin/Web Shell 与受控 Landing Block 已完成         |
+| 4. 第一方扩展     | Completed   | 0.5 CMS 一方扩展、Service Port 与显式启停已完成         |
+| 5. Consumer 试点  | Completed   | 官网已独立上线并完成 0.7.1→0.7.2 保数据生产升级         |
+| 6. 文档与参考应用 | In progress | R0-R6 已交付，线上生命周期与回滚验收待完成              |
+| 7. 开源 Beta      | In progress | Apache-2.0 与公开仓库完成，npmjs scope 释放和首发待完成 |
+| 8. 1.0 稳定       | Not started | -                                                       |
 
 ## 阶段 0：架构冻结
 
@@ -708,5 +708,21 @@ Frame 跨版本升级。
 - Release workflow 新增 `0.7.1 → 0.7.2` PostgreSQL 升级门禁，已验证旧版本迁移、数据哨兵保留、
   候选迁移追加和重复迁移幂等。
 
-遗留：官网真实数据库升级、Preview 运行验证与回滚演练仍是阶段 5 的退出条件；GitHub Template 镜像和
+当时遗留的官网真实数据库升级已由下一节完成；生产回滚演练继续纳入阶段 6，GitHub Template 镜像和
 第二个差异化 Consumer 属于后续规模化工作。
+
+### 官网首次保数据跨版本升级（2026-08-10）
+
+已交付：
+
+- 官网仓库加入 `lingcootech.frame.json`、`frame:verify`、`frame:upgrade` 和常驻升级 workflow；八个
+  Frame 运行时包与生成器由 `0.7.1` 统一升级到 `0.7.2`，没有复制 Frame 源码。
+- 升级 workflow 使用仓库 `GITHUB_TOKEN` 读取 GitHub Packages；八个 Package 完成 Actions Access 后
+  无需个人 PAT。升级 PR 的完整 CI 和 Alpine Docker 验证通过。
+- 生产部署在同一数据库上运行全部迁移，迁移前后均为 `accounts=1 inquiries=0 cms_entries=0
+migrations=13`，13 条迁移全部识别为已应用；受保护数据断言、现有账号保留、Worker 和公网健康检查通过。
+- Consumer 反馈修复了升级提交遗漏 workspace 清单，以及 SSH 流式脚本被 Compose 消费 stdin 的问题；
+  后者改为远端完整落盘后执行。
+
+阶段 5 的独立 Consumer、无底层源码副本、保留生产数据和完整部署链路退出条件已经满足。生产回滚演练
+继续归入阶段 6 的线上生命周期验收；第二个差异化 Consumer 和 GitHub Template 镜像进入规模化阶段。
