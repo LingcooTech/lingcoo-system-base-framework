@@ -11,12 +11,14 @@ import {
 } from '@lingcootech/frame-extension-sdk';
 import { defineEnvironmentExtension } from '@lingcootech/frame-extension-sdk/environment';
 import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
+import { compileMigrationPlan } from '@lingcootech/frame-database/migrations';
 
 import {
   frameCoreExtension,
   frameCoreSystem,
   frameIdentityExtension,
   frameKernelExtension,
+  frameLegacyCoreSystem,
 } from '../src/core/extension.js';
 import { buildApp } from '../src/host/app.js';
 import { loadEnv } from '../src/host/env.js';
@@ -627,6 +629,15 @@ test('the reference extension composes across Server, Worker, settings and migra
   assert.ok(status.eventTopics.includes('example.created'));
   assert.deepEqual(status.extensions, ['frame', 'example']);
   await worker.dispose();
+});
+
+test('legacy Core migration aliases never conflict with their canonical paths', () => {
+  const plan = compileMigrationPlan(collectSystemMigrationSources(frameLegacyCoreSystem));
+  const presentation = plan.find(
+    (migration) => migration.canonicalId === 'frame/0008_presentation.sql',
+  );
+  assert.ok(presentation);
+  assert.deepEqual(presentation.legacyAliases, ['0008_presentation.sql']);
 });
 
 test('Server extensions can resolve the installed security provider capability', async () => {

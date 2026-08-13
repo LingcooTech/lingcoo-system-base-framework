@@ -94,10 +94,7 @@ export const frameCoreManifest = {
       { id: '0003_integrations.sql' },
       { id: '0004_assets.sql' },
       ...frameMigrations.map((id) => ({ id, legacyAliases: [id] })),
-      {
-        id: '0008_presentation.sql',
-        legacyAliases: ['0008_presentation.sql', 'frame/0008_presentation.sql'],
-      },
+      { id: '0008_presentation.sql', legacyAliases: ['0008_presentation.sql'] },
     ],
   },
   admin: frameAdminManifest,

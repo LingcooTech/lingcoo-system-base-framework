@@ -45,3 +45,5 @@ Extract the provider-neutral connection lifecycle into `frame-integrations`, inc
 Move SMTP, Qiniu storage, Alipay/WeChat Pay and OpenRouter implementations into independently publishable adapter packages. Keep legacy imports as compatibility forwards; each HTTP-capable adapter now owns its route schemas and registration surface while Integrations Core remains provider-neutral.
 
 Extract media Assets into `frame-assets`, including its Manifest, REST lifecycle, reference protection, Worker handlers, Admin ownership and migration source. Replace direct Integration, Qiniu, Jobs table and Audit coupling with injectable ports, while the Frame compatibility composition supplies the existing implementations.
+
+Reset the development-stage database schema into final-state Feature-owned migration sources. This release requires a fresh database; in-place data-preserving upgrades from 0.7.1 are intentionally outside the supported migration contract. CI and release gates verify fresh migration completeness and idempotency without weakening migration checksum validation.

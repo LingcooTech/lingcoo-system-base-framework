@@ -148,7 +148,7 @@ const frameLegacyMigrations = defineMigrationExtension(
       {
         id: '0008_presentation.sql',
         sql: presentationMigrationSource.migrations[0]!.sql,
-        legacyAliases: ['0008_presentation.sql', 'frame/0008_presentation.sql'],
+        legacyAliases: ['0008_presentation.sql'],
       },
     ],
   }),

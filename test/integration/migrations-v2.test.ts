@@ -18,6 +18,24 @@ import { identityMigrationSource } from '@lingcootech/frame-identity/migrations'
 import { integrationsMigrationSource } from '@lingcootech/frame-integrations/migrations';
 import { jobsMigrationSource } from '@lingcootech/frame-jobs/migrations';
 import { notificationsMigrationSource } from '@lingcootech/frame-notifications/migrations';
+import { referenceSystem } from '../../apps/reference-system/src/system.js';
+import { collectSystemMigrationSources } from '../../packages/frame/src/runtime/extensions.js';
+
+test('Reference System migration manifests match every runtime source', () => {
+  assert.deepEqual(
+    collectSystemMigrationSources(referenceSystem).map((source) => source.id),
+    [
+      'frame',
+      'frame-identity',
+      'frame-integrations',
+      'frame-jobs',
+      'frame-assets',
+      'frame-presentation',
+      'frame-notifications',
+      'frame-cms',
+    ],
+  );
+});
 
 test('Migration V2 preserves manifest order and sorts source dependencies', () => {
   const base = defineMigrationSource({

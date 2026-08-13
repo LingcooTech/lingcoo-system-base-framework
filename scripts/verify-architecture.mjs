@@ -23,7 +23,7 @@ async function fileText(file) {
 
 function importsDatabaseSchemaSymbol(source, symbol) {
   return new RegExp(
-    `import\\s*\\{[^}]*\\b${symbol}\\b[^}]*\\}\\s*from ['\"]@lingcootech/frame-database/schema['\"]`,
+    `import\\s*\\{[^}]*\\b${symbol}\\b[^}]*\\}\\s*from ['"]@lingcootech/frame-database/schema['"]`,
     's',
   ).test(source);
 }

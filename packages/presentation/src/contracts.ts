@@ -22,7 +22,15 @@ export const presentationManifest = {
       { method: 'GET', path: '/sitemap.xml' },
     ],
   },
-  migrations: { sourceId: 'frame-presentation', migrations: [{ id: '0001_presentation.sql' }] },
+  migrations: {
+    sourceId: 'frame-presentation',
+    migrations: [
+      {
+        id: '0001_presentation.sql',
+        legacyAliases: ['0008_presentation.sql', 'frame/0008_presentation.sql'],
+      },
+    ],
+  },
   admin: {
     routes: [
       {
