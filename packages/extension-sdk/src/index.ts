@@ -16,6 +16,30 @@ export interface ExtensionDependency {
   version: string;
 }
 
+export interface ExtensionCapabilityProvider {
+  id: string;
+  version: string;
+}
+
+export interface ExtensionCapabilityRequirement {
+  id: string;
+  version: string;
+}
+
+export interface ExtensionCapabilityDeclaration {
+  provides?: readonly ExtensionCapabilityProvider[];
+  requires?: readonly ExtensionCapabilityRequirement[];
+}
+
+export interface ExtensionEnvironmentVariableDeclaration {
+  name: string;
+  sensitive?: boolean;
+}
+
+export interface ExtensionEnvironmentDeclaration {
+  variables: readonly ExtensionEnvironmentVariableDeclaration[];
+}
+
 export interface ExtensionRouteDeclaration {
   method: ExtensionRouteMethod;
   path: string;
@@ -92,6 +116,8 @@ export interface ExtensionManifest {
   frame: string;
   dependencies?: readonly ExtensionDependency[];
   optionalDependencies?: readonly ExtensionDependency[];
+  capabilities?: Partial<Record<ExtensionSurfaceName, ExtensionCapabilityDeclaration>>;
+  environment?: ExtensionEnvironmentDeclaration;
   permissions?: readonly string[];
   settings?: readonly string[];
   server?: {
@@ -119,6 +145,7 @@ export interface ExtensionManifest {
 
 export interface ExtensionDefinition {
   manifest: ExtensionManifest;
+  environment?: unknown;
   server?: unknown;
   worker?: unknown;
   migrations?: unknown;
@@ -127,6 +154,20 @@ export interface ExtensionDefinition {
 }
 
 export type ExtensionSurfaceName = 'server' | 'worker' | 'migrations' | 'admin' | 'web';
+
+const extensionSurfaceNames = [
+  'server',
+  'worker',
+  'migrations',
+  'admin',
+  'web',
+] as const satisfies readonly ExtensionSurfaceName[];
+
+const environmentVariablePattern = /^[A-Z][A-Z0-9_]*$/;
+
+function capabilityClaimKey(surface: ExtensionSurfaceName, id: string): string {
+  return `${surface}:${id}`;
+}
 
 export interface DefineSystemOptions {
   id: string;
@@ -248,6 +289,50 @@ function validateManifest(
     }
     if (dependency.id === manifest.id) fail(`Extension ${manifest.id} cannot depend on itself`);
     dependencies.add(dependency.id);
+  }
+
+  for (const surface of extensionSurfaceNames) {
+    const declaration = manifest.capabilities?.[surface];
+    const provided = new Set<string>();
+    const required = new Set<string>();
+    for (const capability of declaration?.provides ?? []) {
+      validateContribution(capability.id, `${surface} capability in ${manifest.id}`);
+      validateVersion(
+        capability.version,
+        `version for ${surface} capability ${capability.id} in ${manifest.id}`,
+      );
+      if (provided.has(capability.id)) {
+        fail(`Duplicate ${surface} capability ${capability.id} provided by ${manifest.id}`);
+      }
+      provided.add(capability.id);
+    }
+    for (const capability of declaration?.requires ?? []) {
+      validateContribution(capability.id, `${surface} capability requirement in ${manifest.id}`);
+      validateRange(
+        capability.version,
+        `version for ${surface} capability requirement ${capability.id} in ${manifest.id}`,
+      );
+      if (required.has(capability.id)) {
+        fail(`Duplicate ${surface} capability ${capability.id} required by ${manifest.id}`);
+      }
+      if (provided.has(capability.id)) {
+        fail(
+          `Extension ${manifest.id} cannot provide and require ${surface} capability ${capability.id}`,
+        );
+      }
+      required.add(capability.id);
+    }
+  }
+
+  const environmentVariables = new Set<string>();
+  for (const variable of manifest.environment?.variables ?? []) {
+    if (!environmentVariablePattern.test(variable.name)) {
+      fail(`Invalid environment variable in ${manifest.id}: ${variable.name}`);
+    }
+    if (environmentVariables.has(variable.name)) {
+      fail(`Duplicate environment variable ${variable.name} in extension ${manifest.id}`);
+    }
+    environmentVariables.add(variable.name);
   }
 
   for (const permission of manifest.permissions ?? []) {
@@ -386,10 +471,20 @@ function validateManifest(
 function sortExtensions(
   extensions: readonly ExtensionDefinition[],
   byId: ReadonlyMap<string, ExtensionDefinition>,
+  capabilityProviders: ReadonlyMap<string, { extensionId: string; version: string }>,
 ): ExtensionDefinition[] {
   const inputOrder = new Map(extensions.map((extension, index) => [extension.manifest.id, index]));
   const outgoing = new Map<string, string[]>();
   const indegree = new Map(extensions.map((extension) => [extension.manifest.id, 0]));
+  const edges = new Set<string>();
+
+  const addEdge = (providerId: string, consumerId: string) => {
+    const key = `${providerId}\0${consumerId}`;
+    if (edges.has(key)) return;
+    edges.add(key);
+    outgoing.set(providerId, [...(outgoing.get(providerId) ?? []), consumerId]);
+    indegree.set(consumerId, (indegree.get(consumerId) ?? 0) + 1);
+  };
 
   for (const extension of extensions) {
     const dependencies = [
@@ -406,8 +501,23 @@ function sortExtensions(
           `Extension ${extension.manifest.id} requires ${dependency.id} ${dependency.version}, installed version is ${installed.manifest.version}`,
         );
       }
-      outgoing.set(dependency.id, [...(outgoing.get(dependency.id) ?? []), extension.manifest.id]);
-      indegree.set(extension.manifest.id, (indegree.get(extension.manifest.id) ?? 0) + 1);
+      addEdge(dependency.id, extension.manifest.id);
+    }
+    for (const surface of extensionSurfaceNames) {
+      for (const capability of extension.manifest.capabilities?.[surface]?.requires ?? []) {
+        const provider = capabilityProviders.get(capabilityClaimKey(surface, capability.id));
+        if (!provider) {
+          fail(
+            `Extension ${extension.manifest.id} is missing ${surface} capability ${capability.id}`,
+          );
+        }
+        if (!semver.satisfies(provider.version, capability.version)) {
+          fail(
+            `Extension ${extension.manifest.id} requires ${surface} capability ${capability.id} ${capability.version}, installed version is ${provider.version}`,
+          );
+        }
+        addEdge(provider.extensionId, extension.manifest.id);
+      }
     }
   }
 
@@ -451,6 +561,15 @@ export function projectExtensionManifest(
     frame: manifest.frame,
     dependencies: manifest.dependencies,
     optionalDependencies: manifest.optionalDependencies,
+    capabilities: manifest.capabilities
+      ? Object.fromEntries(
+          extensionSurfaceNames
+            .filter((surface) => selected.has(surface) && manifest.capabilities?.[surface])
+            .map((surface) => [surface, manifest.capabilities![surface]]),
+        )
+      : undefined,
+    environment:
+      selected.has('server') || selected.has('worker') ? manifest.environment : undefined,
     permissions: manifest.permissions,
     settings: manifest.settings,
     server: selected.has('server') ? manifest.server : undefined,
@@ -474,8 +593,10 @@ export function defineSystem(options: DefineSystemOptions): DefinedSystem {
   if (!apiVersion.trim()) fail('Extension API version cannot be empty');
 
   const byId = new Map<string, ExtensionDefinition>();
+  const capabilityProviders = new Map<string, { extensionId: string; version: string }>();
   const permissions = new Map<string, string>();
   const settings = new Map<string, string>();
+  const environmentVariables = new Map<string, string>();
   const routes = new Map<string, string>();
   const jobs = new Map<string, string>();
   const migrationSources = new Map<string, string>();
@@ -499,11 +620,27 @@ export function defineSystem(options: DefineSystemOptions): DefinedSystem {
     if (byId.has(id)) fail(`Duplicate extension id: ${id}`);
     byId.set(id, extension);
 
+    for (const surface of extensionSurfaceNames) {
+      for (const capability of extension.manifest.capabilities?.[surface]?.provides ?? []) {
+        const key = capabilityClaimKey(surface, capability.id);
+        const existing = capabilityProviders.get(key);
+        if (existing) {
+          fail(
+            `Duplicate ${surface} capability ${capability.id} provided by ${existing.extensionId} and ${id}`,
+          );
+        }
+        capabilityProviders.set(key, { extensionId: id, version: capability.version });
+      }
+    }
+
     for (const permission of extension.manifest.permissions ?? []) {
       claim(permissions, permission, id, 'permission');
     }
     for (const setting of extension.manifest.settings ?? []) {
       claim(settings, setting, id, 'setting');
+    }
+    for (const variable of extension.manifest.environment?.variables ?? []) {
+      claim(environmentVariables, variable.name, id, 'environment variable');
     }
     for (const route of extension.manifest.server?.routes ?? []) {
       claim(routes, `${route.method} ${route.path}`, id, 'route');
@@ -553,7 +690,7 @@ export function defineSystem(options: DefineSystemOptions): DefinedSystem {
     }
   }
 
-  const extensions = sortExtensions(options.extensions, byId);
+  const extensions = sortExtensions(options.extensions, byId, capabilityProviders);
   return Object.freeze({
     id: options.id,
     version: options.version,

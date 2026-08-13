@@ -8,14 +8,12 @@ import { useEffect, useState, type FormEvent } from 'react';
 import {
   archiveNotification,
   fetchAdminNotifications,
-  fetchIntegrationConnections,
   fetchMyNotifications,
   fetchNotificationDeliveries,
   fetchUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead,
   publishAnnouncement,
-  type IntegrationConnection,
   type NotificationItem,
   type NotificationDelivery,
 } from '../client.js';
@@ -34,24 +32,21 @@ export function NotificationsPage() {
   const [mine, setMine] = useState<NotificationItem[]>([]);
   const [adminItems, setAdminItems] = useState<NotificationItem[]>([]);
   const [deliveries, setDeliveries] = useState<NotificationDelivery[]>([]);
-  const [smtpConnections, setSmtpConnections] = useState<IntegrationConnection[]>([]);
   const [unread, setUnread] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [level, setLevel] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   const [sendEmail, setSendEmail] = useState(false);
-  const [smtpConnectionId, setSmtpConnectionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
   async function load() {
     try {
-      const [myResult, count, connections, adminResult, deliveryResult] = await Promise.all([
+      const [myResult, count, adminResult, deliveryResult] = await Promise.all([
         fetchMyNotifications(),
         fetchUnreadNotificationCount(),
-        fetchIntegrationConnections(),
         hasPermission('notifications.read')
           ? fetchAdminNotifications()
           : Promise.resolve({ items: [], total: 0 }),
@@ -63,9 +58,6 @@ export function NotificationsPage() {
       setUnread(count);
       setAdminItems(adminResult.items);
       setDeliveries(deliveryResult.items);
-      const smtp = connections.filter((item) => item.providerCode === 'smtp' && item.enabled);
-      setSmtpConnections(smtp);
-      setSmtpConnectionId((current) => current || smtp[0]?.id || '');
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '通知加载失败');
@@ -76,7 +68,6 @@ export function NotificationsPage() {
     Promise.all([
       fetchMyNotifications(),
       fetchUnreadNotificationCount(),
-      fetchIntegrationConnections(),
       hasPermission('notifications.read')
         ? fetchAdminNotifications()
         : Promise.resolve({ items: [], total: 0 }),
@@ -84,14 +75,11 @@ export function NotificationsPage() {
         ? fetchNotificationDeliveries()
         : Promise.resolve({ items: [], total: 0 }),
     ])
-      .then(([myResult, count, connections, adminResult, deliveryResult]) => {
+      .then(([myResult, count, adminResult, deliveryResult]) => {
         setMine(myResult.items);
         setUnread(count);
         setAdminItems(adminResult.items);
         setDeliveries(deliveryResult.items);
-        const smtp = connections.filter((item) => item.providerCode === 'smtp' && item.enabled);
-        setSmtpConnections(smtp);
-        setSmtpConnectionId((current) => current || smtp[0]?.id || '');
         setError('');
       })
       .catch((cause: unknown) => {
@@ -118,7 +106,6 @@ export function NotificationsPage() {
         body,
         level,
         sendEmail,
-        ...(sendEmail && smtpConnectionId ? { smtpConnectionId } : {}),
       });
       setMessage(
         `公告已发布给 ${result.recipientCount} 个账号${sendEmail ? '，邮件已进入任务队列' : ''}。`,
@@ -231,7 +218,7 @@ export function NotificationsPage() {
         </div>
       ),
     },
-    { key: 'connection', header: '通道', cell: (item) => item.connectionName || item.channel },
+    { key: 'connection', header: '通道', cell: (item) => item.transportLabel || item.channel },
     {
       key: 'status',
       header: '投递状态',
@@ -286,8 +273,8 @@ export function NotificationsPage() {
         </article>
         <article className="metric-card">
           <span>邮件通道</span>
-          <strong>{smtpConnections.length}</strong>
-          <small>已启用 SMTP 连接</small>
+          <strong>{sendEmail ? '启用' : '按需'}</strong>
+          <small>由 Mail Adapter 提供</small>
         </article>
       </div>
       {message ? <p className="integration-notice success">{message}</p> : null}
@@ -358,12 +345,7 @@ export function NotificationsPage() {
               <Button onClick={() => setDialogOpen(false)} variant="secondary">
                 取消
               </Button>
-              <Button
-                disabled={sendEmail && smtpConnections.length === 0}
-                form="announcement-form"
-                loading={submitting}
-                type="submit"
-              >
+              <Button form="announcement-form" loading={submitting} type="submit">
                 确认发布
               </Button>
             </DialogFooter>
@@ -419,28 +401,7 @@ export function NotificationsPage() {
                 <small>每个接收账号创建一个可重试任务。</small>
               </span>
             </label>
-            {sendEmail ? (
-              <FormField label="SMTP 连接" required>
-                {({ controlId }) => (
-                  <select
-                    className="integration-select"
-                    id={controlId}
-                    onChange={(event) => setSmtpConnectionId(event.target.value)}
-                    required
-                    value={smtpConnectionId}
-                  >
-                    {smtpConnections.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </FormField>
-            ) : null}
-            {sendEmail && smtpConnections.length === 0 ? (
-              <p className="auth-error">请先配置、测试并启用 SMTP 连接。</p>
-            ) : null}
+            {sendEmail ? <p className="form-help">系统将使用当前默认的邮件投递适配器。</p> : null}
           </form>
         </DialogContent>
       </Dialog>

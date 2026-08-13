@@ -5,7 +5,7 @@ import { DataExchangeService } from './service.js';
 export const dataExchangeModule: AppModule = {
   name: 'data-exchange',
   register(app) {
-    const service = new DataExchangeService(app.db, app.datasetRegistry);
+    const service = new DataExchangeService(app.db, app.datasetRegistry, app.auditCommands);
     app.get(
       '/api/data-exchange/datasets',
       { preHandler: app.requirePermission('data_exchange.read') },

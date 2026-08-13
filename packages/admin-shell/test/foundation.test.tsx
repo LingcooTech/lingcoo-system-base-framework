@@ -8,7 +8,15 @@ import { defineExtension, defineSystem } from '@lingcootech/frame-extension-sdk'
 import { AdminShell, createAdminRegistry, defineAdminExtension } from '../src/index.js';
 import { AdminAuthProvider, type AdminAccount, type AdminAuthClient } from '../src/auth.js';
 import { AdminApplicationShell } from '../src/layout.js';
-import { frameAdminManifest } from '../src/manifest.js';
+import {
+  frameAdminManifest,
+  frameAssetsAdminManifest,
+  frameIdentityAdminManifest,
+  frameIntegrationsAdminManifest,
+  frameJobsAdminManifest,
+  frameKernelAdminManifest,
+  frameNotificationsAdminManifest,
+} from '../src/manifest.js';
 import { AdminRouterProvider } from '../src/router.js';
 import { DataTable, PageFrame } from '../src/shared.js';
 import {
@@ -143,6 +151,59 @@ test('Frame keeps technical routes hidden and contributes one application settin
     assert.equal(routeIds.has(routeId), true);
     assert.equal(navigationRouteIds.has(routeId), false);
   }
+});
+
+test('Identity Admin routes are independently selectable from the Kernel surface', () => {
+  const identityRouteIds = frameIdentityAdminManifest.routes.map((route) => route.id);
+  const kernelRouteIds = frameKernelAdminManifest.routes.map((route) => route.id);
+  assert.deepEqual(identityRouteIds, ['frame.access', 'frame.account']);
+  assert.equal(kernelRouteIds.includes('frame.access'), false);
+  assert.equal(kernelRouteIds.includes('frame.account'), false);
+  assert.equal(kernelRouteIds.includes('frame.system-info'), true);
+});
+
+test('Jobs Admin route is independently selectable from the Kernel surface', () => {
+  assert.deepEqual(
+    frameJobsAdminManifest.routes.map((route) => route.id),
+    ['frame.operations'],
+  );
+  assert.equal(
+    frameKernelAdminManifest.routes.some((route) => route.id === 'frame.operations'),
+    false,
+  );
+});
+
+test('Notifications Admin route is independently selectable from the Kernel surface', () => {
+  assert.deepEqual(
+    frameNotificationsAdminManifest.routes.map((route) => route.id),
+    ['frame.notifications'],
+  );
+  assert.equal(
+    frameKernelAdminManifest.routes.some((route) => route.id === 'frame.notifications'),
+    false,
+  );
+});
+
+test('Integrations Admin route is independently selectable from the Kernel surface', () => {
+  assert.deepEqual(
+    frameIntegrationsAdminManifest.routes.map((route) => route.id),
+    ['frame.integrations'],
+  );
+  assert.equal(
+    frameKernelAdminManifest.routes.some((route) => route.id === 'frame.integrations'),
+    false,
+  );
+});
+
+test('Assets Admin route is independently selectable from the Kernel surface', () => {
+  assert.deepEqual(
+    frameAssetsAdminManifest.routes.map((route) => route.id),
+    ['frame.assets'],
+  );
+  assert.equal(
+    frameKernelAdminManifest.routes.some((route) => route.id === 'frame.assets'),
+    false,
+  );
 });
 
 test('shared page and table composites carry structure without application APIs', () => {

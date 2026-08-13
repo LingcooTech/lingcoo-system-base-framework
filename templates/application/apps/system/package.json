@@ -16,8 +16,14 @@
   },
   "dependencies": {
     "@lingcootech/frame": "__FRAME_VERSION__",
+    "@lingcootech/frame-assets": "__FRAME_VERSION__",
+    "@lingcootech/frame-presentation": "__FRAME_VERSION__",
     "@lingcootech/frame-cms": "__FRAME_VERSION__",
     "@lingcootech/frame-extension-sdk": "__FRAME_VERSION__",
+    "@lingcootech/frame-identity": "__FRAME_VERSION__",
+    "@lingcootech/frame-integrations": "__FRAME_VERSION__",
+    "@lingcootech/frame-jobs": "__FRAME_VERSION__",
+    "@lingcootech/frame-notifications": "__FRAME_VERSION__",
     "__PACKAGE_SCOPE__/__PROJECT_NAME__-domain": "*"
   },
   "devDependencies": {

@@ -1,15 +1,16 @@
 import { desc, eq } from 'drizzle-orm';
 
+import type { AuditCommandPort } from '@lingcootech/frame-audit';
 import type { Database } from '@lingcootech/frame-database';
 import { accounts, dataExchangeRuns } from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
-import { recordAuditEvent } from '../audit/recorder.js';
 import type { DatasetRegistry } from './registry.js';
 
 export class DataExchangeService {
   constructor(
     private readonly db: Database,
     private readonly registry: DatasetRegistry,
+    private readonly audit: AuditCommandPort,
   ) {}
 
   datasets() {
@@ -53,7 +54,7 @@ export class DataExchangeService {
       summary: { formatVersion: document.formatVersion },
       createdBy: actorId,
     });
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'data_exchange.exported',
       resourceType: 'dataset',
       resourceId: datasetCode,
@@ -81,7 +82,7 @@ export class DataExchangeService {
         summary: { creates: result.creates, updates: result.updates },
         createdBy: actorId,
       });
-      await recordAuditEvent(this.db, {
+      await this.audit.record({
         action: 'data_exchange.imported',
         resourceType: 'dataset',
         resourceId: datasetCode,
@@ -102,7 +103,7 @@ export class DataExchangeService {
         errorMessage: message,
         createdBy: actorId,
       });
-      await recordAuditEvent(this.db, {
+      await this.audit.record({
         action: 'data_exchange.import_failed',
         resourceType: 'dataset',
         resourceId: datasetCode,

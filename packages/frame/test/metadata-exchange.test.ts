@@ -4,6 +4,7 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import {
   accountRoles,
   accounts,
@@ -73,6 +74,7 @@ test(
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'metadata-exchange-test-secret-32-characters',
       }),
+      { system: frameCoreSystem },
     );
     const email = 'metadata-owner@example.test';
     const password = 'Metadata-owner-2026!';

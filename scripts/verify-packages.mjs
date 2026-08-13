@@ -48,8 +48,22 @@ await mkdir(archiveDirectory, { recursive: true });
 
 try {
   const frame = packPackage(path.join(repositoryRoot, 'packages/frame'));
-  const database = packPackage(path.join(repositoryRoot, 'packages/database'));
   const extensionSdk = packPackage(path.join(repositoryRoot, 'packages/extension-sdk'));
+  const kernel = packPackage(path.join(repositoryRoot, 'packages/kernel'));
+  const database = packPackage(path.join(repositoryRoot, 'packages/database'));
+  const audit = packPackage(path.join(repositoryRoot, 'packages/audit'));
+  const fastify = packPackage(path.join(repositoryRoot, 'packages/fastify'));
+  const opentelemetry = packPackage(path.join(repositoryRoot, 'packages/opentelemetry'));
+  const identity = packPackage(path.join(repositoryRoot, 'packages/identity'));
+  const integrations = packPackage(path.join(repositoryRoot, 'packages/integrations'));
+  const assets = packPackage(path.join(repositoryRoot, 'packages/assets'));
+  const presentation = packPackage(path.join(repositoryRoot, 'packages/presentation'));
+  const mailNodemailer = packPackage(path.join(repositoryRoot, 'packages/mail-nodemailer'));
+  const storageQiniu = packPackage(path.join(repositoryRoot, 'packages/storage-qiniu'));
+  const aiOpenrouter = packPackage(path.join(repositoryRoot, 'packages/ai-openrouter'));
+  const payments = packPackage(path.join(repositoryRoot, 'packages/payments'));
+  const jobs = packPackage(path.join(repositoryRoot, 'packages/jobs'));
+  const notifications = packPackage(path.join(repositoryRoot, 'packages/notifications'));
   const admin = packPackage(path.join(repositoryRoot, 'packages/admin-shell'));
   const cms = packPackage(path.join(repositoryRoot, 'packages/cms'));
   const web = packPackage(path.join(repositoryRoot, 'packages/web-shell'));
@@ -70,23 +84,115 @@ try {
     'dist/core/extension.js',
     'dist/core/manifest.js',
     'dist/integrations/cms/extension.js',
+    'dist/security.js',
+    'dist/security.d.ts',
+    'dist/capabilities.js',
+    'dist/capabilities.d.ts',
+    'dist/environment.js',
+    'dist/environment.d.ts',
   ]);
   assert.equal(frame.files.has('apps/reference-admin/dist/index.html'), false);
   assert.equal(frame.files.has('apps/reference-web/dist/index.html'), false);
+  assertPackageFiles('@lingcootech/frame-kernel', kernel.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/extensions.js',
+    'dist/migrations.js',
+    'dist/ports/index.js',
+  ]);
   assertPackageFiles('@lingcootech/frame-database', database.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/migrations.js',
     'dist/schema.js',
     'drizzle/0000_base_system.sql',
-    'drizzle/0010_account_security.sql',
+    'drizzle/0001_platform_permissions.sql',
+  ]);
+  assertPackageFiles('@lingcootech/frame-audit', audit.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/postgres.js',
+    'dist/postgres.d.ts',
   ]);
   assertPackageFiles('@lingcootech/frame-extension-sdk', extensionSdk.files, [
     'dist/index.js',
     'dist/index.d.ts',
     'dist/server.js',
+    'dist/environment.js',
+    'dist/environment.d.ts',
     'dist/worker.js',
     'dist/migrations.js',
+  ]);
+  assertPackageFiles('@lingcootech/frame-fastify', fastify.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+    'dist/app.js',
+  ]);
+  assertPackageFiles('@lingcootech/frame-opentelemetry', opentelemetry.files, [
+    'dist/index.js',
+    'dist/index.d.ts',
+  ]);
+  assertPackageFiles('@lingcootech/frame-identity', identity.files, [
+    'dist/index.js',
+    'dist/manifest.js',
+    'dist/environment.js',
+    'dist/provider.js',
+    'dist/repository.js',
+    'dist/server.js',
+    'dist/migrations.js',
+    'dist/password.js',
+    'dist/rbac.js',
+    'migrations/0001_identity.sql',
+  ]);
+  assertPackageFiles('@lingcootech/frame-jobs', jobs.files, [
+    'dist/index.js',
+    'dist/manifest.js',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
+    'migrations/0001_jobs.sql',
+  ]);
+  assertPackageFiles('@lingcootech/frame-integrations', integrations.files, [
+    'dist/index.js',
+    'dist/manifest.js',
+    'dist/server.js',
+    'dist/migrations.js',
+    'dist/crypto.js',
+    'migrations/0001_integrations.sql',
+  ]);
+  assertPackageFiles('@lingcootech/frame-assets', assets.files, [
+    'dist/index.js',
+    'dist/manifest.js',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
+    'migrations/0001_assets.sql',
+  ]);
+  assertPackageFiles('@lingcootech/frame-presentation', presentation.files, [
+    'dist/index.js',
+    'dist/contracts.js',
+    'dist/postgres.js',
+    'dist/postgres.d.ts',
+    'dist/server.js',
+    'dist/migrations.js',
+    'dist/service.js',
+    'migrations/0001_presentation.sql',
+  ]);
+  for (const [packageName, archive] of [
+    ['@lingcootech/frame-mail-nodemailer', mailNodemailer],
+    ['@lingcootech/frame-storage-qiniu', storageQiniu],
+    ['@lingcootech/frame-ai-openrouter', aiOpenrouter],
+    ['@lingcootech/frame-payments', payments],
+  ]) {
+    assertPackageFiles(packageName, archive.files, ['dist/index.js', 'dist/index.d.ts']);
+  }
+  assertPackageFiles('@lingcootech/frame-notifications', notifications.files, [
+    'dist/index.js',
+    'dist/manifest.js',
+    'dist/server.js',
+    'dist/worker.js',
+    'dist/migrations.js',
+    'migrations/0001_notifications.sql',
   ]);
   assertPackageFiles('@lingcootech/frame-admin', admin.files, [
     'dist/index.js',
@@ -168,8 +274,22 @@ try {
   ]);
   for (const [packageName, archive] of [
     ['@lingcootech/frame', frame],
-    ['@lingcootech/frame-database', database],
     ['@lingcootech/frame-extension-sdk', extensionSdk],
+    ['@lingcootech/frame-kernel', kernel],
+    ['@lingcootech/frame-database', database],
+    ['@lingcootech/frame-audit', audit],
+    ['@lingcootech/frame-fastify', fastify],
+    ['@lingcootech/frame-opentelemetry', opentelemetry],
+    ['@lingcootech/frame-identity', identity],
+    ['@lingcootech/frame-integrations', integrations],
+    ['@lingcootech/frame-assets', assets],
+    ['@lingcootech/frame-presentation', presentation],
+    ['@lingcootech/frame-mail-nodemailer', mailNodemailer],
+    ['@lingcootech/frame-storage-qiniu', storageQiniu],
+    ['@lingcootech/frame-ai-openrouter', aiOpenrouter],
+    ['@lingcootech/frame-payments', payments],
+    ['@lingcootech/frame-jobs', jobs],
+    ['@lingcootech/frame-notifications', notifications],
     ['@lingcootech/frame-admin', admin],
     ['@lingcootech/frame-cms', cms],
     ['@lingcootech/frame-web', web],
@@ -193,8 +313,40 @@ try {
   const fixtureManifestPath = path.join(consumerDirectory, 'package.json');
   const fixtureManifest = JSON.parse(await readFile(fixtureManifestPath, 'utf8'));
   fixtureManifest.dependencies['@lingcootech/frame'] = pathToFileURL(frame.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-kernel'] = pathToFileURL(kernel.archive).href;
   fixtureManifest.dependencies['@lingcootech/frame-database'] = pathToFileURL(
     database.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-audit'] = pathToFileURL(audit.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-fastify'] = pathToFileURL(fastify.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-opentelemetry'] = pathToFileURL(
+    opentelemetry.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-identity'] = pathToFileURL(
+    identity.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-integrations'] = pathToFileURL(
+    integrations.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-assets'] = pathToFileURL(assets.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-presentation'] = pathToFileURL(
+    presentation.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-mail-nodemailer'] = pathToFileURL(
+    mailNodemailer.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-storage-qiniu'] = pathToFileURL(
+    storageQiniu.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-ai-openrouter'] = pathToFileURL(
+    aiOpenrouter.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-payments'] = pathToFileURL(
+    payments.archive,
+  ).href;
+  fixtureManifest.dependencies['@lingcootech/frame-jobs'] = pathToFileURL(jobs.archive).href;
+  fixtureManifest.dependencies['@lingcootech/frame-notifications'] = pathToFileURL(
+    notifications.archive,
   ).href;
   fixtureManifest.dependencies['@lingcootech/frame-extension-sdk'] = pathToFileURL(
     extensionSdk.archive,
@@ -259,8 +411,22 @@ try {
     ['@lingcootech/frame-admin', admin.archive],
     ['@lingcootech/frame-cms', cms.archive],
     ['@lingcootech/frame-database', database.archive],
+    ['@lingcootech/frame-audit', audit.archive],
     ['@lingcootech/frame-design-tokens', designTokens.archive],
     ['@lingcootech/frame-extension-sdk', extensionSdk.archive],
+    ['@lingcootech/frame-kernel', kernel.archive],
+    ['@lingcootech/frame-fastify', fastify.archive],
+    ['@lingcootech/frame-opentelemetry', opentelemetry.archive],
+    ['@lingcootech/frame-identity', identity.archive],
+    ['@lingcootech/frame-integrations', integrations.archive],
+    ['@lingcootech/frame-assets', assets.archive],
+    ['@lingcootech/frame-presentation', presentation.archive],
+    ['@lingcootech/frame-mail-nodemailer', mailNodemailer.archive],
+    ['@lingcootech/frame-storage-qiniu', storageQiniu.archive],
+    ['@lingcootech/frame-ai-openrouter', aiOpenrouter.archive],
+    ['@lingcootech/frame-payments', payments.archive],
+    ['@lingcootech/frame-jobs', jobs.archive],
+    ['@lingcootech/frame-notifications', notifications.archive],
     ['@lingcootech/frame-ui', ui.archive],
     ['@lingcootech/frame-web', web.archive],
   ]);
@@ -274,6 +440,14 @@ try {
   }
   for (const manifestPath of await findPackageManifests(generatedConsumerDirectory)) {
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    if (manifestPath === path.join(generatedConsumerDirectory, 'package.json')) {
+      manifest.dependencies ??= {};
+      for (const packageName of generatedArchives.keys()) {
+        if (packageName !== '@lingcootech/create-frame-app') {
+          manifest.dependencies[packageName] ??= frameVersion;
+        }
+      }
+    }
     for (const field of [
       'dependencies',
       'devDependencies',

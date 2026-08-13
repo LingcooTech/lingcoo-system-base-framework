@@ -4,16 +4,23 @@ import { createServer } from 'node:http';
 import { createDatabase } from '@lingcootech/frame-database';
 import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
 
-import { frameCoreSystem } from '../core/extension.js';
-import { recordAuditEvent } from '../core/modules/audit/recorder.js';
-import { OutboxService } from '../core/modules/jobs/outbox.js';
-import { JobHandlerRegistry, OutboxSubscriberRegistry } from '../core/modules/jobs/registry.js';
-import { JobService } from '../core/modules/jobs/service.js';
+import { createLegacyAuditPort } from '../integrations/audit/ports.js';
+import {
+  JobHandlerRegistry,
+  JobService,
+  OutboxService,
+  OutboxSubscriberRegistry,
+} from '@lingcootech/frame-jobs/worker';
 import { MetricsRegistry } from '../core/modules/observability/metrics.js';
 import { ObservabilityService } from '../core/modules/observability/service.js';
 import type { AppEnv } from '../host/env.js';
 import { serializeSafeError, writeServiceLog } from '../host/logging.js';
+import { frameKernelSystem } from '../kernel/system.js';
 import { assertFrameSystemCompatibility, registerSystemWorkerExtensions } from './extensions.js';
+import {
+  createSystemEnvironmentRegistry,
+  readSystemEnvironmentSensitiveValues,
+} from './environment.js';
 
 export interface FrameWorkerStatus {
   id: string;
@@ -34,38 +41,52 @@ export interface FrameWorker {
 
 export interface CreateFrameWorkerOptions {
   system?: DefinedSystem;
+  healthServer?: boolean;
 }
 
 export function createFrameWorker(
   env: AppEnv,
   options: CreateFrameWorkerOptions = {},
 ): FrameWorker {
-  const system = options.system ?? frameCoreSystem;
+  const system = options.system ?? frameKernelSystem;
   assertFrameSystemCompatibility(system);
+  const environment = createSystemEnvironmentRegistry(system, env);
   const workerId = `worker_${randomUUID()}`;
   const workerStartedAt = new Date();
-  const { db, pool } = createDatabase(env.DATABASE_URL);
-  const jobs = new JobService(db);
-  const outbox = new OutboxService(db);
+  const hasWorkerExtensions = system.extensions.some(
+    (extension) =>
+      Boolean(extension.worker) ||
+      (extension.manifest.worker?.jobs?.length ?? 0) > 0 ||
+      (extension.manifest.worker?.subscriptions?.length ?? 0) > 0,
+  );
+  const databaseHandle = hasWorkerExtensions ? createDatabase(env.DATABASE_URL) : undefined;
+  const audit = databaseHandle ? createLegacyAuditPort(databaseHandle.db) : undefined;
+  const jobs = databaseHandle ? new JobService(databaseHandle.db) : undefined;
+  const outbox = databaseHandle ? new OutboxService(databaseHandle.db) : undefined;
   const jobHandlers = new JobHandlerRegistry();
   const subscribers = new OutboxSubscriberRegistry();
-  const observability = new ObservabilityService(db, new MetricsRegistry());
+  const observability =
+    databaseHandle && audit
+      ? new ObservabilityService(databaseHandle.db, new MetricsRegistry(), audit)
+      : undefined;
   const redactionSecrets = [
-    env.AUTH_JWT_SECRET,
+    ...readSystemEnvironmentSensitiveValues(environment),
     env.SETTINGS_ENCRYPTION_KEY,
-    env.AUTH_BOOTSTRAP_PASSWORD,
     env.METRICS_BEARER_TOKEN,
   ];
   try {
-    registerSystemWorkerExtensions({
-      system,
-      env,
-      database: db,
-      jobHandlers,
-      subscribers,
-    });
+    if (databaseHandle) {
+      registerSystemWorkerExtensions({
+        system,
+        env,
+        environment,
+        database: databaseHandle.db,
+        jobHandlers,
+        subscribers,
+      });
+    }
   } catch (error) {
-    void pool.end();
+    void databaseHandle?.pool.end();
     throw error;
   }
 
@@ -82,20 +103,24 @@ export function createFrameWorker(
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  const healthServer = createServer((_request, response) => {
-    const fresh = Date.now() - lastLoopAt.getTime() < env.WORKER_STALE_TIMEOUT_MS;
-    const healthy = !stopping && fresh;
-    response.writeHead(healthy ? 200 : 503, { 'Content-Type': 'application/json' });
-    response.end(
-      JSON.stringify({
-        status: stopping ? 'stopping' : fresh ? 'ok' : 'stale',
-        workerId,
-        lastLoopAt: lastLoopAt.toISOString(),
-      }),
-    );
-  });
+  const healthServer =
+    options.healthServer === false
+      ? undefined
+      : createServer((_request, response) => {
+          const fresh = Date.now() - lastLoopAt.getTime() < env.WORKER_STALE_TIMEOUT_MS;
+          const healthy = !stopping && fresh;
+          response.writeHead(healthy ? 200 : 503, { 'Content-Type': 'application/json' });
+          response.end(
+            JSON.stringify({
+              status: stopping ? 'stopping' : fresh ? 'ok' : 'stale',
+              workerId,
+              lastLoopAt: lastLoopAt.toISOString(),
+            }),
+          );
+        });
 
   async function recoverStaleWork() {
+    if (!jobs || !outbox) return;
     if (Date.now() - lastRecoveryAt < 60_000) return;
     lastRecoveryAt = Date.now();
     const [jobCount, eventCount] = await Promise.all([
@@ -112,6 +137,7 @@ export function createFrameWorker(
   }
 
   async function processOutbox(): Promise<boolean> {
+    if (!outbox) return false;
     const event = await outbox.claimNext(workerId);
     if (!event) return false;
     try {
@@ -127,7 +153,7 @@ export function createFrameWorker(
       const safeError = serializeSafeError(error, redactionSecrets);
       await outbox.markFailed(event, new Error(safeError.message));
       await observability
-        .captureIncident({
+        ?.captureIncident({
           category: 'worker_error',
           serviceType: 'worker',
           error,
@@ -145,6 +171,7 @@ export function createFrameWorker(
   }
 
   async function processJob(): Promise<boolean> {
+    if (!jobs || !databaseHandle) return false;
     const job = await jobs.claimNext(workerId);
     if (!job) return false;
     try {
@@ -154,7 +181,7 @@ export function createFrameWorker(
         signal: AbortSignal.timeout(60_000),
       });
       await jobs.markSucceeded(job.id, result);
-      await recordAuditEvent(db, {
+      await audit!.record({
         action: 'job.succeeded',
         resourceType: 'job_run',
         resourceId: job.id,
@@ -163,7 +190,7 @@ export function createFrameWorker(
     } catch (error) {
       const safeError = serializeSafeError(error, redactionSecrets);
       const status = await jobs.markFailed(job, new Error(safeError.message));
-      await recordAuditEvent(db, {
+      await audit!.record({
         action: status === 'dead' ? 'job.dead' : 'job.retry_scheduled',
         resourceType: 'job_run',
         resourceId: job.id,
@@ -176,7 +203,7 @@ export function createFrameWorker(
         },
       });
       await observability
-        .captureIncident({
+        ?.captureIncident({
           category: 'worker_error',
           serviceType: 'worker',
           error,
@@ -197,7 +224,7 @@ export function createFrameWorker(
 
   async function closeHealthServer(): Promise<void> {
     if (healthClosePromise) return healthClosePromise;
-    if (!healthServer.listening) return;
+    if (!healthServer?.listening) return;
     healthClosePromise = new Promise<void>((resolve, reject) => {
       healthServer.close((error) => (error ? reject(error) : resolve()));
     });
@@ -206,19 +233,23 @@ export function createFrameWorker(
 
   async function execute(): Promise<void> {
     try {
-      await new Promise<void>((resolve, reject) => {
-        healthServer.once('error', reject);
-        healthServer.listen(env.WORKER_HEALTH_PORT, env.API_HOST, () => resolve());
-      });
-      const sendHeartbeat = (status: 'healthy' | 'stopping' | 'degraded' = 'healthy') =>
-        observability.heartbeat({
-          serviceType: 'worker',
-          instanceId: workerId,
-          version: env.APP_VERSION,
-          status,
-          startedAt: workerStartedAt,
-          metadata: { lastLoopAt: lastLoopAt.toISOString() },
+      if (healthServer) {
+        await new Promise<void>((resolve, reject) => {
+          healthServer.once('error', reject);
+          healthServer.listen(env.WORKER_HEALTH_PORT, env.API_HOST, () => resolve());
         });
+      }
+      const sendHeartbeat = (status: 'healthy' | 'stopping' | 'degraded' = 'healthy') =>
+        observability
+          ? observability.heartbeat({
+              serviceType: 'worker',
+              instanceId: workerId,
+              version: env.APP_VERSION,
+              status,
+              startedAt: workerStartedAt,
+              metadata: { lastLoopAt: lastLoopAt.toISOString() },
+            })
+          : Promise.resolve();
       await sendHeartbeat();
       heartbeatTimer = setInterval(() => {
         void sendHeartbeat().catch((error) => {
@@ -242,7 +273,7 @@ export function createFrameWorker(
         error: serializeSafeError(error, redactionSecrets),
       });
       await observability
-        .captureIncident({
+        ?.captureIncident({
           category: 'worker_error',
           serviceType: 'worker',
           error,
@@ -254,7 +285,7 @@ export function createFrameWorker(
     } finally {
       if (heartbeatTimer) clearInterval(heartbeatTimer);
       await closeHealthServer();
-      await pool.end();
+      await databaseHandle?.pool.end();
       running = false;
       disposed = true;
     }
@@ -276,7 +307,7 @@ export function createFrameWorker(
     writeServiceLog('info', 'worker', 'stopping', { instanceId: workerId, signal });
     if (running) {
       await observability
-        .heartbeat({
+        ?.heartbeat({
           serviceType: 'worker',
           instanceId: workerId,
           version: env.APP_VERSION,
@@ -297,7 +328,7 @@ export function createFrameWorker(
       return;
     }
     stopping = true;
-    await pool.end();
+    await databaseHandle?.pool.end();
     disposed = true;
   }
 

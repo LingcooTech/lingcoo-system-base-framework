@@ -28,7 +28,7 @@ export interface CmsServerAdapter {
 }
 
 export function createCmsServerExtension(adapter: CmsServerAdapter) {
-  return defineServerExtension({
+  return defineServerExtension<FastifyInstance>({
     register({ app }) {
       const service = new CmsService(adapter.database(app), adapter.servicePorts(app));
       const publicSite = adapter.publicSite(app);

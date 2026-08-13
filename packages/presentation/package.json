@@ -1,0 +1,70 @@
+{
+  "name": "@lingcootech/frame-presentation",
+  "version": "0.7.2",
+  "private": false,
+  "type": "module",
+  "description": "Branding and public-site presentation extension for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/manifest.d.ts",
+      "import": "./dist/manifest.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres.d.ts",
+      "import": "./dist/postgres.js"
+    },
+    "./migrations": {
+      "types": "./dist/migrations.d.ts",
+      "import": "./dist/migrations.js"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node ../../scripts/copy-package-legal.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "node --import tsx --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "@lingcootech/frame-admin": "^0.7.2",
+    "@lingcootech/frame-audit": "^0.7.2",
+    "@lingcootech/frame-database": "^0.7.2",
+    "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-fastify": "^0.7.2",
+    "@lingcootech/frame-identity": "^0.7.2",
+    "drizzle-orm": "^0.45.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "eslint": "^10.8.0",
+    "fastify": "^5.6.1",
+    "globals": "^16.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
+  }
+}

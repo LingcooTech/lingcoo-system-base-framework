@@ -1,6 +1,6 @@
 import type { ExtensionManifest } from '@lingcootech/frame-extension-sdk';
 
-export const frameAdminManifest = {
+const completeFrameAdminManifest = {
   routes: [
     {
       id: 'frame.system-info',
@@ -106,3 +106,50 @@ export const frameAdminManifest = {
   ],
   searchProviders: [{ id: 'frame.resources', label: '框架资源', permission: 'search.use' }],
 } as const satisfies NonNullable<ExtensionManifest['admin']>;
+
+const identityRouteIds = new Set(['frame.access', 'frame.account']);
+const jobsRouteIds = new Set(['frame.operations']);
+const notificationsRouteIds = new Set(['frame.notifications']);
+const integrationsRouteIds = new Set(['frame.integrations']);
+const assetsRouteIds = new Set(['frame.assets']);
+const presentationRouteIds = new Set(['frame.presentation']);
+
+export const frameIdentityAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => identityRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const frameJobsAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => jobsRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const frameNotificationsAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => notificationsRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const frameIntegrationsAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => integrationsRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const frameAssetsAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => assetsRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const framePresentationAdminManifest = {
+  routes: completeFrameAdminManifest.routes.filter((route) => presentationRouteIds.has(route.id)),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+export const frameKernelAdminManifest = {
+  ...completeFrameAdminManifest,
+  routes: completeFrameAdminManifest.routes.filter(
+    (route) =>
+      !identityRouteIds.has(route.id) &&
+      !jobsRouteIds.has(route.id) &&
+      !notificationsRouteIds.has(route.id) &&
+      !integrationsRouteIds.has(route.id) &&
+      !assetsRouteIds.has(route.id) &&
+      !presentationRouteIds.has(route.id),
+  ),
+} satisfies NonNullable<ExtensionManifest['admin']>;
+
+/** @deprecated Prefer frameKernelAdminManifest plus frameIdentityAdminManifest. */
+export const frameAdminManifest = completeFrameAdminManifest;

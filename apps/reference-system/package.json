@@ -15,8 +15,14 @@
   },
   "dependencies": {
     "@lingcootech/frame": "^0.7.0",
+    "@lingcootech/frame-assets": "^0.7.2",
+    "@lingcootech/frame-presentation": "^0.7.2",
     "@lingcootech/frame-cms": "^0.7.0",
-    "@lingcootech/frame-extension-sdk": "^0.7.0"
+    "@lingcootech/frame-extension-sdk": "^0.7.0",
+    "@lingcootech/frame-identity": "^0.7.2",
+    "@lingcootech/frame-integrations": "^0.7.2",
+    "@lingcootech/frame-jobs": "^0.7.2",
+    "@lingcootech/frame-notifications": "^0.7.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

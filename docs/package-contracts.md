@@ -24,16 +24,30 @@ npm install @lingcootech/frame@0.7.2 @lingcootech/frame-cms@0.7.2
 
 ## 包边界
 
-| 包                                 | 职责                                                | 公开入口                                                                                                           |
-| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `@lingcootech/frame`               | Fastify 宿主、核心扩展、Worker、系统迁移和一方适配  | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                           |
-| `@lingcootech/frame-database`      | PostgreSQL/Drizzle、Schema、Migration V2 和历史 SQL | `.`, `./schema`, `./migrations`                                                                                    |
-| `@lingcootech/frame-extension-sdk` | 浏览器安全 Manifest/System 及分运行面扩展契约       | `.`, `./server`, `./worker`, `./migrations`                                                                        |
-| `@lingcootech/frame-admin`         | Admin Shell、认证、路由、系统信息与扩展注册表       | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                   |
-| `@lingcootech/frame-web`           | Web Registry、公共站点壳、SEO、状态与账号安全流程   | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css` |
-| `@lingcootech/frame-cms`           | 可选 CMS 一方扩展及全部运行面                       | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`, `./styles.css`                     |
-| `@lingcootech/frame-ui`            | 无业务语义的 React UI 组件和共享样式                | `.`, 组件子路径, `./styles.css`                                                                                    |
-| `@lingcootech/frame-design-tokens` | 基础、后台和公共站点语义 Token                      | `./base.css`, `./admin.css`, `./public.css`                                                                        |
+| 包                                   | 职责                                                              | 公开入口                                                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `@lingcootech/frame-extension-sdk`   | 基础设施无关的 Manifest/System 与分运行面公共契约                 | `.`, `./server`, `./worker`, `./migrations`                                                                         |
+| `@lingcootech/frame-kernel`          | System、Capability、Extension 与 Migration Engine                 | `.`, `./ports`, `./extensions`, `./migrations`                                                                      |
+| `@lingcootech/frame-fastify`         | Fastify HTTP Host Adapter 与存活/就绪探针                         | `.`                                                                                                                 |
+| `@lingcootech/frame-database`        | PostgreSQL/Drizzle Adapter、Schema、Migration Runner              | `.`, `./schema`, `./migrations`                                                                                     |
+| `@lingcootech/frame-audit`           | Audit 读写公共契约与 PostgreSQL Adapter                           | `.`, `./postgres`                                                                                                   |
+| `@lingcootech/frame-opentelemetry`   | 可选 OpenTelemetry API Adapter                                    | `.`                                                                                                                 |
+| `@lingcootech/frame-identity`        | Identity Feature、账号目录端口、Fastify Server 与 PG Adapter      | `.`, `./contracts`, `./environment`, `./provider`, `./postgres`, `./server`, `./migrations`, `./password`, `./rbac` |
+| `@lingcootech/frame-integrations`    | Provider-neutral 连接端口、加密凭据、调用事件与 Provider Registry | `.`, `./contracts`, `./server`, `./migrations`, `./crypto`                                                          |
+| `@lingcootech/frame-assets`          | Provider-neutral 资产生命周期、引用、REST、Worker 与 Migration    | `.`, `./contracts`, `./server`, `./worker`, `./migrations`                                                          |
+| `@lingcootech/frame-presentation`    | 品牌呈现、Public Site Discovery 与站点配置                        | `.`, `./contracts`, `./server`, `./postgres`, `./migrations`                                                        |
+| `@lingcootech/frame-mail-nodemailer` | Nodemailer SMTP Provider、Service 与管理路由                      | `.`                                                                                                                 |
+| `@lingcootech/frame-storage-qiniu`   | 七牛对象存储 Provider、Service 与管理路由                         | `.`                                                                                                                 |
+| `@lingcootech/frame-ai-openrouter`   | OpenRouter Provider、Service 与管理路由                           | `.`                                                                                                                 |
+| `@lingcootech/frame-payments`        | 支付宝、微信支付 Provider 与统一 PaymentService                   | `.`                                                                                                                 |
+| `@lingcootech/frame-jobs`            | 可选 Jobs/Outbox Feature、REST、Worker Registry 与 Migration      | `.`, `./contracts`, `./server`, `./worker`, `./migrations`                                                          |
+| `@lingcootech/frame-notifications`   | 可选通知、投递编排、Mail Ports、Worker 与 Migration               | `.`, `./contracts`, `./server`, `./worker`, `./migrations`                                                          |
+| `@lingcootech/frame`                 | 旧 Host/Worker/Core/一方适配的迁移期兼容聚合包                    | `.`, `./app`, `./env`, `./worker`, `./extensions`, `./manifest`, `./migrations`, `./cms`                            |
+| `@lingcootech/frame-admin`           | Admin Shell、认证、路由、系统信息与扩展注册表                     | `.`, `./manifest`, `./auth`, `./layout`, `./router`, `./shared`, `./system-info`, `./styles.css`                    |
+| `@lingcootech/frame-web`             | Web Registry、公共站点壳、SEO、状态与账号安全流程                 | `.`, `./manifest`, `./layout`, `./site`, `./presentation`, `./seo`, `./system-states`, `./account`, `./styles.css`  |
+| `@lingcootech/frame-cms`             | 可选 CMS 一方扩展及全部运行面                                     | `.`, `./contracts`, `./server`, `./worker`, `./migrations`, `./admin`, `./web`, `./styles.css`                      |
+| `@lingcootech/frame-ui`              | 无业务语义的 React UI 组件和共享样式                              | `.`, 组件子路径, `./styles.css`                                                                                     |
+| `@lingcootech/frame-design-tokens`   | 基础、后台和公共站点语义 Token                                    | `./base.css`, `./admin.css`, `./public.css`                                                                         |
 
 `apps/reference-admin` 和 `apps/reference-web` 是参考应用，不属于 Consumer API；它们已经使用
 Admin/Web Registry 组合 Frame Core 页面。业务系统消费 Shell 包并安装自己的前端扩展入口，不复制
@@ -44,34 +58,68 @@ Reference Web 的官方站点扩展属于应用层示例，不是 Frame 公共�
 
 ## 系统组合
 
+零扩展应用优先从真实 Kernel 和 Adapter 组合：
+
+```ts
+import { buildFastifyHost } from '@lingcootech/frame-fastify';
+import { frameKernelSystem } from '@lingcootech/frame-kernel';
+
+const app = await buildFastifyHost({ system: frameKernelSystem });
+await app.listen({ port: 8090 });
+```
+
+需要 PostgreSQL 时，由应用组合根显式传入 `createPostgresAdapter()`；不传数据库时 Host 仍可启动。
+完整应用使用兼容 Host/Worker，但在组合根显式安装 Feature：
+
 ```ts
 import { buildApp, createFrameWorker } from '@lingcootech/frame';
 import { frameCmsExtension } from '@lingcootech/frame/cms';
-import { frameCoreExtension } from '@lingcootech/frame/extensions';
+import { frameIntegrationsExtension, frameKernelExtension } from '@lingcootech/frame/extensions';
 import { defineSystem } from '@lingcootech/frame-extension-sdk';
+import { frameIdentityExtension } from '@lingcootech/frame-identity';
+import { frameAssetsExtension } from '@lingcootech/frame-assets';
+import { frameJobsExtension } from '@lingcootech/frame-jobs';
+import { frameNotificationsExtension } from '@lingcootech/frame/extensions';
 import { officialSiteExtension } from '@lingcootech/official-site-extension';
 
 const system = defineSystem({
   id: 'official-site',
   version: '0.1.0',
-  extensions: [frameCoreExtension, frameCmsExtension, officialSiteExtension],
+  extensions: [
+    frameKernelExtension,
+    frameIdentityExtension,
+    frameIntegrationsExtension,
+    frameJobsExtension,
+    frameAssetsExtension,
+    frameNotificationsExtension,
+    frameCmsExtension,
+    officialSiteExtension,
+  ],
 });
 
 const app = await buildApp(env, { system });
 const worker = createFrameWorker(env, { system });
 ```
 
-省略 `frameCmsExtension` 即可得到不含 CMS API、Job、Admin/Web 路由与迁移的 Core-only 系统。
+省略任一 Feature Extension 即不会安装它的路由、Worker 合约与迁移；只组合 Kernel 时得到无 Feature 的
+空系统。
 `defineSystem()` 校验扩展 ID、SemVer、Frame/API 兼容范围、依赖完整性和循环，并稳定拓扑排序。它会
 拒绝重复权限、设置、路由、Job Kind、Migration Source 和 Legacy Alias；多个扩展订阅同一个 Outbox
-Topic 是合法 fan-out。`buildApp(env)` 与 `createFrameWorker(env)` 继续使用默认核心 System，兼容
-0.2 调用方式；这两个默认入口现在都是 Core-only。仓库的 Reference System 在自己的组合根中显式安装
-CMS。
+Topic 是合法 fan-out。`buildApp(env)`、`createFrameWorker(env)` 和 `runSystemMigrations()` 的默认
+System 都是零扩展 Kernel。仓库 Reference System 在自己的组合根中直接安装
+`frameIdentityExtension`、`frameIntegrationsExtension`、`frameJobsExtension`、
+`frameNotificationsExtension` 与 CMS；这些能力不会进入
+新 Kernel。Notifications 的默认包不包含 SMTP；兼容 Frame 入口为 Reference System 注入当前 SMTP/Mail
+Adapter，独立应用也可以注入自己的邮件服务。
 
 ## 运行面
 
-- `@lingcootech/frame-extension-sdk`：只含 Manifest、`defineExtension()` 和 `defineSystem()`，可进入浏览器构建。
-- `./server`：Fastify 路由与类型化非敏感设置；声明路由会在注册前检查核心及其他路由冲突。
+- `@lingcootech/frame-extension-sdk`：只含 Manifest、`defineExtension()`、`defineSystem()` 和基础设施无关契约。
+- `./server`：默认使用最小 HTTP Application Contract；需要 Fastify 专有 API 的扩展显式参数化 Adapter 类型。
+- `@lingcootech/frame-kernel`：验证系统兼容性、Capability 实现、扩展路由声明和 Migration Source 一致性。
+- `@lingcootech/frame-fastify`：安装成熟 Fastify 中间件、错误契约与探针，并通过 Kernel Engine 注册扩展。
+- `@lingcootech/frame-database`：实现 Kernel Database Port，连接与探针生命周期由 Host 组合根管理。
+- `@lingcootech/frame-opentelemetry`：桥接官方 API；没有全局 Provider 时保持 no-op。
 - `./worker`：通过受限上下文注册声明过的 Job Handler 与 Outbox Subscriber。
 - `./migrations`：Migration Source 定义及数据库迁移类型，不进入浏览器入口。
 - `@lingcootech/frame-admin`：Admin Route、Navigation、Dashboard Widget、Search Provider 和 Landing
@@ -130,14 +178,14 @@ await runSystemMigrations({
 
 ## 发布产物验收
 
-`npm run packages:verify` 构建并打包 Frame、Database、Extension SDK、Admin、Web、CMS、UI、Design
+`npm run packages:verify` 构建并打包 Kernel、基础设施 Adapters、Frame 兼容包、Extension SDK、Admin、Web、CMS、UI、Design
 Tokens 与完整示例扩展，再在临时目录隔离安装。Consumer Fixture 会进行 TypeScript 公共入口编译，组合
 API/Worker/Admin/Web/CMS 默认页面，验证示例页面、搜索、SEO、Sitemap、Landing Block 和 13 条系统迁移。CI 提供
 PostgreSQL 17，并真实执行全部迁移。
 
 包版本由 Changesets 统一管理：`npm run changeset` 记录变更，`npm run version:packages` 应用版本，
 `Release Frame Packages` workflow 发布 Preview/Stable，`Release Frame Canary` workflow 发布当前提交的
-不可变 Canary。发布脚本只读取明确列出的八个运行时包和 `create-frame-app` 生成器，不会发布 Reference
+不可变 Canary。发布脚本只读取明确列出的公开包和 `create-frame-app` 生成器，不会发布 Reference
 App 或 Fixture。
 
 完整扩展结构、规则与示例见 [扩展开发与系统组合](extension-development.md)，第一方模块依赖与端口见

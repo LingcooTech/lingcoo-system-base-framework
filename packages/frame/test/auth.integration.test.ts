@@ -12,6 +12,7 @@ import {
 } from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import { loadEnv } from '../src/host/env.js';
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -38,6 +39,7 @@ test(
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'frame-integration-jwt-secret-with-32-characters',
       }),
+      { system: frameCoreSystem },
     );
 
     const email = `frame-owner-${randomUUID()}@example.test`;

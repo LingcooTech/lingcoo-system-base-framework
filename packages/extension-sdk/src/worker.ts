@@ -1,3 +1,5 @@
+import type { ExtensionEnvironmentValues } from './environment.js';
+
 export interface JobHandlerContext {
   jobId: string;
   payload: Record<string, unknown>;
@@ -20,6 +22,7 @@ export type OutboxSubscriber = (context: OutboxEventContext) => Promise<void> | 
 
 export interface WorkerExtensionContext<TEnvironment = unknown, TDatabase = unknown> {
   env: TEnvironment;
+  environment: ExtensionEnvironmentValues;
   database: TDatabase;
   registerJob(kind: string, handler: JobHandler): void;
   subscribe(topic: string, subscriber: OutboxSubscriber): void;

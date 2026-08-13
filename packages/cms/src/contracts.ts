@@ -1,4 +1,5 @@
 import { FRAME_VERSION, type ExtensionManifest } from '@lingcootech/frame-extension-sdk';
+import type { AuditEvent } from '@lingcootech/frame-audit';
 
 export const CMS_EXTENSION_ID = 'frame-cms';
 export const CMS_EXTENSION_VERSION = FRAME_VERSION;
@@ -75,13 +76,7 @@ export const cmsManifest = {
   },
 } as const satisfies ExtensionManifest;
 
-export interface CmsAuditEvent {
-  action: string;
-  resourceType: string;
-  resourceId?: string;
-  actorId?: string;
-  metadata?: Record<string, unknown>;
-}
+export type CmsAuditEvent = AuditEvent;
 
 export interface CmsPublicAsset {
   id: string;

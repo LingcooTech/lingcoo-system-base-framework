@@ -7,7 +7,7 @@ import {
   projectExtensionManifest,
 } from '@lingcootech/frame-extension-sdk';
 import { createWebRegistry, defineWebExtension } from '@lingcootech/frame-web';
-import { frameWebManifest } from '@lingcootech/frame-web/manifest';
+import { frameIdentityWebManifest } from '@lingcootech/frame-web/manifest';
 import type { PublicPresentation } from '@lingcootech/frame-web/presentation';
 
 import { AuthRoute } from './auth-route';
@@ -17,13 +17,23 @@ export interface PublicWebContext {
   presentation: PublicPresentation | null;
 }
 
-const frameWebDefinition = defineExtension({
+const frameKernelWebDefinition = defineExtension({
   manifest: {
     id: 'frame',
     version: FRAME_VERSION,
     apiVersion: '1',
     frame: `^${FRAME_VERSION}`,
-    web: frameWebManifest,
+  },
+});
+
+const frameIdentityWebDefinition = defineExtension({
+  manifest: {
+    id: 'frame-identity',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame', version: `^${FRAME_VERSION}` }],
+    web: frameIdentityWebManifest,
   },
   web: defineWebExtension<PublicWebContext>({
     routes: [{ id: 'frame.auth', component: AuthRoute }],
@@ -41,7 +51,12 @@ const cmsWebDefinition = defineExtension({
 export const publicWebSystem = defineSystem({
   id: 'frame-reference-web',
   version: FRAME_VERSION,
-  extensions: [frameWebDefinition, cmsWebDefinition, referenceSiteDefinition],
+  extensions: [
+    frameKernelWebDefinition,
+    frameIdentityWebDefinition,
+    cmsWebDefinition,
+    referenceSiteDefinition,
+  ],
 });
 
 export const webRegistry = createWebRegistry<PublicWebContext>(publicWebSystem);

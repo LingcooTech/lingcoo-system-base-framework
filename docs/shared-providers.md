@@ -1,7 +1,9 @@
 # 通用 Provider 适配器
 
-Frame 将成熟系统反复使用的外部服务拆成五个独立适配器。适配器只负责服务商协议，不包含课程、
-商品、会员、行业订单或业务状态机。
+Provider-neutral 连接 Core 位于 `@lingcootech/frame-integrations`；厂商实现已分别迁入
+`@lingcootech/frame-mail-nodemailer`、`@lingcootech/frame-storage-qiniu`、
+`@lingcootech/frame-payments` 和 `@lingcootech/frame-ai-openrouter`。兼容 `@lingcootech/frame` 只组合这些
+包并保留 deprecated 转发。适配器只负责服务商协议，不包含课程、商品、会员、行业订单或业务状态机。
 
 | Provider   | 连接测试（无业务副作用）       | 可复用能力                                       |
 | ---------- | ------------------------------ | ------------------------------------------------ |

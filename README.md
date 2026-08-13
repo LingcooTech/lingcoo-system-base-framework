@@ -5,8 +5,9 @@
 
 一套剔除具体行业和业务逻辑后，仍然可以独立运行、测试和部署的系统基础框架。
 
-当前 `0.7` 已完成首个一方扩展闭环、目录架构对齐、官方 Reference Experience 和版本化包发布链路：后端宿主、Database、
-Extension SDK、Admin/Web Shell、共享 UI、Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。
+当前 `0.7` 已完成首个一方扩展闭环、目录架构对齐、官方 Reference Experience 和版本化包发布链路：
+无基础设施依赖的 Kernel、Fastify/PostgreSQL/OpenTelemetry Adapters、Extension SDK、Identity、Jobs、
+Notifications、Admin/Web Shell、共享 UI、Design Tokens 与 CMS 都能以真实 npm tarball 安装和消费。
 Frame 仍同时保留可运行参考系统；新的业务
 系统通过 `defineSystem()` 显式安装构建期扩展，而不是复制本仓库后长期维护底层源码副本。
 
@@ -21,7 +22,7 @@ Frame 仍同时保留可运行参考系统；新的业务
 
 ## 开源与商业边界
 
-Frame 源码、八个官方包、参考应用、测试和文档采用 [Apache License 2.0](LICENSE)。Edu 等行业应用、
+Frame 源码、官方包、参考应用、测试和文档采用 [Apache License 2.0](LICENSE)。Edu 等行业应用、
 Stack 中台、应用市场、客户代码/数据、商业镜像交付和运维服务不因 Frame 开源而自动开放。Apache-2.0
 不授予 LingcooTech、Lingcoo 或 Lingcoo Frame 的品牌使用权，详见
 [Frame 开源与商业边界](docs/open-source-policy.md) 和 [商标说明](TRADEMARKS.md)。
@@ -55,13 +56,14 @@ lockfile，不自动跟随 dist-tag。
 - 工程质量：类型检查、测试、Lint、格式检查和 CI
 - 扩展内核：Manifest、`defineSystem()`、依赖排序、冲突拒绝和分运行面注册
 - 前端扩展：Admin/Web Shell、路由、导航、Widget、搜索、SEO、Sitemap 与 Landing Block 注册表
-- 一方扩展：`@lingcootech/frame-cms` 可独立启停，覆盖 Server、Worker、Admin、Web 与 Migration
+- 一方扩展：Identity、Integrations Core、Jobs/Outbox、Notifications 与 CMS 均拥有独立包、Manifest、运行面和 Migration Source
 - 迁移协议：命名空间 Migration Source、Legacy Alias adoption、checksum 和并发锁
 
-当前包含 `system`、`auth`、`access`、`settings`、`audit`、`metadata`、`search`、
-`data-exchange`、`integrations`、`jobs`、`notifications`、`assets`、`presentation`、`public-site` 和
-`observability` 基础模块。`@lingcootech/frame` 默认只安装 Core；可部署的 Reference System 显式安装
-`frame-cms` 一方扩展。框架没有商品、课程、订单等具体行业领域概念。
+当前可发布边界包含空 Kernel、三种基础设施 Adapter、Identity、Integrations Core、Jobs/Outbox、
+Assets、Notifications、CMS，以及 Nodemailer、七牛、支付和 OpenRouter Adapter；Presentation 等
+尚未拆出的功能暂时留在兼容 `@lingcootech/frame` 内。
+默认 `frameKernelSystem` 不安装任何 Feature，可部署的 Reference System 在组合根显式安装
+Kernel、Identity、Integrations、Jobs、Notifications、CMS 和应用扩展。框架没有商品、课程、订单等具体行业领域概念。
 
 ## 仓库结构
 
@@ -161,8 +163,10 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## 如何增加业务
 
-业务应用直接依赖 Frame 包，在组合根中把 `frameCoreExtension`、所需一方扩展与自己的领域扩展交给
-`defineSystem()`，再将同一个 System 传给 API、Worker 和迁移运行时。领域扩展现在可以贡献权限、
+业务应用在组合根中把 `frameKernelExtension`、`frameIdentityExtension`、`frameJobsExtension`、
+`frameNotificationsExtension`、所需其它一方扩展与自己的领域扩展交给 `defineSystem()`，再将同一个
+System 传给 API、Worker 和迁移运行时。
+领域扩展现在可以贡献权限、
 非敏感设置、Server 路由、Job Handler、Outbox Subscriber、命名空间迁移、Admin 页面与导航、
 Public Web 页面、SEO、Sitemap 和受控 Landing Block。各运行面使用独立入口，浏览器代码不导入
 Server、Worker 或数据库实现。

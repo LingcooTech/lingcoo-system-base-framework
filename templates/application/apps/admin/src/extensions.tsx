@@ -1,6 +1,23 @@
 import { createAdminRegistry } from '@lingcootech/frame-admin';
-import { apiRequest, createFrameAdminExtension } from '@lingcootech/frame-admin/defaults';
-import { frameAdminManifest } from '@lingcootech/frame-admin/manifest';
+import {
+  apiRequest,
+  createFrameIdentityAdminExtension,
+  createFrameIntegrationsAdminExtension,
+  createFrameAssetsAdminExtension,
+  createFrameJobsAdminExtension,
+  createFrameKernelAdminExtension,
+  createFrameNotificationsAdminExtension,
+  createFramePresentationAdminExtension,
+} from '@lingcootech/frame-admin/defaults';
+import {
+  frameIdentityAdminManifest,
+  frameIntegrationsAdminManifest,
+  frameAssetsAdminManifest,
+  frameJobsAdminManifest,
+  frameKernelAdminManifest,
+  frameNotificationsAdminManifest,
+  framePresentationAdminManifest,
+} from '@lingcootech/frame-admin/manifest';
 // <cms>
 import { createCmsAdminClient, createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
 import { cmsManifest } from '@lingcootech/frame-cms/contracts';
@@ -16,15 +33,93 @@ import { domainManifest } from '__PACKAGE_SCOPE__/__PROJECT_NAME__-domain/contra
 
 export type AdminAppContext = Record<string, never>;
 
-const frameDefinition = defineExtension({
+const frameKernelDefinition = defineExtension({
   manifest: {
     id: 'frame',
     version: FRAME_VERSION,
     apiVersion: '1',
     frame: `^${FRAME_VERSION}`,
-    admin: frameAdminManifest,
+    admin: frameKernelAdminManifest,
   },
-  admin: createFrameAdminExtension<AdminAppContext>(),
+  admin: createFrameKernelAdminExtension<AdminAppContext>(),
+});
+
+const frameIdentityDefinition = defineExtension({
+  manifest: {
+    id: 'frame-identity',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame', version: `^${FRAME_VERSION}` }],
+    admin: frameIdentityAdminManifest,
+  },
+  admin: createFrameIdentityAdminExtension<AdminAppContext>(),
+});
+
+const frameIntegrationsDefinition = defineExtension({
+  manifest: {
+    id: 'frame-integrations',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: frameIntegrationsAdminManifest,
+  },
+  admin: createFrameIntegrationsAdminExtension<AdminAppContext>(),
+});
+
+const frameAssetsDefinition = defineExtension({
+  manifest: {
+    id: 'frame-assets',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [
+      { id: 'frame-identity', version: `^${FRAME_VERSION}` },
+      { id: 'frame-jobs', version: `^${FRAME_VERSION}` },
+    ],
+    admin: frameAssetsAdminManifest,
+  },
+  admin: createFrameAssetsAdminExtension<AdminAppContext>(),
+});
+
+const framePresentationDefinition = defineExtension({
+  manifest: {
+    id: 'frame-presentation',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: framePresentationAdminManifest,
+  },
+  admin: createFramePresentationAdminExtension<AdminAppContext>(),
+});
+
+const frameJobsDefinition = defineExtension({
+  manifest: {
+    id: 'frame-jobs',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: frameJobsAdminManifest,
+  },
+  admin: createFrameJobsAdminExtension<AdminAppContext>(),
+});
+
+const frameNotificationsDefinition = defineExtension({
+  manifest: {
+    id: 'frame-notifications',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [
+      { id: 'frame-identity', version: `^${FRAME_VERSION}` },
+      { id: 'frame-jobs', version: `^${FRAME_VERSION}` },
+    ],
+    admin: frameNotificationsAdminManifest,
+  },
+  admin: createFrameNotificationsAdminExtension<AdminAppContext>(),
 });
 
 // <cms>
@@ -43,7 +138,13 @@ export const adminSystem = defineSystem({
   id: '__SYSTEM_ID__-admin',
   version: '0.1.0',
   extensions: [
-    frameDefinition,
+    frameKernelDefinition,
+    frameIdentityDefinition,
+    frameIntegrationsDefinition,
+    frameJobsDefinition,
+    frameAssetsDefinition,
+    framePresentationDefinition,
+    frameNotificationsDefinition,
     // <cms>
     cmsDefinition,
     // </cms>

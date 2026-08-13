@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 
+import { assetsMigrationSource, frameAssetsExtension } from '@lingcootech/frame-assets';
+import {
+  presentationMigrationSource,
+  framePresentationExtension,
+} from '@lingcootech/frame-presentation';
 import {
   buildApp,
   createFrameWorker,
-  frameCoreExtension,
+  frameKernelExtension,
   loadEnv,
   runSystemMigrations,
 } from '@lingcootech/frame';
@@ -24,17 +29,42 @@ import {
   projectExtensionManifest,
 } from '@lingcootech/frame-extension-sdk';
 import { createDatabase, schema } from '@lingcootech/frame-database';
+import { createPostgresAdapter } from '@lingcootech/frame-database';
 import {
   frameMigrationsDirectory,
   listMigrationFiles,
 } from '@lingcootech/frame-database/migrations';
+import { buildFastifyHost } from '@lingcootech/frame-fastify';
+import { frameKernelSystem } from '@lingcootech/frame-kernel';
+import { frameIdentityManifest } from '@lingcootech/frame-identity/contracts';
+import { frameIdentityExtension, identityMigrationSource } from '@lingcootech/frame-identity';
+import {
+  frameIntegrationsExtension,
+  integrationsMigrationSource,
+} from '@lingcootech/frame-integrations';
+import { frameJobsExtension, jobsMigrationSource } from '@lingcootech/frame-jobs';
+import {
+  frameNotificationsExtension,
+  notificationsMigrationSource,
+} from '@lingcootech/frame-notifications';
+import { createOpenTelemetryAdapter } from '@lingcootech/frame-opentelemetry';
 
 const databaseUrl = process.env.DATABASE_URL;
 const migrations = listMigrationFiles();
 const system = defineSystem({
   id: 'packed-consumer',
   version: '0.1.0',
-  extensions: [exampleExtension, frameCmsExtension, frameCoreExtension],
+  extensions: [
+    frameKernelExtension,
+    frameIdentityExtension,
+    frameIntegrationsExtension,
+    frameJobsExtension,
+    frameAssetsExtension,
+    framePresentationExtension,
+    frameNotificationsExtension,
+    exampleExtension,
+    frameCmsExtension,
+  ],
 });
 
 const frameDependency = defineExtension({
@@ -125,11 +155,33 @@ assert.deepEqual(preparedBlock.config, {
   imageAssetId: null,
 });
 
-assert.equal(migrations.length, 10);
+assert.equal(migrations.length, 6);
 assert.equal(migrations[0], '0000_base_system.sql');
-assert.equal(migrations.at(-1), '0010_account_security.sql');
+assert.equal(migrations.at(-1), '0008_presentation.sql');
 assert.ok(frameMigrationsDirectory.endsWith('drizzle'));
 assert.ok(schema.accounts);
+assert.equal(createPostgresAdapter().id, 'postgresql');
+assert.equal(frameIdentityManifest.id, 'frame-identity');
+assert.equal(frameIdentityManifest.dependencies, undefined);
+assert.equal(identityMigrationSource.migrations[0].id, '0001_identity.sql');
+assert.equal(integrationsMigrationSource.migrations[0].id, '0001_integrations.sql');
+assert.equal(assetsMigrationSource.migrations[0].id, '0001_assets.sql');
+assert.equal(presentationMigrationSource.migrations[0].id, '0001_presentation.sql');
+assert.equal(jobsMigrationSource.migrations[0].id, '0001_jobs.sql');
+assert.equal(notificationsMigrationSource.migrations[0].id, '0001_notifications.sql');
+
+const kernelHost = await buildFastifyHost({
+  system: frameKernelSystem,
+  telemetry: createOpenTelemetryAdapter(),
+  logger: false,
+});
+const kernelHealth = await kernelHost.inject({ method: 'GET', url: '/health' });
+const kernelReady = await kernelHost.inject({ method: 'GET', url: '/ready' });
+assert.equal(kernelHealth.statusCode, 200);
+assert.equal(kernelReady.statusCode, 200);
+assert.equal(kernelReady.json().database, 'not_configured');
+assert.deepEqual(kernelHost.frameKernel.system.extensions, []);
+await kernelHost.close();
 
 if (databaseUrl) {
   const migrationResult = await runSystemMigrations({

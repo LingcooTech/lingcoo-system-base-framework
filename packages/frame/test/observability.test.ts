@@ -13,6 +13,7 @@ import {
 } from '@lingcootech/frame-database/schema';
 import { hashPassword } from '../src/core/modules/auth/password.js';
 import { MetricsRegistry } from '../src/core/modules/observability/metrics.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import { loadEnv } from '../src/host/env.js';
 import { serializeSafeError } from '../src/host/logging.js';
 
@@ -77,7 +78,9 @@ test('request IDs are echoed and metrics stay hidden when no token is configured
 
 test('metrics endpoint accepts only its dedicated bearer token', async () => {
   const token = 'metrics-test-token-with-24-characters';
-  const app = await buildApp(baseEnv({ METRICS_BEARER_TOKEN: token }));
+  const app = await buildApp(baseEnv({ METRICS_BEARER_TOKEN: token }), {
+    system: frameCoreSystem,
+  });
   const denied = await app.inject({ method: 'GET', url: '/metrics' });
   assert.equal(denied.statusCode, 401);
   const metrics = await app.inject({
@@ -104,6 +107,7 @@ test(
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'observability-test-secret-with-32-characters',
       }),
+      { system: frameCoreSystem },
     );
     app.get('/test/observability-failure', async () => {
       throw new TypeError('test failure payload is never persisted');

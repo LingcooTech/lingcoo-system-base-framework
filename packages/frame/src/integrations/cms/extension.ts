@@ -8,12 +8,15 @@ import type { Database } from '@lingcootech/frame-database';
 import { cmsContentEntries } from '@lingcootech/frame-database/schema';
 import { defineExtension } from '@lingcootech/frame-extension-sdk';
 import { defineServerExtension } from '@lingcootech/frame-extension-sdk/server';
+import type { FastifyInstance } from 'fastify';
 
-import { recordAuditEvent } from '../../core/modules/audit/recorder.js';
+import { createLegacyAuditPort } from '../audit/ports.js';
 import type { SearchProvider } from '../../core/modules/search/registry.js';
 import type { AppEnv } from '../../host/env.js';
 import { DatabaseCmsAssetPort } from './asset-port.js';
+import { createLegacyAssetsPorts } from '../assets/ports.js';
 import { DatabaseCmsJobPort } from './job-port.js';
+import { createLegacyJobsPortsForDatabase } from '../jobs/ports.js';
 import { DatabaseCmsTaxonomyPort } from './taxonomy-port.js';
 
 const cmsSearchProvider: SearchProvider = {
@@ -45,11 +48,11 @@ const cmsSearchProvider: SearchProvider = {
   },
 };
 
-function createCmsServicePorts(database: Database): CmsServicePorts {
+function createCmsServicePorts(database: Database, env: AppEnv): CmsServicePorts {
   return {
-    assets: new DatabaseCmsAssetPort(database),
-    audit: { record: (event) => recordAuditEvent(database, event) },
-    jobs: new DatabaseCmsJobPort(),
+    assets: new DatabaseCmsAssetPort(createLegacyAssetsPorts(database, env).references),
+    audit: createLegacyAuditPort(database),
+    jobs: new DatabaseCmsJobPort(createLegacyJobsPortsForDatabase(database).commands),
     taxonomy: new DatabaseCmsTaxonomyPort(database),
   };
 }
@@ -61,11 +64,11 @@ const cmsServerSurface = createCmsServerExtension({
     return request.auth.accountId;
   },
   requirePermission: (app, permission) => app.requirePermission(permission),
-  servicePorts: (app) => createCmsServicePorts(app.db),
+  servicePorts: (app) => createCmsServicePorts(app.db, app.appEnv),
   publicSite: (app) => app.publicSiteRegistry,
 });
 
-const frameCmsServer = defineServerExtension({
+const frameCmsServer = defineServerExtension<FastifyInstance>({
   async register(context) {
     await cmsServerSurface.register(context);
     context.app.searchRegistry.register(cmsSearchProvider);

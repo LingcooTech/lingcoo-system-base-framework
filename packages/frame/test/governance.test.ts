@@ -4,6 +4,7 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import {
   accountRoles,
   accounts,
@@ -51,6 +52,7 @@ test(
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'governance-test-secret-with-32-characters',
       }),
+      { system: frameCoreSystem },
     );
     const email = 'governance-owner@example.test';
     const password = 'Governance-owner-2026!';

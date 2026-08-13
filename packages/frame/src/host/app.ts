@@ -1,7 +1,5 @@
-import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import sensible from '@fastify/sensible';
 import fastifyStatic from '@fastify/static';
@@ -12,39 +10,32 @@ import { ZodError } from 'zod';
 
 import { createDatabase } from '@lingcootech/frame-database';
 import type { DefinedSystem } from '@lingcootech/frame-extension-sdk';
-import { frameCoreSystem } from '../core/extension.js';
-import { hasAnyPermission, type PermissionCode } from '../core/modules/access/rbac.js';
-import { AuthRepository } from '../core/modules/auth/repository.js';
-import { baseDatasetAdapters } from '../core/modules/data-exchange/adapters.js';
-import { DatasetRegistry } from '../core/modules/data-exchange/registry.js';
-import { installObservability } from '../core/modules/observability/index.js';
-import { MetricsRegistry } from '../core/modules/observability/metrics.js';
-import { ObservabilityService } from '../core/modules/observability/service.js';
-import { PublicSiteRegistry } from '../core/modules/public-site/registry.js';
-import { baseSearchProviders } from '../core/modules/search/providers.js';
-import { SearchProviderRegistry } from '../core/modules/search/registry.js';
+import { frameKernelSystem } from '../kernel/system.js';
 import {
   assertFrameSystemCompatibility,
+  createSystemServerCapabilityRegistry,
   createSystemSettingsRegistry,
   registerSystemServerExtensions,
 } from '../runtime/extensions.js';
+import {
+  createSystemEnvironmentRegistry,
+  readSystemEnvironmentSensitiveValues,
+} from '../runtime/environment.js';
 import type { AppEnv } from './env.js';
 import { serializeSafeError } from './logging.js';
+import { registerOperationalRoutes } from './operational-routes.js';
 import { runWithRequestContext, setRequestActor } from './request-context.js';
+import {
+  createDenyAllSecurityProvider,
+  SECURITY_PROVIDER_CAPABILITY,
+  type SecurityProvider,
+} from './security.js';
 
 function parseCorsOrigins(value: string): string[] {
   return value
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
-}
-
-function resolveJwtSecret(env: AppEnv): string {
-  if (env.AUTH_JWT_SECRET) return env.AUTH_JWT_SECRET;
-  if (env.NODE_ENV === 'production') {
-    throw new Error('AUTH_JWT_SECRET is required in production');
-  }
-  return 'lingcoo-frame-development-jwt-secret-change-me';
 }
 
 export interface StaticAssetDirectories {
@@ -55,11 +46,23 @@ export interface StaticAssetDirectories {
 export interface BuildAppOptions {
   system?: DefinedSystem;
   staticAssets?: StaticAssetDirectories;
+  securityProvider?: SecurityProvider;
 }
 
 export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
-  const system = options.system ?? frameCoreSystem;
+  const system = options.system ?? frameKernelSystem;
   assertFrameSystemCompatibility(system);
+  const environment = createSystemEnvironmentRegistry(system, env);
+  const capabilityOverrides = new Map<string, unknown>();
+  const declaresSecurityProvider = system.extensions.some((extension) =>
+    extension.manifest.capabilities?.server?.provides?.some(
+      (capability) => capability.id === SECURITY_PROVIDER_CAPABILITY,
+    ),
+  );
+  if (options.securityProvider && declaresSecurityProvider) {
+    capabilityOverrides.set(SECURITY_PROVIDER_CAPABILITY, options.securityProvider);
+  }
+  const capabilities = createSystemServerCapabilityRegistry(system, capabilityOverrides);
   const app = Fastify({
     logger: {
       level: env.LOG_LEVEL,
@@ -87,23 +90,16 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
 
   app.decorate('appEnv', env);
   app.decorate('frameSystem', system);
+  app.decorate('capabilities', capabilities);
+  app.decorate('environment', environment);
   app.decorate('db', db);
   app.decorate('settingsRegistry', createSystemSettingsRegistry(system));
-  const searchRegistry = new SearchProviderRegistry();
-  for (const provider of baseSearchProviders) searchRegistry.register(provider);
-  app.decorate('searchRegistry', searchRegistry);
-  const datasetRegistry = new DatasetRegistry();
-  for (const adapter of baseDatasetAdapters) datasetRegistry.register(adapter);
-  app.decorate('datasetRegistry', datasetRegistry);
-  app.decorate('publicSiteRegistry', new PublicSiteRegistry());
-  app.decorate('observability', new ObservabilityService(db, new MetricsRegistry()));
   app.addHook('onRequest', (request, reply, done) => {
     reply.header('x-request-id', request.id);
     reply.header('x-content-type-options', 'nosniff');
     reply.header('referrer-policy', 'strict-origin-when-cross-origin');
     runWithRequestContext({ requestId: request.id }, done);
   });
-  installObservability(app);
   app.addHook('onClose', async () => {
     await pool.end();
   });
@@ -125,59 +121,52 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
       },
     },
   });
-  await app.register(cookie);
-  await app.register(jwt, {
-    secret: resolveJwtSecret(env),
-    cookie: {
-      cookieName: env.AUTH_COOKIE_NAME,
-      signed: false,
-    },
-  });
+  const securityProvider =
+    options.securityProvider ??
+    capabilities.get<SecurityProvider>(SECURITY_PROVIDER_CAPABILITY) ??
+    createDenyAllSecurityProvider();
+  let security;
+  try {
+    security = await securityProvider.install({ app, env, environment });
+  } catch (error) {
+    await app.close();
+    throw error;
+  }
+  app.decorate('security', security);
   await app.register(rateLimit, {
     max: 300,
     timeWindow: '1 minute',
   });
 
   app.decorateRequest('auth', null);
+  app.decorateRequest('principal', null);
   app.decorate('authenticate', async (request) => {
-    try {
-      await request.jwtVerify();
-    } catch {
-      throw app.httpErrors.unauthorized('登录已过期，请重新登录');
-    }
-    if (!request.user.sub || !request.user.sid) {
-      throw app.httpErrors.unauthorized('登录凭证无效');
-    }
-
-    const repository = new AuthRepository(app.db);
-    const resolved = await repository.resolveSession(request.user.sid, request.user.sub);
-    if (!resolved) {
-      throw app.httpErrors.unauthorized('登录已失效，请重新登录');
-    }
-    const access = await repository.getAccess(resolved.account.id);
+    const principal = await app.security.authenticate(request);
+    request.principal = principal;
     request.auth = {
-      accountId: resolved.account.id,
-      sessionId: resolved.session.id,
-      email: resolved.account.email,
-      displayName: resolved.account.displayName,
-      roleCodes: access.roles.map((role) => role.code),
-      permissions: access.permissions,
+      accountId: principal.accountId ?? principal.subject,
+      sessionId: principal.sessionId ?? '',
+      email: principal.email ?? '',
+      displayName: principal.displayName ?? principal.subject,
+      roleCodes: principal.roleCodes,
+      permissions: principal.permissions,
     };
-    setRequestActor(resolved.account.id);
-    await repository.touchSession(resolved.session.id, resolved.session.lastSeenAt);
+    setRequestActor(principal.accountId ?? principal.subject);
   });
-  app.decorate('requirePermission', (required: PermissionCode | PermissionCode[]) => {
+  app.decorate('requirePermission', (required: string | string[]) => {
     const permissionCodes = Array.isArray(required) ? required : [required];
     return async (request) => {
       await app.authenticate(request);
       if (
-        !request.auth ||
-        !hasAnyPermission(request.auth.roleCodes, request.auth.permissions, permissionCodes)
+        !request.principal ||
+        !(await app.security.authorize(request.principal, permissionCodes))
       ) {
         throw app.httpErrors.forbidden('当前账号没有执行此操作的权限');
       }
     };
   });
+
+  registerOperationalRoutes(app);
 
   // Register the root error handler before extension plugins so their
   // encapsulated routes inherit the standard Frame error contract.
@@ -195,16 +184,16 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
         ? (error as { statusCode: number }).statusCode
         : 500;
     const safeError = serializeSafeError(error, [
-      env.AUTH_JWT_SECRET,
+      ...(app.security.sensitiveValues ?? []),
+      ...readSystemEnvironmentSensitiveValues(environment),
       env.SETTINGS_ENCRYPTION_KEY,
-      env.AUTH_BOOTSTRAP_PASSWORD,
       env.METRICS_BEARER_TOKEN,
     ]);
     request.log.error(
       { errorName: safeError.name, errorMessage: safeError.message, requestId: request.id },
       'request failed',
     );
-    if (statusCode >= 500 && app.observability) {
+    if (statusCode >= 500 && app.hasDecorator('observability')) {
       await app.observability
         .captureRequestError({
           error,
@@ -257,7 +246,9 @@ export async function buildApp(env: AppEnv, options: BuildAppOptions = {}) {
     if (request.url.startsWith('/admin') && adminDist && existsSync(adminDist)) {
       return reply.sendFile('index.html', adminDist);
     }
-    const redirect = await app.publicSiteRegistry.resolveRedirect(request.url.split('?')[0]);
+    const redirect = app.hasDecorator('publicSiteRegistry')
+      ? await app.publicSiteRegistry.resolveRedirect(request.url.split('?')[0])
+      : null;
     if (redirect) {
       return reply.code(redirect.statusCode).header('Location', redirect.targetPath).send();
     }

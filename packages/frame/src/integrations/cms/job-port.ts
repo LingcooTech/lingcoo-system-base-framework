@@ -1,32 +1,32 @@
 import type { CmsJobPort } from '@lingcootech/frame-cms/server';
-import { jobRuns, outboxEvents } from '@lingcootech/frame-database/schema';
+import type { JobsCommandPort } from '@lingcootech/frame-jobs';
 
 const resourceType = 'cms.content';
 
 export class DatabaseCmsJobPort implements CmsJobPort {
+  constructor(private readonly commands: JobsCommandPort) {}
   async publishContent(
     transaction: Parameters<CmsJobPort['publishContent']>[0],
     input: Parameters<CmsJobPort['publishContent']>[1],
   ) {
-    await transaction
-      .insert(outboxEvents)
-      .values({
+    await this.commands.publish(
+      {
         topic: 'cms.content.published',
         aggregateType: resourceType,
         aggregateId: input.contentId,
         payload: { contentId: input.contentId, type: input.type, slug: input.slug },
         dedupeKey: `cms-published:${input.contentId}:${input.version}`,
-      })
-      .onConflictDoNothing({ target: outboxEvents.dedupeKey });
+      },
+      transaction,
+    );
   }
 
   async schedulePublish(
     transaction: Parameters<CmsJobPort['schedulePublish']>[0],
     input: Parameters<CmsJobPort['schedulePublish']>[1],
   ) {
-    await transaction
-      .insert(jobRuns)
-      .values({
+    await this.commands.enqueue(
+      {
         kind: 'cms.content.publish-scheduled',
         queue: 'default',
         payload: {
@@ -39,7 +39,8 @@ export class DatabaseCmsJobPort implements CmsJobPort {
         relatedEntityType: resourceType,
         relatedEntityId: input.contentId,
         createdBy: input.actorId,
-      })
-      .onConflictDoNothing({ target: jobRuns.dedupeKey });
+      },
+      transaction,
+    );
   }
 }

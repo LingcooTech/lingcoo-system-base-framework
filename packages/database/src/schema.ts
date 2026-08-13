@@ -499,11 +499,9 @@ export const notificationDeliveries = pgTable(
     channel: text('channel').notNull(),
     destination: text('destination').notNull(),
     status: text('status').notNull().default('pending'),
-    integrationConnectionId: uuid('integration_connection_id').references(
-      () => integrationConnections.id,
-      { onDelete: 'set null' },
-    ),
-    encryptedContent: jsonb('encrypted_content'),
+    transportId: text('transport_id'),
+    transportLabel: text('transport_label'),
+    content: jsonb('content'),
     jobId: uuid('job_id').references(() => jobRuns.id, { onDelete: 'set null' }),
     attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),
@@ -525,9 +523,7 @@ export const storageAssets = pgTable(
   'storage_assets',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    connectionId: uuid('connection_id')
-      .notNull()
-      .references(() => integrationConnections.id, { onDelete: 'restrict' }),
+    connectionId: uuid('connection_id').notNull(),
     providerCode: text('provider_code').notNull().default('qiniu'),
     objectKey: text('object_key').notNull(),
     originalFilename: text('original_filename').notNull(),
@@ -583,21 +579,11 @@ export const presentationProfiles = pgTable('presentation_profiles', {
   displayName: text('display_name').notNull().default('Lingcoo Frame'),
   shortName: text('short_name'),
   slogan: text('slogan'),
-  fullLogoAssetId: uuid('full_logo_asset_id').references(() => storageAssets.id, {
-    onDelete: 'restrict',
-  }),
-  squareLogoAssetId: uuid('square_logo_asset_id').references(() => storageAssets.id, {
-    onDelete: 'restrict',
-  }),
-  darkLogoAssetId: uuid('dark_logo_asset_id').references(() => storageAssets.id, {
-    onDelete: 'restrict',
-  }),
-  faviconAssetId: uuid('favicon_asset_id').references(() => storageAssets.id, {
-    onDelete: 'restrict',
-  }),
-  socialImageAssetId: uuid('social_image_asset_id').references(() => storageAssets.id, {
-    onDelete: 'restrict',
-  }),
+  fullLogoAssetId: uuid('full_logo_asset_id'),
+  squareLogoAssetId: uuid('square_logo_asset_id'),
+  darkLogoAssetId: uuid('dark_logo_asset_id'),
+  faviconAssetId: uuid('favicon_asset_id'),
+  socialImageAssetId: uuid('social_image_asset_id'),
   primaryColor: text('primary_color').notNull().default('#315f47'),
   secondaryColor: text('secondary_color').notNull().default('#b9efc5'),
   accentColor: text('accent_color').notNull().default('#39735a'),
@@ -649,12 +635,8 @@ export const cmsContentEntries = pgTable(
     excerpt: text('excerpt'),
     body: text('body').notNull().default(''),
     bodyFormat: text('body_format').notNull().default('markdown'),
-    coverAssetId: uuid('cover_asset_id').references(() => storageAssets.id, {
-      onDelete: 'restrict',
-    }),
-    socialImageAssetId: uuid('social_image_asset_id').references(() => storageAssets.id, {
-      onDelete: 'restrict',
-    }),
+    coverAssetId: uuid('cover_asset_id'),
+    socialImageAssetId: uuid('social_image_asset_id'),
     status: text('status').notNull().default('draft'),
     pinned: boolean('pinned').notNull().default(false),
     seoTitle: text('seo_title'),

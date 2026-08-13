@@ -336,15 +336,15 @@ export interface NotificationDelivery {
   createdAt: string;
   notificationId: string;
   notificationTitle: string;
-  connectionId: string | null;
-  connectionName: string | null;
+  transportId: string | null;
+  transportLabel: string | null;
   jobId: string | null;
 }
 
 export interface StorageAsset {
   id: string;
   connectionId: string;
-  providerCode: 'qiniu';
+  providerCode: string;
   objectKey: string;
   originalFilename: string;
   displayName: string;
@@ -365,6 +365,12 @@ export interface AssetSummary {
   status: Record<string, number>;
   kind: Record<string, number>;
   totalBytes: number;
+}
+
+export interface AssetStorageConnection {
+  id: string;
+  providerCode: string;
+  name?: string;
 }
 
 export interface PresentationAsset {
@@ -1029,7 +1035,6 @@ export async function publishAnnouncement(input: {
   body: string;
   level: 'info' | 'success' | 'warning' | 'error';
   sendEmail: boolean;
-  smtpConnectionId?: string;
 }): Promise<{ broadcastId: string; recipientCount: number }> {
   return (
     await apiRequest<{ result: { broadcastId: string; recipientCount: number } }>(
@@ -1041,6 +1046,11 @@ export async function publishAnnouncement(input: {
 
 export async function fetchAssets(): Promise<{ items: StorageAsset[]; total: number }> {
   return apiRequest('/api/assets?limit=100');
+}
+
+export async function fetchAssetStorageConnections(): Promise<AssetStorageConnection[]> {
+  return (await apiRequest<{ items: AssetStorageConnection[] }>('/api/assets/storage-connections'))
+    .items;
 }
 
 export async function fetchAssetSummary(): Promise<AssetSummary> {

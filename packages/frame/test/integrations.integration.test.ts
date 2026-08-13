@@ -4,6 +4,7 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import {
   accountRoles,
   accounts,
@@ -42,6 +43,7 @@ test(
         AUTH_JWT_SECRET: 'integration-jwt-secret-with-at-least-32-characters',
         SETTINGS_ENCRYPTION_KEY: encryptionKey,
       }),
+      { system: frameCoreSystem },
     );
 
     const [ownerRole] = await app.db

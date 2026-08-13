@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@lingcootech/frame-admin": "^0.7.2",
+    "@lingcootech/frame-audit": "^0.7.2",
     "@lingcootech/frame-database": "^0.7.2",
     "@lingcootech/frame-extension-sdk": "^0.7.2",
     "@lingcootech/frame-ui": "^0.7.2",

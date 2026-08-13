@@ -43,6 +43,12 @@ test('creates deterministic application metadata and feature selection', async (
       await readFile(path.join(target, 'apps/system/src/system.ts'), 'utf8'),
       /frameCmsExtension/,
     );
+    const generatedSystem = await readFile(path.join(target, 'apps/system/src/system.ts'), 'utf8');
+    assert.match(generatedSystem, /frameKernelExtension/);
+    assert.match(generatedSystem, /frameIdentityExtension/);
+    assert.match(generatedSystem, /frameJobsExtension/);
+    assert.match(generatedSystem, /frameNotificationsExtension/);
+    assert.doesNotMatch(generatedSystem, /frameCoreExtension/);
     await verifyApplicationVersions(target);
   } finally {
     await rm(temporaryRoot, { recursive: true, force: true });

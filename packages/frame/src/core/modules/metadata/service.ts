@@ -1,5 +1,6 @@
 import { and, asc, count, eq, isNotNull } from 'drizzle-orm';
 
+import type { AuditCommandPort } from '@lingcootech/frame-audit';
 import type { Database } from '@lingcootech/frame-database';
 import {
   metadataDictionaries,
@@ -9,7 +10,6 @@ import {
   taxonomyTerms,
 } from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
-import { recordAuditEvent } from '../audit/recorder.js';
 
 type Status = 'active' | 'inactive';
 type ValueType = 'string' | 'number' | 'boolean' | 'json';
@@ -28,7 +28,10 @@ function validateValue(valueType: ValueType, value: unknown): unknown {
 }
 
 export class MetadataService {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly audit: AuditCommandPort,
+  ) {}
 
   async summary() {
     const [[dictionary], [item], [taxonomy], [term], [assignment]] = await Promise.all([
@@ -82,7 +85,7 @@ export class MetadataService {
       .insert(metadataDictionaries)
       .values({ ...input, createdBy: actorId })
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.dictionary_created',
       resourceType: 'metadata_dictionary',
       resourceId: created.id,
@@ -116,7 +119,7 @@ export class MetadataService {
       .set({ ...input, updatedAt: new Date() })
       .where(eq(metadataDictionaries.id, dictionary.id))
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.dictionary_updated',
       resourceType: 'metadata_dictionary',
       resourceId: dictionary.id,
@@ -169,7 +172,7 @@ export class MetadataService {
         createdBy: actorId,
       })
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.dictionary_item_created',
       resourceType: 'metadata_dictionary_item',
       resourceId: created.id,
@@ -214,7 +217,7 @@ export class MetadataService {
       })
       .where(eq(metadataDictionaryItems.id, itemId))
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.dictionary_item_updated',
       resourceType: 'metadata_dictionary_item',
       resourceId: itemId,
@@ -259,7 +262,7 @@ export class MetadataService {
       .insert(taxonomies)
       .values({ ...input, createdBy: actorId })
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.taxonomy_created',
       resourceType: 'taxonomy',
       resourceId: created.id,
@@ -298,7 +301,7 @@ export class MetadataService {
       .set({ ...input, updatedAt: new Date() })
       .where(eq(taxonomies.id, taxonomy.id))
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.taxonomy_updated',
       resourceType: 'taxonomy',
       resourceId: taxonomy.id,
@@ -343,7 +346,7 @@ export class MetadataService {
       .insert(taxonomyTerms)
       .values({ ...input, taxonomyId: taxonomy.id, createdBy: actorId })
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.term_created',
       resourceType: 'taxonomy_term',
       resourceId: created.id,
@@ -394,7 +397,7 @@ export class MetadataService {
       .set({ ...input, updatedAt: new Date() })
       .where(eq(taxonomyTerms.id, termId))
       .returning();
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.term_updated',
       resourceType: 'taxonomy_term',
       resourceId: termId,
@@ -450,7 +453,7 @@ export class MetadataService {
       .onConflictDoNothing()
       .returning();
     if (assignment)
-      await recordAuditEvent(this.db, {
+      await this.audit.record({
         action: 'metadata.term_assigned',
         resourceType: input.resourceType,
         resourceId: input.resourceId,
@@ -467,7 +470,7 @@ export class MetadataService {
       .where(eq(resourceTerms.id, assignmentId))
       .returning();
     if (!assignment) throw httpError(404, '分类关联不存在', 'NotFoundError');
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'metadata.term_unassigned',
       resourceType: assignment.resourceType,
       resourceId: assignment.resourceId,

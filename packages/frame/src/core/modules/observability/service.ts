@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto';
 
 import { count, desc, eq, sql } from 'drizzle-orm';
 
+import type { AuditCommandPort } from '@lingcootech/frame-audit';
 import type { Database } from '@lingcootech/frame-database';
 import { accounts, serviceHeartbeats, systemIncidents } from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
-import { recordAuditEvent } from '../audit/recorder.js';
 import type { MetricsRegistry } from './metrics.js';
 
 export interface IncidentInput {
@@ -22,6 +22,7 @@ export class ObservabilityService {
   constructor(
     private readonly db: Database,
     readonly metrics: MetricsRegistry,
+    private readonly audit: AuditCommandPort,
   ) {}
 
   async heartbeat(input: {
@@ -149,7 +150,7 @@ export class ObservabilityService {
       .where(eq(systemIncidents.id, incidentId))
       .returning();
     if (!incident) throw httpError(404, '系统错误记录不存在', 'NotFoundError');
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action:
         status === 'resolved'
           ? 'observability.incident_resolved'

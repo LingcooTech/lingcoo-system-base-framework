@@ -21,25 +21,75 @@ test('system runtime summary is derived from the installed system manifest and m
   assert.equal(summary.frame.version, frameCoreSystem.frameVersion);
   assert.deepEqual(
     summary.extensions.map((extension) => extension.id),
-    ['frame'],
+    [
+      'frame',
+      'frame-identity',
+      'frame-integrations',
+      'frame-jobs',
+      'frame-assets',
+      'frame-presentation',
+      'frame-notifications',
+    ],
   );
-  assert.deepEqual(summary.extensions[0]?.surfaces, [
-    'server',
-    'worker',
-    'migrations',
-    'admin',
-    'web',
-  ]);
-  assert.equal(summary.migrations.declaredCount, 10);
+  assert.deepEqual(summary.extensions[0]?.surfaces, ['server', 'migrations', 'admin']);
+  assert.deepEqual(summary.extensions[1]?.surfaces, ['server', 'migrations', 'admin', 'web']);
+  assert.deepEqual(summary.extensions[2]?.surfaces, ['server', 'migrations', 'admin']);
+  assert.deepEqual(summary.extensions[3]?.surfaces, ['server', 'migrations', 'admin']);
+  assert.deepEqual(summary.extensions[4]?.surfaces, ['server', 'worker', 'migrations', 'admin']);
+  assert.deepEqual(summary.extensions[5]?.surfaces, ['server', 'migrations', 'admin']);
+  assert.deepEqual(summary.extensions[6]?.surfaces, ['server', 'worker', 'migrations', 'admin']);
+  assert.equal(summary.migrations.declaredCount, 11);
   assert.equal(summary.migrations.appliedCount, 1);
-  assert.equal(summary.migrations.pendingCount, 9);
+  assert.equal(summary.migrations.pendingCount, 10);
   assert.equal(summary.migrations.status, 'pending');
   assert.deepEqual(summary.migrations.sources[0], {
     id: 'frame',
     extensionId: 'frame',
-    declaredCount: 10,
+    declaredCount: 5,
     appliedCount: 1,
-    pendingCount: 9,
+    pendingCount: 4,
+  });
+  assert.deepEqual(summary.migrations.sources[1], {
+    id: 'frame-identity',
+    extensionId: 'frame-identity',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
+  });
+  assert.deepEqual(summary.migrations.sources[2], {
+    id: 'frame-integrations',
+    extensionId: 'frame-integrations',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
+  });
+  assert.deepEqual(summary.migrations.sources[3], {
+    id: 'frame-jobs',
+    extensionId: 'frame-jobs',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
+  });
+  assert.deepEqual(summary.migrations.sources[4], {
+    id: 'frame-assets',
+    extensionId: 'frame-assets',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
+  });
+  assert.deepEqual(summary.migrations.sources[5], {
+    id: 'frame-presentation',
+    extensionId: 'frame-presentation',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
+  });
+  assert.deepEqual(summary.migrations.sources[6], {
+    id: 'frame-notifications',
+    extensionId: 'frame-notifications',
+    declaredCount: 1,
+    appliedCount: 0,
+    pendingCount: 1,
   });
 });
 

@@ -20,22 +20,16 @@ import { SystemInfoPage } from './defaults/pages/SystemInfoPage.js';
  * Installs the complete Frame administration product into a Consumer registry.
  * Applications add their own routes beside this surface instead of copying the Reference Admin.
  */
-export function createFrameAdminExtension<
+export function createFrameKernelAdminExtension<
   TContext = Record<string, never>,
 >(): AdminExtensionSurface<TContext> {
   return defineAdminExtension<TContext>({
     routes: [
       { id: 'frame.system-info', component: SystemInfoPage },
-      { id: 'frame.access', component: AccessPage },
-      { id: 'frame.integrations', component: IntegrationsPage },
-      { id: 'frame.assets', component: AssetsPage },
-      { id: 'frame.operations', component: OperationsPage },
       { id: 'frame.observability', component: ObservabilityPage },
-      { id: 'frame.notifications', component: NotificationsPage },
       { id: 'frame.metadata', component: MetadataPage },
       { id: 'frame.audit', component: AuditPage },
       { id: 'frame.presentation', component: PresentationPage },
-      { id: 'frame.account', component: AccountPage },
       { id: 'frame.settings', component: SettingsPage },
       { id: 'frame.help', component: HelpPage },
     ],
@@ -59,6 +53,83 @@ export function createFrameAdminExtension<
         },
       },
     ],
+  });
+}
+
+export function createFrameIdentityAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [
+      { id: 'frame.access', component: AccessPage },
+      { id: 'frame.account', component: AccountPage },
+    ],
+  });
+}
+
+export function createFrameJobsAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [{ id: 'frame.operations', component: OperationsPage }],
+  });
+}
+
+export function createFrameNotificationsAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [{ id: 'frame.notifications', component: NotificationsPage }],
+  });
+}
+
+export function createFrameIntegrationsAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [{ id: 'frame.integrations', component: IntegrationsPage }],
+  });
+}
+
+export function createFrameAssetsAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [{ id: 'frame.assets', component: AssetsPage }],
+  });
+}
+
+export function createFramePresentationAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  return defineAdminExtension<TContext>({
+    routes: [{ id: 'frame.presentation', component: PresentationPage }],
+  });
+}
+
+/** @deprecated Prefer composing the Kernel and Feature Admin extensions explicitly. */
+export function createFrameAdminExtension<
+  TContext = Record<string, never>,
+>(): AdminExtensionSurface<TContext> {
+  const kernel = createFrameKernelAdminExtension<TContext>();
+  const identity = createFrameIdentityAdminExtension<TContext>();
+  const jobs = createFrameJobsAdminExtension<TContext>();
+  const notifications = createFrameNotificationsAdminExtension<TContext>();
+  const integrations = createFrameIntegrationsAdminExtension<TContext>();
+  const assets = createFrameAssetsAdminExtension<TContext>();
+  const presentation = createFramePresentationAdminExtension<TContext>();
+  return defineAdminExtension<TContext>({
+    routes: [
+      ...(kernel.routes ?? []),
+      ...(identity.routes ?? []),
+      ...(jobs.routes ?? []),
+      ...(notifications.routes ?? []),
+      ...(integrations.routes ?? []),
+      ...(assets.routes ?? []),
+      ...(presentation.routes ?? []),
+    ],
+    navigation: kernel.navigation,
+    searchProviders: kernel.searchProviders,
   });
 }
 

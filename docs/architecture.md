@@ -33,6 +33,35 @@ Browser
 
 这种形态保持了前端职责的独立性，同时避免一个基础系统一开始就承担多镜像编排、服务发现和跨服务认证等不必要复杂度。
 
+### 最小 Kernel
+
+Frame Kernel 本身不是一个隐式安装全部通用功能的扩展。默认 `frameKernelSystem` 的扩展列表为空。
+`@lingcootech/frame-kernel` 不依赖 Fastify、PostgreSQL/Drizzle 或 OpenTelemetry，负责 System、Capability、
+Extension 和 Migration Source 的组合规则。Identity、Jobs、Notifications、Assets、CMS 等能力必须由
+应用组合根显式安装。
+
+```text
+@lingcootech/frame-extension-sdk       Ports & Public Contracts
+                 │
+                 ▼
+@lingcootech/frame-kernel              System / Runtime / Extension / Migration Engine
+                 ▲
+                 │ implements ports
+        ┌────────┼──────────────┐
+        │        │              │
+ frame-fastify  frame-database  frame-opentelemetry
+ HTTP Host      PostgreSQL      optional telemetry bridge
+
+Docker / Compose                         deployment composition
+```
+
+`@lingcootech/frame-fastify` 在没有数据库适配器时也可以启动，提供 `/health` 和返回
+`database: not_configured` 的 `/ready`。传入 `frame-database` 的 `createPostgresAdapter()` 后才建立数据库
+生命周期。`frame-opentelemetry` 基于官方 API；未注册 Provider 时自然退化为 no-op。
+
+历史 Core 组合和旧 Host/Worker 在迁移期间继续由 `@lingcootech/frame` 兼容聚合包导出，但不再代表纯
+Kernel。待 Feature Extensions 迁出后，再移除聚合包中的旧功能依赖。
+
 ## 3. 目录职责
 
 ```text
@@ -41,12 +70,25 @@ apps/
   reference-admin/     参考管理后台应用
   reference-web/       参考公共用户侧应用
 packages/
-  frame/               Backend Host、Core、Runtime 与一方扩展适配
+  extension-sdk/       Ports、Manifest、System 与各运行面公共契约
+  kernel/              无基础设施依赖的 System、Runtime、Extension、Migration Engine
+  fastify/             Fastify HTTP Host Adapter 与存活/就绪探针
+  database/            PostgreSQL/Drizzle Adapter、Schema 与 Migration Runner
+  audit/               Audit 写入公共契约与 PostgreSQL Adapter
+  opentelemetry/       可选 OpenTelemetry API Adapter
+  identity/            完整 Identity Feature：Server、Ports、Provider、Repository 与 Migrations
+  integrations/        Provider-neutral 连接、凭据、Provider Registry、调用事件与 Migrations
+  assets/              Provider-neutral 资产生命周期、引用、REST、Worker 与 Migrations
+  mail-nodemailer/      SMTP/Nodemailer Adapter
+  storage-qiniu/        七牛对象存储 Adapter
+  ai-openrouter/        OpenRouter Adapter
+  payments/             支付宝、微信支付 Adapter 与 PaymentService
+  jobs/                Jobs/Outbox Feature：REST、Services、Worker Registries 与 Migrations
+  notifications/       Notifications Feature：REST、Delivery、Mail Ports、Worker 与 Migrations
+  frame/               迁移期兼容聚合包与尚未迁出的旧 Feature
   admin-shell/         Admin Shell、路由、导航、Widget、搜索与编辑器注册表
   cms/                 可选 CMS 的 Contracts、Server、Worker、Admin、Web 与迁移
-  database/            Database、基础 Schema、迁移执行器与不可变 SQL
   design-tokens/       双 Web 入口共享的语义设计变量
-  extension-sdk/       浏览器安全 Manifest、System 组合与分运行面契约
   ui/                  无业务含义的 React 基础组件
   web-shell/           Web Shell、路由、SEO、Sitemap 与 Landing Block 注册表
 fixtures/
@@ -58,15 +100,92 @@ deploy/                生产部署脚本和入口配置
 docs/                  架构约束与扩展指南
 ```
 
-`packages/frame/src` 继续分为四层：
+`packages/frame/src` 是迁移期兼容区域，继续分为四层：
 
 - `host/`：HTTP 宿主、环境、请求上下文和日志，不承载业务规则。
 - `core/`：Core Manifest、Core Extension 与稳定基础模块。
 - `runtime/`：System 的扩展安装、Worker 和 Migration 执行。
 - `integrations/`：Frame 对可选一方扩展的 Service Port 适配，例如 CMS。
 
-Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。完整目录阅读顺序见根
+新代码不得向该兼容区域增加 Kernel 能力；Core 与一方/领域扩展统一由 `defineSystem()` 组合进入应用。
+`npm run check:architecture` 会拒绝 Kernel 对 Fastify、pg、Drizzle、OpenTelemetry 和各 Adapter 的反向依赖。
+完整目录阅读顺序见根
 [CODEMAP](../CODEMAP.md)。
+
+### Identity 扩展迁移
+
+`@lingcootech/frame-identity` 已独立拥有 Identity Manifest、环境变量、SecurityProvider、Auth/Access
+路由与服务、RBAC、密码处理、PostgreSQL Repository，以及 `frame-identity/0001_identity.sql` Migration
+Source。Mail、Assets、Audit 和领域事件通过 `IdentityPorts` 注入，默认 no-op 实现不会迫使应用安装其它
+Feature。`@lingcootech/frame` 仅在兼容组合中把旧 Notifications、Assets、Audit 和 Outbox 实现接回这些
+Ports。Reference System 已从 Identity 自己的包直接装配扩展。
+
+Identity 同时公开只读 `IdentityAccountDirectoryPort` 及 PostgreSQL Adapter。Notifications 的收件人解析、
+后台账号搜索和公告广播，Presentation 的历史操作者信息，以及 Frame 全局账号搜索均通过该目录访问；
+`accounts` 表不再被其它 Feature 直接读取。
+
+Presentation 公开窄化的 `PresentationProfileReaderPort` 及 PostgreSQL Adapter。Identity 邮件挑战只读取
+邮件品牌所需的 `displayName/publicUrl`，不再构造完整 `PresentationService` 或间接加载品牌资产。
+
+Audit 读写也已形成独立边界：`@lingcootech/frame-audit` 根入口公开 `AuditEvent`、
+`AuditCommandPort`、`AuditQueryPort`、读模型、上下文契约和 no-op 实现，`./postgres` 才导出 Drizzle Adapter。Identity、Jobs、
+Integrations、Assets、Presentation、Notifications、CMS，以及 Frame 中暂留的 Metadata、Settings、
+Data Exchange、Observability 写服务都只依赖该公共 Port；请求上下文由兼容 Host 在组合根注入，旧的
+database-aware recorder 已删除。Audit API 和 Identity 安全事件通过 Query Port 读取，操作者资料由组合层
+使用 Identity 账号目录补齐，不再在 Frame 内跨表查询 `audit_logs`。
+
+数据库处于可重建阶段，因此 Identity 表使用单个最终状态 Migration；原来的
+`0001_identity_access.sql` 和 `0010_account_security.sql` 已移除，不保留历史数据升级分支。
+
+### Jobs / Outbox 扩展迁移
+
+`@lingcootech/frame-jobs` 已独立拥有 Jobs Manifest、管理 REST 路由、`JobService`、`OutboxService`、
+Worker Handler/Subscriber Registry、`JobsPorts` 和 `frame-jobs/0001_jobs.sql` Migration Source。
+Identity 只向事件 Port 发布领域事件，不再导入或写入 Outbox 表；兼容 Frame 组合层通过
+`OutboxService` 把该 Port 接到 Jobs 扩展。
+
+Jobs 明确依赖 Identity，因为默认权限和审计操作者使用统一账号模型。未安装 Jobs 时，空 Kernel 不会
+创建任务/Outbox 表、注册 Operations API 或连接 Worker 数据库。Reference System 与应用脚手架均在
+组合根显式列出 `frameKernelExtension → frameIdentityExtension → frameJobsExtension`。
+
+### Integrations Core 扩展迁移
+
+`@lingcootech/frame-integrations` 已独立拥有 Provider 契约与 Registry、连接生命周期、AES-256-GCM
+凭据封装、连通性测试、调用事件、通用 REST、Admin Route 和
+`frame-integrations/0001_integrations.sql` Migration Source。默认 Registry 为空，因此该包不依赖
+Nodemailer、支付宝、七牛、微信支付或 OpenRouter SDK，未安装厂商 Adapter 也可以正常启动。
+
+SMTP、Qiniu、Alipay/Wechat Pay 与 OpenRouter 已分别物理迁至 `frame-mail-nodemailer`、
+`frame-storage-qiniu`、`frame-payments` 和 `frame-ai-openrouter`。带 HTTP 能力的 Adapter 自己拥有路由
+声明、输入校验和注册逻辑；兼容 `@lingcootech/frame` 只负责组合并保留旧导入转发。平台 Migration Source 不再创建
+Integration 表或注册其权限，Reference System 与应用脚手架在组合根显式安装 Integrations。
+
+Integrations 现在公开 `IntegrationConnectionsPort`，统一提供已启用连接的列表、解析和中立搜索能力。
+兼容 Frame 仅在 `integrations/integrations/ports.ts` 查询 `integration_connections`；Assets 的 Qiniu
+连接、Notifications/Identity 的 SMTP 连接及全局搜索不再各自理解 Integrations Schema。
+
+### Assets 扩展迁移
+
+`@lingcootech/frame-assets` 已独立拥有资产生命周期、引用保护、REST、Worker Handler、Admin Route 与
+`frame-assets/0001_assets.sql` Migration Source。它通过 `AssetsPorts` 使用对象存储、任务入队和 Audit，
+不读取 Integration 表、不写 Jobs 表，也不依赖 Qiniu。兼容 Frame 把现有 Integrations/Qiniu、Jobs 和
+Audit 实现注入该扩展；未安装 Assets 时不会创建资产表或注册资产路由与任务。
+
+Presentation 和 CMS 的 Asset ID 字段不再建立跨 Feature 数据库外键，引用有效性及删除保护统一由 Assets
+Port 和 `storage_asset_references` 生命周期维护。
+
+### Notifications / Mail 扩展迁移
+
+`@lingcootech/frame-notifications` 已独立拥有 Notifications Manifest、站内通知与公告 REST、
+`NotificationService`、投递状态机、密码变更 Outbox Subscriber、邮件投递 Job Handler、Admin Route 和
+`frame-notifications/0001_notifications.sql` Migration Source。它通过 `NotificationsPorts` 使用 Identity
+账号目录、Jobs 命令、Audit 和 Mail，不导入账号/任务表、SMTP Provider、IntegrationService、凭据解密或旧 Frame。
+
+Mail 当前是一个可替换 Port，而不是强制 Feature：未配置 Mail Adapter 时仍可安装 Notifications 并使用
+站内通知；请求邮件公告时返回明确的配置错误。兼容 `@lingcootech/frame` 把现有 SMTP Provider、加密设置和
+Audit 实现接到该 Port，Reference System 因此保持原有邮件行为。通知投递表使用通用
+`transport_id/transport_label`，不再外键绑定 `integration_connections`。应用组合根现在显式列出
+`Kernel → Identity → Jobs → Notifications`。
 
 ## 4. 基础能力
 

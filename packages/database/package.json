@@ -36,6 +36,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-kernel": "^0.7.2",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.16.3",
     "semver": "^7.7.2"

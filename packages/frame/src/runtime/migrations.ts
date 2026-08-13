@@ -5,7 +5,7 @@ import {
   type MigrationResult,
 } from '@lingcootech/frame-database/migrations';
 
-import { frameCoreSystem } from '../core/extension.js';
+import { frameKernelSystem } from '../kernel/system.js';
 import { assertFrameSystemCompatibility, collectSystemMigrationSources } from './extensions.js';
 
 export interface RunSystemMigrationsOptions {
@@ -16,7 +16,7 @@ export interface RunSystemMigrationsOptions {
 
 export function runSystemMigrations({
   connectionString,
-  system = frameCoreSystem,
+  system = frameKernelSystem,
   logger,
 }: RunSystemMigrationsOptions): Promise<MigrationResult> {
   assertFrameSystemCompatibility(system);

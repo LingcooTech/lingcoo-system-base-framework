@@ -1,11 +1,29 @@
-export {
-  defineMigrationSource,
-  type Migration,
-  type MigrationSource,
-  type MigrationSourceDependency,
-} from '@lingcootech/frame-database/migrations';
+/**
+ * Storage-neutral migration contracts. Infrastructure adapters execute these
+ * sources, but extension manifests must not depend on a PostgreSQL package.
+ */
+export interface MigrationSourceDependency {
+  id: string;
+  version: string;
+}
 
-import type { MigrationSource } from '@lingcootech/frame-database/migrations';
+export interface Migration {
+  id: string;
+  sql: string;
+  checksum?: string;
+  legacyAliases?: readonly string[];
+}
+
+export interface MigrationSource {
+  id: string;
+  version: string;
+  dependencies?: readonly MigrationSourceDependency[];
+  migrations: readonly Migration[];
+}
+
+export function defineMigrationSource<T extends MigrationSource>(source: T): T {
+  return source;
+}
 
 export interface MigrationExtensionSurface {
   source: MigrationSource;

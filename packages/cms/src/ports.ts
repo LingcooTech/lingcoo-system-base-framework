@@ -1,7 +1,7 @@
 import type { Database } from '@lingcootech/frame-database';
+import type { AuditCommandPort } from '@lingcootech/frame-audit';
 
 import type {
-  CmsAuditEvent,
   CmsPublicAsset,
   CmsPublicRoute,
   CmsRedirectResolution,
@@ -58,9 +58,7 @@ export interface CmsJobPort {
   ): Promise<void>;
 }
 
-export interface CmsAuditPort {
-  record(event: CmsAuditEvent): Promise<void>;
-}
+export type CmsAuditPort = AuditCommandPort;
 
 export interface CmsServicePorts {
   assets: CmsAssetPort;

@@ -13,11 +13,11 @@ import {
   fetchAssets,
   fetchAssetAccessUrl,
   fetchAssetSummary,
-  fetchIntegrationConnections,
+  fetchAssetStorageConnections,
   restoreAsset,
   uploadAssetFile,
   type AssetSummary,
-  type IntegrationConnection,
+  type AssetStorageConnection,
   type StorageAsset,
 } from '../client.js';
 import { useAdminAuth as useAuth } from '../../auth.js';
@@ -56,7 +56,7 @@ async function fetchPageData() {
   const [assetResult, summary, connections] = await Promise.all([
     fetchAssets(),
     fetchAssetSummary(),
-    fetchIntegrationConnections(),
+    fetchAssetStorageConnections(),
   ]);
   return { assetResult, summary, connections };
 }
@@ -67,7 +67,7 @@ export function AssetsPage() {
   const { toast } = useToast();
   const [assets, setAssets] = useState<StorageAsset[]>([]);
   const [summary, setSummary] = useState<AssetSummary>({ status: {}, kind: {}, totalBytes: 0 });
-  const [connections, setConnections] = useState<IntegrationConnection[]>([]);
+  const [connections, setConnections] = useState<AssetStorageConnection[]>([]);
   const [connectionId, setConnectionId] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [file, setFile] = useState<File | null>(null);
@@ -80,11 +80,8 @@ export function AssetsPage() {
   function applyPageData(data: Awaited<ReturnType<typeof fetchPageData>>) {
     setAssets(data.assetResult.items);
     setSummary(data.summary);
-    const qiniu = data.connections.filter(
-      (connection) => connection.providerCode === 'qiniu' && connection.enabled,
-    );
-    setConnections(qiniu);
-    setConnectionId((current) => current || qiniu[0]?.id || '');
+    setConnections([...data.connections]);
+    setConnectionId((current) => current || data.connections[0]?.id || '');
     setError('');
     setLoading(false);
   }
@@ -215,7 +212,7 @@ export function AssetsPage() {
                 >
                   {connections.map((connection) => (
                     <option key={connection.id} value={connection.id}>
-                      {connection.name}
+                      {connection.name ?? connection.providerCode}
                     </option>
                   ))}
                 </select>

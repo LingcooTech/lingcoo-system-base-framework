@@ -23,6 +23,42 @@ test('worker runtime import is side-effect free and idle instances can be dispos
   );
 
   assert.equal(worker.getStatus().state, 'idle');
+  assert.deepEqual(worker.getStatus().extensions, []);
+  assert.deepEqual(worker.getStatus().jobKinds, []);
+  assert.deepEqual(worker.getStatus().eventTopics, []);
   await worker.dispose();
   assert.equal(worker.getStatus().state, 'stopped');
+});
+
+test('empty Kernel worker starts and stops without connecting to PostgreSQL', async () => {
+  const { createFrameWorker } = await import('../src/runtime/worker.js');
+  const worker = createFrameWorker(
+    loadEnv({
+      NODE_ENV: 'test',
+      API_HOST: '127.0.0.1',
+      LOG_LEVEL: 'silent',
+      DATABASE_URL: 'postgres://frame:frame@127.0.0.1:1/unreachable',
+      WORKER_POLL_INTERVAL_MS: '100',
+    }),
+    { healthServer: false },
+  );
+
+  const completion = worker.run();
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.equal(worker.getStatus().state, 'running');
+  await worker.stop('test');
+  await completion;
+  assert.equal(worker.getStatus().state, 'stopped');
+});
+
+test('empty Kernel migration plan completes without connecting to PostgreSQL', async () => {
+  const { runSystemMigrations } = await import('../src/runtime/migrations.js');
+  const messages: string[] = [];
+  const result = await runSystemMigrations({
+    connectionString: 'postgres://frame:frame@127.0.0.1:1/unreachable',
+    logger: { log: (message) => messages.push(message) },
+  });
+
+  assert.deepEqual(result, { applied: [], adopted: [], alreadyApplied: [] });
+  assert.deepEqual(messages, ['No migrations found; skipping.']);
 });

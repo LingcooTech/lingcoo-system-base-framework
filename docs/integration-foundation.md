@@ -11,8 +11,9 @@
 - 连通性测试和后续业务调用如何审计
 - 管理后台如何根据 Provider 契约生成配置入口
 
-它不直接承载行业业务，但通过具体 Provider 实现邮件、对象存储、支付协议和模型调用。目前已安装
-SMTP、七牛云、支付宝、微信支付 API v3 和 OpenRouter。
+它不直接承载行业业务。`@lingcootech/frame-integrations` 只拥有 Provider-neutral Core；邮件、对象存储、
+支付协议和模型调用由应用显式注册的 Provider Adapter 实现。这些实现已分别位于 Nodemailer、七牛、
+支付和 OpenRouter 独立包；兼容 Frame 默认组合它们以保持现有应用行为。
 
 ## 2. 组成
 
@@ -96,7 +97,7 @@ Integration Event + Audit Log
 
 ## 6. 实现一个 Provider
 
-Provider 适配器实现 `IntegrationProvider`：
+Provider 适配器实现从 `@lingcootech/frame-integrations` 导出的 `IntegrationProvider`：
 
 ```ts
 const provider: IntegrationProvider = {

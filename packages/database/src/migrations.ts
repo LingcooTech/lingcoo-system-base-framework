@@ -4,21 +4,28 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import semver from 'semver';
+import {
+  defineMigrationSource,
+  type MigrationSource,
+  type MigrationSourceDependency,
+} from '@lingcootech/frame-extension-sdk/migrations';
+
+export {
+  defineMigrationSource,
+  type Migration,
+  type MigrationSource,
+  type MigrationSourceDependency,
+} from '@lingcootech/frame-extension-sdk/migrations';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceIdPattern = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
 const migrationIdPattern = /^[a-z0-9][a-z0-9._-]*\.sql$/;
 const frameMigrationFiles = [
   '0000_base_system.sql',
-  '0001_identity_access.sql',
-  '0002_integration_foundation.sql',
-  '0003_jobs_notifications.sql',
-  '0004_storage_assets.sql',
+  '0001_platform_permissions.sql',
   '0005_governance.sql',
   '0006_metadata_exchange.sql',
   '0007_observability.sql',
-  '0008_presentation.sql',
-  '0010_account_security.sql',
 ] as const;
 
 export const frameMigrationsDirectory = path.join(packageDirectory, 'drizzle');
@@ -26,25 +33,6 @@ export const FRAME_DATABASE_VERSION = '0.7.2';
 
 export interface MigrationLogger {
   log(message: string): void;
-}
-
-export interface MigrationSourceDependency {
-  id: string;
-  version: string;
-}
-
-export interface Migration {
-  id: string;
-  sql: string;
-  checksum?: string;
-  legacyAliases?: readonly string[];
-}
-
-export interface MigrationSource {
-  id: string;
-  version: string;
-  dependencies?: readonly MigrationSourceDependency[];
-  migrations: readonly Migration[];
 }
 
 export interface CompiledMigration {
@@ -107,12 +95,9 @@ export const frameMigrationSource = createFileMigrationSource({
   version: FRAME_DATABASE_VERSION,
   directory: frameMigrationsDirectory,
   files: frameMigrationFiles,
+  dependencies: [{ id: 'frame-identity', version: '^0.7.2' }],
   legacyAliases: Object.fromEntries(frameMigrationFiles.map((file) => [file, [file]])),
 });
-
-export function defineMigrationSource<T extends MigrationSource>(source: T): T {
-  return source;
-}
 
 function migrationError(message: string): never {
   throw new Error(`Invalid migration sources: ${message}`);

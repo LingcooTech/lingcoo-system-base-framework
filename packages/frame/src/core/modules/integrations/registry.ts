@@ -1,10 +1,9 @@
 import type { IntegrationProvider } from './provider.js';
 import { IntegrationProviderRegistry } from './provider.js';
-import { AlipayProvider } from './providers/alipay.js';
-import { OpenRouterProvider } from './providers/openrouter.js';
-import { QiniuProvider } from './providers/qiniu.js';
-import { SmtpProvider } from './providers/smtp.js';
-import { WechatPayProvider } from './providers/wechat-pay.js';
+import { OpenRouterProvider } from '@lingcootech/frame-ai-openrouter';
+import { SmtpProvider } from '@lingcootech/frame-mail-nodemailer';
+import { AlipayProvider, WechatPayProvider } from '@lingcootech/frame-payments';
+import { QiniuProvider } from '@lingcootech/frame-storage-qiniu';
 
 const diagnosticProvider: IntegrationProvider = {
   code: 'framework-diagnostic',

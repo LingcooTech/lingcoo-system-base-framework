@@ -20,7 +20,7 @@ import { MetadataService } from './service.js';
 export const metadataModule: AppModule = {
   name: 'metadata',
   register(app) {
-    const service = new MetadataService(app.db);
+    const service = new MetadataService(app.db, app.auditCommands);
 
     app.get(
       '/api/metadata/summary',

@@ -1,0 +1,51 @@
+{
+  "name": "@lingcootech/frame-audit",
+  "version": "0.7.2",
+  "private": false,
+  "type": "module",
+  "description": "Provider-neutral audit command/query contracts and PostgreSQL adapters for Lingcoo Frame.",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres.d.ts",
+      "import": "./dist/postgres.js"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node ../../scripts/copy-package-legal.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "node --import tsx --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "@lingcootech/frame-database": "^0.7.2",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.5.2",
+    "eslint": "^10.8.0",
+    "globals": "^16.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingcooTech/lingcoo-system-base-framework.git"
+  }
+}

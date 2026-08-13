@@ -1,5 +1,6 @@
 import { desc, eq, sql } from 'drizzle-orm';
 
+import type { AuditCommandPort } from '@lingcootech/frame-audit';
 import type { Database } from '@lingcootech/frame-database';
 import {
   accounts,
@@ -7,12 +8,12 @@ import {
   systemSettingVersions,
 } from '@lingcootech/frame-database/schema';
 import { httpError } from '../../../host/http-error.js';
-import { recordAuditEvent } from '../audit/recorder.js';
 import { defaultSettingsRegistry, type SettingsRegistry } from './registry.js';
 
 export class SettingsService {
   constructor(
     private readonly db: Database,
+    private readonly audit: AuditCommandPort,
     private readonly registry: SettingsRegistry = defaultSettingsRegistry,
   ) {}
 
@@ -73,7 +74,7 @@ export class SettingsService {
       });
       return row;
     });
-    await recordAuditEvent(this.db, {
+    await this.audit.record({
       action: 'system.setting_updated',
       resourceType: 'system_setting',
       resourceId: key,

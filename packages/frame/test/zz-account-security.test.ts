@@ -5,6 +5,7 @@ import test from 'node:test';
 import { desc, eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import {
   accountRoles,
   accounts,
@@ -48,6 +49,7 @@ test(
         SETTINGS_ENCRYPTION_KEY: encryptionKey,
         AUTH_JWT_SECRET: 'account-security-test-jwt-secret-2026',
       }),
+      { system: frameCoreSystem },
     );
     await app.db
       .insert(presentationProfiles)
@@ -139,11 +141,11 @@ test(
     });
     assert.equal(verification.statusCode, 202);
     const [verificationDelivery] = await app.db
-      .select({ encryptedContent: notificationDeliveries.encryptedContent })
+      .select({ content: notificationDeliveries.content })
       .from(notificationDeliveries)
       .orderBy(desc(notificationDeliveries.createdAt))
       .limit(1);
-    const verificationToken = tokenFromEncryptedContent(verificationDelivery.encryptedContent);
+    const verificationToken = tokenFromEncryptedContent(verificationDelivery.content);
     const verified = await app.inject({
       method: 'POST',
       url: '/api/auth/email/verify',
@@ -158,11 +160,11 @@ test(
     });
     assert.equal(resetRequest.statusCode, 202);
     const [resetDelivery] = await app.db
-      .select({ encryptedContent: notificationDeliveries.encryptedContent })
+      .select({ content: notificationDeliveries.content })
       .from(notificationDeliveries)
       .orderBy(desc(notificationDeliveries.createdAt))
       .limit(1);
-    const resetToken = tokenFromEncryptedContent(resetDelivery.encryptedContent);
+    const resetToken = tokenFromEncryptedContent(resetDelivery.content);
     const newPassword = 'Security-owner-new-2026!';
     const reset = await app.inject({
       method: 'POST',
@@ -198,12 +200,12 @@ test(
     });
     assert.equal(invited.statusCode, 201);
     const [invitationDelivery] = await app.db
-      .select({ encryptedContent: notificationDeliveries.encryptedContent })
+      .select({ content: notificationDeliveries.content })
       .from(notificationDeliveries)
       .where(eq(notificationDeliveries.destination, inviteEmail))
       .orderBy(desc(notificationDeliveries.createdAt))
       .limit(1);
-    const invitationToken = tokenFromEncryptedContent(invitationDelivery.encryptedContent);
+    const invitationToken = tokenFromEncryptedContent(invitationDelivery.content);
     const invitedPassword = 'Invited-user-password-2026!';
     const accepted = await app.inject({
       method: 'POST',

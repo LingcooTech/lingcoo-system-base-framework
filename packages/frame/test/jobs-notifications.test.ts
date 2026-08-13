@@ -4,6 +4,7 @@ import test from 'node:test';
 import { and, eq } from 'drizzle-orm';
 
 import { buildApp } from '../src/host/app.js';
+import { frameCoreSystem } from '../src/core/extension.js';
 import {
   accountRoles,
   accounts,
@@ -71,6 +72,7 @@ test(
         DATABASE_URL: databaseUrl,
         AUTH_JWT_SECRET: 'jobs-notifications-test-secret-32-characters',
       }),
+      { system: frameCoreSystem },
     );
     const email = 'jobs-notifications-owner@example.test';
     const password = 'Jobs-notifications-2026!';

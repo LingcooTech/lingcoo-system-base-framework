@@ -25,6 +25,18 @@
       "types": "./dist/host/env.d.ts",
       "import": "./dist/host/env.js"
     },
+    "./environment": {
+      "types": "./dist/environment.d.ts",
+      "import": "./dist/environment.js"
+    },
+    "./security": {
+      "types": "./dist/security.d.ts",
+      "import": "./dist/security.js"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities.d.ts",
+      "import": "./dist/capabilities.js"
+    },
     "./worker": {
       "types": "./dist/runtime/worker.d.ts",
       "import": "./dist/runtime/worker.js"
@@ -61,13 +73,24 @@
     "@fastify/sensible": "^6.0.4",
     "@fastify/static": "^10.1.2",
     "@lingcootech/frame-admin": "^0.7.2",
+    "@lingcootech/frame-audit": "^0.7.2",
+    "@lingcootech/frame-assets": "^0.7.2",
+    "@lingcootech/frame-ai-openrouter": "^0.7.2",
     "@lingcootech/frame-database": "^0.7.2",
     "@lingcootech/frame-extension-sdk": "^0.7.2",
+    "@lingcootech/frame-fastify": "^0.7.2",
+    "@lingcootech/frame-identity": "^0.7.2",
+    "@lingcootech/frame-integrations": "^0.7.2",
+    "@lingcootech/frame-mail-nodemailer": "^0.7.2",
+    "@lingcootech/frame-jobs": "^0.7.2",
+    "@lingcootech/frame-kernel": "^0.7.2",
+    "@lingcootech/frame-notifications": "^0.7.2",
+    "@lingcootech/frame-presentation": "^0.7.2",
+    "@lingcootech/frame-payments": "^0.7.2",
+    "@lingcootech/frame-storage-qiniu": "^0.7.2",
     "@lingcootech/frame-web": "^0.7.2",
-    "alipay-sdk": "^4.14.0",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.6.1",
-    "nodemailer": "^9.0.3",
     "pg": "^8.16.3",
     "zod": "^4.1.11"
   },
@@ -83,7 +106,6 @@
     "@eslint/js": "^10.0.1",
     "@lingcootech/frame-cms": "^0.7.2",
     "@types/node": "^24.5.2",
-    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.15.5",
     "eslint": "^10.8.0",
     "globals": "^16.0.0",

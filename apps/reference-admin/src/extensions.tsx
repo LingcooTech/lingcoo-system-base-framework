@@ -1,6 +1,22 @@
 import { createAdminRegistry, defineAdminExtension } from '@lingcootech/frame-admin';
-import { createFrameAdminExtension } from '@lingcootech/frame-admin/defaults';
-import { frameAdminManifest } from '@lingcootech/frame-admin/manifest';
+import {
+  createFrameIdentityAdminExtension,
+  createFrameIntegrationsAdminExtension,
+  createFrameAssetsAdminExtension,
+  createFrameJobsAdminExtension,
+  createFrameKernelAdminExtension,
+  createFrameNotificationsAdminExtension,
+  createFramePresentationAdminExtension,
+} from '@lingcootech/frame-admin/defaults';
+import {
+  frameIdentityAdminManifest,
+  frameIntegrationsAdminManifest,
+  frameAssetsAdminManifest,
+  frameJobsAdminManifest,
+  frameKernelAdminManifest,
+  frameNotificationsAdminManifest,
+  framePresentationAdminManifest,
+} from '@lingcootech/frame-admin/manifest';
 import { createCmsAdminClient, createCmsAdminExtension } from '@lingcootech/frame-cms/admin';
 import { cmsManifest } from '@lingcootech/frame-cms/contracts';
 import {
@@ -14,17 +30,94 @@ import { HomePage } from './pages/HomePage';
 
 export type AdminAppContext = Record<string, never>;
 
-const frameAdminSurface = createFrameAdminExtension<AdminAppContext>();
-
-const frameAdminDefinition = defineExtension({
+const frameKernelAdminDefinition = defineExtension({
   manifest: {
     id: 'frame',
     version: FRAME_VERSION,
     apiVersion: '1',
     frame: `^${FRAME_VERSION}`,
-    admin: frameAdminManifest,
+    admin: frameKernelAdminManifest,
   },
-  admin: frameAdminSurface,
+  admin: createFrameKernelAdminExtension<AdminAppContext>(),
+});
+
+const frameIdentityAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-identity',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame', version: `^${FRAME_VERSION}` }],
+    admin: frameIdentityAdminManifest,
+  },
+  admin: createFrameIdentityAdminExtension<AdminAppContext>(),
+});
+
+const frameIntegrationsAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-integrations',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: frameIntegrationsAdminManifest,
+  },
+  admin: createFrameIntegrationsAdminExtension<AdminAppContext>(),
+});
+
+const frameAssetsAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-assets',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [
+      { id: 'frame-identity', version: `^${FRAME_VERSION}` },
+      { id: 'frame-jobs', version: `^${FRAME_VERSION}` },
+    ],
+    admin: frameAssetsAdminManifest,
+  },
+  admin: createFrameAssetsAdminExtension<AdminAppContext>(),
+});
+
+const framePresentationAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-presentation',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: framePresentationAdminManifest,
+  },
+  admin: createFramePresentationAdminExtension<AdminAppContext>(),
+});
+
+const frameJobsAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-jobs',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [{ id: 'frame-identity', version: `^${FRAME_VERSION}` }],
+    admin: frameJobsAdminManifest,
+  },
+  admin: createFrameJobsAdminExtension<AdminAppContext>(),
+});
+
+const frameNotificationsAdminDefinition = defineExtension({
+  manifest: {
+    id: 'frame-notifications',
+    version: FRAME_VERSION,
+    apiVersion: '1',
+    frame: `^${FRAME_VERSION}`,
+    dependencies: [
+      { id: 'frame-identity', version: `^${FRAME_VERSION}` },
+      { id: 'frame-integrations', version: `^${FRAME_VERSION}` },
+      { id: 'frame-jobs', version: `^${FRAME_VERSION}` },
+    ],
+    admin: frameNotificationsAdminManifest,
+  },
+  admin: createFrameNotificationsAdminExtension<AdminAppContext>(),
 });
 
 const cmsAdminDefinition = defineExtension({
@@ -40,7 +133,12 @@ const referenceAdminDefinition = defineExtension({
     version: FRAME_VERSION,
     apiVersion: '1',
     frame: `^${FRAME_VERSION}`,
-    dependencies: [{ id: 'frame', version: `^${FRAME_VERSION}` }],
+    dependencies: [
+      { id: 'frame', version: `^${FRAME_VERSION}` },
+      { id: 'frame-identity', version: `^${FRAME_VERSION}` },
+      { id: 'frame-jobs', version: `^${FRAME_VERSION}` },
+      { id: 'frame-notifications', version: `^${FRAME_VERSION}` },
+    ],
     admin: {
       routes: [
         {
@@ -61,7 +159,17 @@ const referenceAdminDefinition = defineExtension({
 export const adminSystem = defineSystem({
   id: 'frame-reference-admin',
   version: FRAME_VERSION,
-  extensions: [frameAdminDefinition, cmsAdminDefinition, referenceAdminDefinition],
+  extensions: [
+    frameKernelAdminDefinition,
+    frameIdentityAdminDefinition,
+    frameIntegrationsAdminDefinition,
+    frameJobsAdminDefinition,
+    frameAssetsAdminDefinition,
+    framePresentationAdminDefinition,
+    frameNotificationsAdminDefinition,
+    cmsAdminDefinition,
+    referenceAdminDefinition,
+  ],
 });
 
 export const adminRegistry = createAdminRegistry<AdminAppContext>(adminSystem);

@@ -21,6 +21,10 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
     },
+    "./environment": {
+      "types": "./dist/environment.d.ts",
+      "import": "./dist/environment.js"
+    },
     "./worker": {
       "types": "./dist/worker.d.ts",
       "import": "./dist/worker.js"
@@ -38,25 +42,11 @@
   "dependencies": {
     "semver": "^7.7.2"
   },
-  "peerDependencies": {
-    "@lingcootech/frame-database": "^0.7.2",
-    "fastify": "^5.6.0"
-  },
-  "peerDependenciesMeta": {
-    "@lingcootech/frame-database": {
-      "optional": true
-    },
-    "fastify": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@lingcootech/frame-database": "^0.7.2",
     "@types/node": "^24.5.2",
     "@types/semver": "^7.7.1",
     "eslint": "^10.8.0",
-    "fastify": "^5.6.1",
     "globals": "^16.0.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.65.0"

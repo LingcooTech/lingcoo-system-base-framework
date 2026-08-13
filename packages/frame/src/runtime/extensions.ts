@@ -1,20 +1,24 @@
-import {
-  FRAME_VERSION,
-  type DefinedSystem,
-  type ExtensionDefinition,
-} from '@lingcootech/frame-extension-sdk';
-import type { MigrationExtensionSurface } from '@lingcootech/frame-extension-sdk/migrations';
+import type { DefinedSystem, ExtensionDefinition } from '@lingcootech/frame-extension-sdk';
+import type { MigrationSource } from '@lingcootech/frame-extension-sdk/migrations';
 import type {
   ServerExtensionSurface,
   ServerSettingDefinition,
 } from '@lingcootech/frame-extension-sdk/server';
 import type { WorkerExtensionSurface } from '@lingcootech/frame-extension-sdk/worker';
-import type { Database, MigrationSource } from '@lingcootech/frame-database';
+import type { Database } from '@lingcootech/frame-database';
+import {
+  assertSystemCompatibility,
+  collectSystemMigrationSources as collectKernelMigrationSources,
+  createSystemServerCapabilityRegistry as createKernelCapabilityRegistry,
+  registerSystemServerExtensions as registerKernelServerExtensions,
+  type ServerCapabilityRegistry,
+} from '@lingcootech/frame-kernel';
 import type { FastifyInstance } from 'fastify';
+import type { JobHandlerRegistry, OutboxSubscriberRegistry } from '@lingcootech/frame-jobs/worker';
 
-import { JobHandlerRegistry, OutboxSubscriberRegistry } from '../core/modules/jobs/registry.js';
 import { SettingsRegistry } from '../core/modules/settings/registry.js';
 import type { AppEnv } from '../host/env.js';
+import type { SystemEnvironmentRegistry } from './environment.js';
 
 function serverSurface(extension: ExtensionDefinition): ServerExtensionSurface | undefined {
   return extension.server as ServerExtensionSurface | undefined;
@@ -27,15 +31,7 @@ function workerSurface(
 }
 
 export function assertFrameSystemCompatibility(system: DefinedSystem): void {
-  if (system.frameVersion !== FRAME_VERSION) {
-    throw new Error(
-      `Defined System targets Frame ${system.frameVersion}, but this runtime is ${FRAME_VERSION}`,
-    );
-  }
-  const core = system.extensions.find((extension) => extension.manifest.id === 'frame');
-  if (!core || core.manifest.version !== FRAME_VERSION) {
-    throw new Error(`Defined System must include frameCoreExtension@${FRAME_VERSION}`);
-  }
+  assertSystemCompatibility(system);
 }
 
 export function createSystemSettingsRegistry(system: DefinedSystem): SettingsRegistry {
@@ -60,39 +56,32 @@ export function createSystemSettingsRegistry(system: DefinedSystem): SettingsReg
   return registry;
 }
 
+export function createSystemServerCapabilityRegistry(
+  system: DefinedSystem,
+  overrides: ReadonlyMap<string, unknown> = new Map(),
+): ServerCapabilityRegistry {
+  return createKernelCapabilityRegistry(system, overrides);
+}
+
 export async function registerSystemServerExtensions(
   app: FastifyInstance,
   system: DefinedSystem,
 ): Promise<void> {
-  for (const extension of system.extensions) {
-    const routes = extension.manifest.server?.routes ?? [];
-    for (const route of routes) {
-      if (app.hasRoute({ method: route.method, url: route.path })) {
-        throw new Error(
-          `Extension route conflicts with an installed route: ${route.method} ${route.path}`,
-        );
-      }
-    }
-    const surface = serverSurface(extension);
-    if (!surface && (routes.length > 0 || (extension.manifest.settings?.length ?? 0) > 0)) {
-      throw new Error(
-        `Extension ${extension.manifest.id} declares Server contributions without a surface`,
-      );
-    }
-    if (surface) await surface.register({ app });
-    for (const route of routes) {
-      if (!app.hasRoute({ method: route.method, url: route.path })) {
-        throw new Error(
-          `Extension ${extension.manifest.id} did not register declared route ${route.method} ${route.path}`,
-        );
-      }
-    }
-  }
+  await registerKernelServerExtensions(
+    {
+      app,
+      hasRoute(method, path) {
+        return app.hasRoute({ method, url: path });
+      },
+    },
+    system,
+  );
 }
 
 export function registerSystemWorkerExtensions(options: {
   system: DefinedSystem;
   env: AppEnv;
+  environment: SystemEnvironmentRegistry;
   database: Database;
   jobHandlers: JobHandlerRegistry;
   subscribers: OutboxSubscriberRegistry;
@@ -110,6 +99,7 @@ export function registerSystemWorkerExtensions(options: {
     }
     surface?.register({
       env: options.env,
+      environment: options.environment,
       database: options.database,
       registerJob(kind, handler) {
         if (!declaredJobs.has(kind)) {
@@ -142,31 +132,5 @@ export function registerSystemWorkerExtensions(options: {
 }
 
 export function collectSystemMigrationSources(system: DefinedSystem): MigrationSource[] {
-  return system.extensions.flatMap((extension) => {
-    const declaration = extension.manifest.migrations;
-    const surface = extension.migrations as MigrationExtensionSurface | undefined;
-    if (!declaration && !surface) return [];
-    if (!declaration || !surface) {
-      throw new Error(`Extension ${extension.manifest.id} has an incomplete migration surface`);
-    }
-    if (surface.source.id !== declaration.sourceId) {
-      throw new Error(
-        `Extension ${extension.manifest.id} migration source ${surface.source.id} does not match ${declaration.sourceId}`,
-      );
-    }
-    const runtimeDeclarations = surface.source.migrations.map((migration) => ({
-      id: migration.id,
-      aliases: [...(migration.legacyAliases ?? [])].sort(),
-    }));
-    const manifestDeclarations = declaration.migrations.map((migration) => ({
-      id: migration.id,
-      aliases: [...(migration.legacyAliases ?? [])].sort(),
-    }));
-    if (JSON.stringify(runtimeDeclarations) !== JSON.stringify(manifestDeclarations)) {
-      throw new Error(
-        `Extension ${extension.manifest.id} migration manifest does not match its source`,
-      );
-    }
-    return [surface.source];
-  });
+  return collectKernelMigrationSources(system);
 }

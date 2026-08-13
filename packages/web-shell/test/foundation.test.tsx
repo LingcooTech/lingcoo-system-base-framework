@@ -9,6 +9,7 @@ import { Hero, PageHeader, Section } from '../src/layout.js';
 import type { PublicPresentation } from '../src/presentation.js';
 import { breadcrumbStructuredData } from '../src/seo.js';
 import { SiteShell } from '../src/site.js';
+import { frameIdentityWebManifest, frameKernelWebManifest } from '../src/manifest.js';
 
 Object.assign(globalThis, { React });
 
@@ -110,4 +111,9 @@ test('SEO helpers and public account routes are application-independent', () => 
   assert.equal(publicAuthModeFromRoute('forgot-password'), 'forgot');
   assert.equal(publicAuthModeFromRoute('accept-invitation'), 'invitation');
   assert.equal(publicAuthModeFromRoute('unknown'), null);
+});
+
+test('public account route belongs to the optional Identity Web manifest', () => {
+  assert.deepEqual(frameKernelWebManifest, {});
+  assert.deepEqual(frameIdentityWebManifest.routes, [{ id: 'frame.auth', path: '/auth/:mode' }]);
 });

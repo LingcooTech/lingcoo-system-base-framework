@@ -60,6 +60,12 @@ test(
 
     const deletedKeys: string[] = [];
     const gateway: StorageAssetGateway = {
+      async listConnections() {
+        return [{ id: connection.id, providerCode: 'qiniu', name: 'Asset test storage' }];
+      },
+      async resolveConnection() {
+        return { id: connection.id, providerCode: 'qiniu', name: 'Asset test storage' };
+      },
       async createUploadToken(_connectionId, input) {
         return {
           key: `frame/${input.key}`,
@@ -84,7 +90,17 @@ test(
         };
       },
     };
-    const service = new AssetService(app.db, gateway);
+    const service = new AssetService(app.db, {
+      storage: gateway,
+      audit: { async record() {} },
+      jobs: {
+        async enqueue(transaction, input) {
+          await transaction.insert(jobRuns).values(input).onConflictDoNothing({
+            target: jobRuns.dedupeKey,
+          });
+        },
+      },
+    });
     const intent = await service.createUploadIntent(
       {
         connectionId: connection.id,
