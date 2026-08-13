@@ -184,6 +184,10 @@ assert.deepEqual(kernelHost.frameKernel.system.extensions, []);
 await kernelHost.close();
 
 if (databaseUrl) {
+  const expectedMigrationCount = system.extensions.reduce(
+    (count, extension) => count + (extension.migrations?.source.migrations.length ?? 0),
+    0,
+  );
   const migrationResult = await runSystemMigrations({
     connectionString: databaseUrl,
     system,
@@ -193,7 +197,7 @@ if (databaseUrl) {
     migrationResult.applied.length +
       migrationResult.adopted.length +
       migrationResult.alreadyApplied.length,
-    13,
+    expectedMigrationCount,
   );
 }
 
