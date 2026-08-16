@@ -39,18 +39,18 @@
     "@lingcootech/frame-extension-sdk": "^0.7.2",
     "@lingcootech/frame-kernel": "^0.7.2",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.16.3",
+    "pg": "^8.23.0",
     "semver": "^7.7.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.5.2",
-    "@types/pg": "^8.15.5",
+    "@types/pg": "^8.21.0",
     "@types/semver": "^7.7.1",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "globals": "^16.0.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.67.0"
   },
   "engines": {
     "node": ">=22.0.0"
