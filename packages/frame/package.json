@@ -90,7 +90,7 @@
     "@lingcootech/frame-storage-qiniu": "^0.7.2",
     "@lingcootech/frame-web": "^0.7.2",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.6.1",
+    "fastify": "^5.12.1",
     "pg": "^8.16.3",
     "zod": "^4.1.11"
   },
