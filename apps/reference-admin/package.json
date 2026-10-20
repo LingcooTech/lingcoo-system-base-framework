@@ -17,7 +17,7 @@
     "@lingcootech/frame-extension-sdk": "^0.7.0",
     "@lingcootech/frame-ui": "^0.7.0",
     "@tailwindcss/vite": "^4.3.0",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^6.0.5",
     "lucide-react": "^0.503.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
