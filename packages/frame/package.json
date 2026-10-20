@@ -69,7 +69,7 @@
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/jwt": "^10.2.1",
-    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/rate-limit": "^11.2.0",
     "@fastify/sensible": "^6.0.4",
     "@fastify/static": "^10.1.2",
     "@lingcootech/frame-admin": "^0.7.2",
